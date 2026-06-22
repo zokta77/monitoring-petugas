@@ -5,7 +5,6 @@ import tempfile
 from datetime import datetime
 import schedule
 import time
-
 from config_se2026 import NAMA_KABUPATEN, BASE_PATH, LATEST_FILE, archive_filename
 
 # ================= SETTINGS =================
