@@ -103,14 +103,10 @@ def save_and_merge(new_data):
                 "nmkec",
                 "nmdesa",
                 "nmsls",
-                "nmsubsls",
-                "pengawas",
-                "pencacah",
-                "nama_pcl",
-                "nama_pml"
+                "nmsubsls"
             ]
-        ],
-        on="email",
+        ].drop_duplicates(),
+        on="regionCode",
         how="left"
     )
 
