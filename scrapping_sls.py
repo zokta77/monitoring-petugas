@@ -92,8 +92,8 @@ def save_and_merge(new_data):
     df_new["scraped_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     master = pd.read_excel("data/master_data.xlsx")
 
-    master["regionCode"] = master["regionCode"].astype(str)
-    df_new["regionCode"] = df_new["regionCode"].astype(str)
+    master["pencacah"] = master["pencacah"].astype(str)
+    df_new["email"] = df_new["email"].astype(str)
 
     df_new = df_new.merge(
         master[
@@ -110,7 +110,7 @@ def save_and_merge(new_data):
                 "nama_pml"
             ]
         ],
-        on="regionCode",
+        on="email",
         how="left"
     )
 
