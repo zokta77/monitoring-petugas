@@ -15,7 +15,6 @@ base_path = BASE_PATH                #FOLDER UNTUK MENYIMPAN DATA HASIL SCRAPPIN
 
 # ===================== GANTI COOKIE DI SINI =====================
 cookies = {
-    'f5avraaaaaaaaaaaaaaaa_session_': 'DAOEDJIPEJMJAGDAEHJNNMDEBDJLABJAPEICHHIPDFHBKJAJEMPEDBOICKAFAEDGELMDHLBIKIBBFODGMJHAIHLGPHNHOHLBAGDHFFNKLMMKJAMPMKKJOKHGBHFMKNEJ',
     '_ga_G604FXJW6E': 'GS2.1.s1780902144$o1$g0$t1780902163$j41$l0$h0',
     '_ga_K98R6MSKRH': 'GS2.1.s1780922743$o1$g1$t1780922897$j47$l0$h0',
     '_ga_WQKDWE3S3T': 'GS2.1.s1780971857$o1$g0$t1780971857$j60$l0$h0',
@@ -24,15 +23,15 @@ cookies = {
     '_ga_T7YPSCVK8R': 'GS2.1.s1782095603$o1$g0$t1782095607$j56$l0$h0',
     '_ga': 'GA1.3.1484741960.1780902145',
     '_ga_XXTTVXWHDB': 'GS2.3.s1782095624$o9$g1$t1782095696$j50$l0$h0',
-    'db8ca2b43ed851cc93e71fd5fd72bff7': '63cb22dd24962f7d58232a22d15c0336',
-    'TS011f2d1a': '01266d26d02298296679113eb3d4ee45eefaab17db65313cdc1a3d408d94b00f8f04145144bff959ae6d599bcbcb042d62a29907a5',
-    'XSRF-TOKEN': '248cf163-5e0f-42a4-8aa4-faaafc76b05f',
-    'SESSION': '8223a419-36ed-457c-8672-95726abc1ef5',
-    'TSPD_101': '0868f8be6fab2800bb8f17e62ab6aa7c0d0fd21d7caebf5548c384fcb6e117540157582a6524eebda279b134f35fec0308145fea2c0518008674c8cca285ca2f5ca1732140a3428bba23ce13beb1c95e',
-    'f5avraaaaaaaaaaaaaaaa_session_': 'NANLFDOIBKEDOLELJALHKKOJEMOMPIDIBOPILFMIDLPELHCFCDIGJDABPGPCJILNGNIDFNMJKILLBLNKJHJALEPHMHNABGAAMMDPHKOIOKBLHOGEGNDAFNOGEEAKNNFH',
-    'TS5220f739077': '0868f8be6fab28002e90e22a7bd8762e439ac72db4340985b479f1dedcd3f3025d16d2bb2e6616f23ed8cdd65da8a4130831a9585217200046a2de5640d67dc2242f5994ed0a0f69741abd32e7bfb4e159398aa5d350b7ea',
-    'TS5220f739029': '0868f8be6fab28005c5e1f59b2e7787f2f6de1d549acf2648e85ec48bab78229c308cb41ec03520384ed93a3f240fecc',
-    'TSf1edb2d2027': '0868f8be6fab200085bca243043b84d222d62f9f8c9648b3422f95290bf55b8cec857450b571c7c508916d6f9c113000a89b987178f81f53a1f245955a13cf92b7d518cbf00748e3781d550e72bb87a08ec2f338e02eb290c81d5ff494bbeeb8',
+    'db8ca2b43ed851cc93e71fd5fd72bff7': 'a21150ab9d665d861e2d326e57acfa6d',
+    'TS011f2d1a': '01266d26d012e43e5a6c9ddd9f031abd9cdc62e70969332c180d0cb7cfd913ee6e9c6bdffcb4cdd4a9c266bced9c77b4041ef075dd',
+    'XSRF-TOKEN': 'ca51d619-add5-4bad-9780-d83e54bc1f0d',
+    'SESSION': 'c2a2b82b-1f56-4536-ab92-53e37a24a76b',
+    'TSPD_101': '0868f8be6fab2800e4b7904c957beec1eaf06326c445dee2f9c7359caa60e7e29ccabf5f9b78f5c431e124ef9b50bd1d08e33529b40518008f1b690324004cc25ca1732140a3428bba23ce13beb1c95e',
+    'f5avraaaaaaaaaaaaaaaa_session_': 'NFHKGOFHOPJCMIJBLLBMDEGOGIDFJHKICNHMCENDPAOLLHKMDCOFNFHLOEMBPCKJHKEDBJADFCGLEDCAEDNADPNGMBJMBECDOKEADGILHJNCLFCNIOMKEJAOBNOCDMCA',
+    'TS5220f739077': '0868f8be6fab280020e9cf3e0eb8901b7766fa55ff2a5bb160cf7b0844b5de8ad3860e115119c291a36669ae99f5df5108335450c1172000621789358f8a046ade45bfb6848da65c0dd7b3161f2ca2f4cb544badb696a00d',
+    'TS5220f739029': '0868f8be6fab28008cc0cfd57d061df2c6be717a2b969a2fd8c4839bb5b521cced591db5db92d32342846b8c6a4de93f',
+    'TSf1edb2d2027': '0868f8be6fab2000345ccde2bf7e5bae6cab9a3292108ce685971299c5b3a6ba64c2be1700854634089a76a7191130001b70909ebd682df5f6216ee047143c5f23b0379bd6d2211566261f105d264d3dc16d3b57396dae0dbe0dc7eed3885560',
 }
 
 headers = {
@@ -45,11 +44,11 @@ headers = {
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
     'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36',
-    'X-XSRF-TOKEN': '248cf163-5e0f-42a4-8aa4-faaafc76b05f',
+    'X-XSRF-TOKEN': 'ca51d619-add5-4bad-9780-d83e54bc1f0d',
     'sec-ch-ua': '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
     'sec-ch-ua-mobile': '?1',
     'sec-ch-ua-platform': '"Android"',
-    'Cookie': 'f5avraaaaaaaaaaaaaaaa_session_=DAOEDJIPEJMJAGDAEHJNNMDEBDJLABJAPEICHHIPDFHBKJAJEMPEDBOICKAFAEDGELMDHLBIKIBBFODGMJHAIHLGPHNHOHLBAGDHFFNKLMMKJAMPMKKJOKHGBHFMKNEJ; _ga_G604FXJW6E=GS2.1.s1780902144$o1$g0$t1780902163$j41$l0$h0; _ga_K98R6MSKRH=GS2.1.s1780922743$o1$g1$t1780922897$j47$l0$h0; _ga_WQKDWE3S3T=GS2.1.s1780971857$o1$g0$t1780971857$j60$l0$h0; _ga_QPPE1C18C5=GS2.1.s1781251554$o2$g0$t1781252726$j60$l0$h0; cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; _ga_T7YPSCVK8R=GS2.1.s1782095603$o1$g0$t1782095607$j56$l0$h0; _ga=GA1.3.1484741960.1780902145; _ga_XXTTVXWHDB=GS2.3.s1782095624$o9$g1$t1782095696$j50$l0$h0; db8ca2b43ed851cc93e71fd5fd72bff7=63cb22dd24962f7d58232a22d15c0336; TS011f2d1a=01266d26d02298296679113eb3d4ee45eefaab17db65313cdc1a3d408d94b00f8f04145144bff959ae6d599bcbcb042d62a29907a5; XSRF-TOKEN=248cf163-5e0f-42a4-8aa4-faaafc76b05f; SESSION=8223a419-36ed-457c-8672-95726abc1ef5; TSPD_101=0868f8be6fab2800bb8f17e62ab6aa7c0d0fd21d7caebf5548c384fcb6e117540157582a6524eebda279b134f35fec0308145fea2c0518008674c8cca285ca2f5ca1732140a3428bba23ce13beb1c95e; f5avraaaaaaaaaaaaaaaa_session_=NANLFDOIBKEDOLELJALHKKOJEMOMPIDIBOPILFMIDLPELHCFCDIGJDABPGPCJILNGNIDFNMJKILLBLNKJHJALEPHMHNABGAAMMDPHKOIOKBLHOGEGNDAFNOGEEAKNNFH; TS5220f739077=0868f8be6fab28002e90e22a7bd8762e439ac72db4340985b479f1dedcd3f3025d16d2bb2e6616f23ed8cdd65da8a4130831a9585217200046a2de5640d67dc2242f5994ed0a0f69741abd32e7bfb4e159398aa5d350b7ea; TS5220f739029=0868f8be6fab28005c5e1f59b2e7787f2f6de1d549acf2648e85ec48bab78229c308cb41ec03520384ed93a3f240fecc; TSf1edb2d2027=0868f8be6fab200085bca243043b84d222d62f9f8c9648b3422f95290bf55b8cec857450b571c7c508916d6f9c113000a89b987178f81f53a1f245955a13cf92b7d518cbf00748e3781d550e72bb87a08ec2f338e02eb290c81d5ff494bbeeb8',
+    'Cookie': '_ga_G604FXJW6E=GS2.1.s1780902144$o1$g0$t1780902163$j41$l0$h0; _ga_K98R6MSKRH=GS2.1.s1780922743$o1$g1$t1780922897$j47$l0$h0; _ga_WQKDWE3S3T=GS2.1.s1780971857$o1$g0$t1780971857$j60$l0$h0; _ga_QPPE1C18C5=GS2.1.s1781251554$o2$g0$t1781252726$j60$l0$h0; cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; _ga_T7YPSCVK8R=GS2.1.s1782095603$o1$g0$t1782095607$j56$l0$h0; _ga=GA1.3.1484741960.1780902145; _ga_XXTTVXWHDB=GS2.3.s1782095624$o9$g1$t1782095696$j50$l0$h0; db8ca2b43ed851cc93e71fd5fd72bff7=a21150ab9d665d861e2d326e57acfa6d; TS011f2d1a=01266d26d012e43e5a6c9ddd9f031abd9cdc62e70969332c180d0cb7cfd913ee6e9c6bdffcb4cdd4a9c266bced9c77b4041ef075dd; XSRF-TOKEN=ca51d619-add5-4bad-9780-d83e54bc1f0d; SESSION=c2a2b82b-1f56-4536-ab92-53e37a24a76b; TSPD_101=0868f8be6fab2800e4b7904c957beec1eaf06326c445dee2f9c7359caa60e7e29ccabf5f9b78f5c431e124ef9b50bd1d08e33529b40518008f1b690324004cc25ca1732140a3428bba23ce13beb1c95e; f5avraaaaaaaaaaaaaaaa_session_=NFHKGOFHOPJCMIJBLLBMDEGOGIDFJHKICNHMCENDPAOLLHKMDCOFNFHLOEMBPCKJHKEDBJADFCGLEDCAEDNADPNGMBJMBECDOKEADGILHJNCLFCNIOMKEJAOBNOCDMCA; TS5220f739077=0868f8be6fab280020e9cf3e0eb8901b7766fa55ff2a5bb160cf7b0844b5de8ad3860e115119c291a36669ae99f5df5108335450c1172000621789358f8a046ade45bfb6848da65c0dd7b3161f2ca2f4cb544badb696a00d; TS5220f739029=0868f8be6fab28008cc0cfd57d061df2c6be717a2b969a2fd8c4839bb5b521cced591db5db92d32342846b8c6a4de93f; TSf1edb2d2027=0868f8be6fab2000345ccde2bf7e5bae6cab9a3292108ce685971299c5b3a6ba64c2be1700854634089a76a7191130001b70909ebd682df5f6216ee047143c5f23b0379bd6d2211566261f105d264d3dc16d3b57396dae0dbe0dc7eed3885560',
 }
 
 json_data = {
@@ -92,19 +91,40 @@ def save_and_merge(new_data):
     df_new["scraped_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     master = pd.read_excel("data/master_data.xlsx")
 
-    master["pencacah"] = master["pencacah"].astype(str).str.strip().str.lower()
-    df_new["email"] = df_new["email"].astype(str).str.strip().str.lower()
+    master["pencacah"] = (
+        master["pencacah"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    df_new["email"] = (
+        df_new["email"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    master["regionCode"] = master["regionCode"].astype(str)
+    df_new["regionCode"] = df_new["regionCode"].astype(str)
 
     df_new = df_new.merge(
         master[
             [
+                "regionCode",
+                "nmkab",
+                "nmkec",
+                "nmdesa",
+                "nmsls",
+                "nmsubsls",
+                "pengawas",
                 "pencacah",
                 "nama_pcl",
                 "nama_pml"
             ]
         ],
-        left_on="email",
-        right_on="pencacah",
+        left_on=["email", "regionCode"],
+        right_on=["pencacah", "regionCode"],
         how="left"
     )
 
