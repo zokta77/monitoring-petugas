@@ -415,9 +415,8 @@ k1.metric("Total Pencacah",  f"{n_pcl:,}")
 k2.metric("Total Pengawas",  f"{n_pml:,}")
 k3.metric("Total Desa",      f"{n_desa:,}")
 k4.metric("Total Muatan",    f"{total_data:,}")
-k5.metric("Selesai (Done)",  f"{total_done:,}", f"{pct_done:.1f}%")
-k6.metric("Ditolak",         f"{total_rejected:,}",
-          f"{total_rejected/total_data*100:.1f}%" if total_data else "0%")
+k5.metric("Selesai (Done)",  f"{total_done:,}")
+k6.metric("Ditolak",         f"{total_rejected:,}")
 
 st.divider()
 
