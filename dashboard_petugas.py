@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from config_se2026 import LATEST_FILE
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Konfigurasi halaman — sidebar disembunyikan sepenuhnya
+# Konfigurasi halaman
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="SE2026 — Monitoring Pencacahan",
@@ -23,19 +23,27 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
+/* ── Reset font global untuk SEMUA mode (terang & gelap) ── */
+html, body,
+[class*="css"],
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main,
+p, span, div, label, td, th, li, a, button {
+    font-family: 'Inter', sans-serif !important;
 }
 
-/* Sembunyikan sidebar toggle & sidebar sepenuhnya */
+/* Sembunyikan sidebar & toggle */
 [data-testid="collapsedControl"],
 section[data-testid="stSidebar"] {
     display: none !important;
 }
 
-/* Main area full-width */
+/* ── Warna teks utama mengikuti tema ── */
+[data-testid="stAppViewContainer"] {
+    padding-top: 0 !important;
+}
 .main .block-container {
-    background: #0f172a;
     padding-top: 1.2rem;
     padding-left: 2rem;
     padding-right: 2rem;
@@ -44,13 +52,20 @@ section[data-testid="stSidebar"] {
 
 /* ── KPI Cards ── */
 div[data-testid="stMetric"] {
-    background: #1e293b;
-    border: 1px solid #334155;
+    border: 1px solid rgba(100,116,139,0.3);
     border-radius: 12px;
-    padding: 1.1rem 1.2rem;
+    padding: 1.1rem 1.2rem 1rem 1.4rem;
     position: relative;
     overflow: hidden;
 }
+/* Mode gelap */
+@media (prefers-color-scheme: dark) {
+    div[data-testid="stMetric"] { background: #1e293b; }
+}
+/* Streamlit dark class */
+[data-theme="dark"] div[data-testid="stMetric"] { background: #1e293b; }
+[data-theme="light"] div[data-testid="stMetric"] { background: #f8fafc; }
+
 div[data-testid="stMetric"]::before {
     content: "";
     position: absolute;
@@ -60,26 +75,27 @@ div[data-testid="stMetric"]::before {
     border-radius: 12px 0 0 12px;
 }
 div[data-testid="stMetric"] label {
-    color: #94a3b8 !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 0.72rem !important;
     font-weight: 600 !important;
     letter-spacing: 0.08em !important;
     text-transform: uppercase !important;
+    color: #64748b !important;
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: #f1f5f9 !important;
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 1.75rem !important;
     font-weight: 700 !important;
-    font-family: 'JetBrains Mono', monospace !important;
 }
 div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
-    color: #6ee7b7 !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 0.8rem !important;
+    color: #10b981 !important;
 }
 
 /* ── Section headers ── */
-h2, h3 {
-    color: #e2e8f0 !important;
+h1, h2, h3, h4 {
+    font-family: 'Inter', sans-serif !important;
     font-weight: 700 !important;
     letter-spacing: -0.01em !important;
 }
@@ -96,11 +112,12 @@ h2::after {
 /* ── Tab styling ── */
 button[data-baseweb="tab"] {
     background: transparent !important;
-    color: #64748b !important;
     border-bottom: 2px solid transparent !important;
+    font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
     font-size: 0.88rem !important;
     padding: 0.6rem 1rem !important;
+    color: #64748b !important;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
     color: #14b8a6 !important;
@@ -109,7 +126,7 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 /* ── Dataframe ── */
 div[data-testid="stDataFrame"] {
-    border: 1px solid #1e293b;
+    border: 1px solid rgba(100,116,139,0.25);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -117,82 +134,72 @@ iframe { border-radius: 12px !important; }
 
 /* ── Divider ── */
 hr {
-    border-color: #1e293b !important;
-    margin: 1.5rem 0 !important;
+    border-color: rgba(100,116,139,0.2) !important;
+    margin: 1.25rem 0 !important;
 }
 
 /* ── Expander ── */
 details {
-    background: #1e293b !important;
-    border: 1px solid #334155 !important;
     border-radius: 10px !important;
     padding: 0.5rem !important;
+    border: 1px solid rgba(100,116,139,0.25) !important;
 }
-details summary { color: #94a3b8 !important; font-size: 0.85rem !important; }
+details summary {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.85rem !important;
+}
 
-/* ── Caption ── */
-small, .stCaption { color: #64748b !important; font-size: 0.78rem !important; }
+/* ── Caption / small text ── */
+small, .stCaption, [data-testid="stCaptionContainer"] {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.78rem !important;
+    color: #64748b !important;
+}
 
 /* ── Alert ── */
 div[data-testid="stAlert"] {
     border-radius: 10px !important;
     border-left-width: 4px !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
-/* ── Download button ── */
-div[data-testid="stDownloadButton"] button {
-    background: #14b8a6 !important;
-    color: #0f172a !important;
-    font-weight: 600 !important;
-    border-radius: 8px !important;
-    border: none !important;
-    padding: 0.45rem 1rem !important;
-    font-size: 0.82rem !important;
+/* ── Multiselect & selectbox ── */
+div[data-baseweb="select"] span,
+div[data-baseweb="tag"] span {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.85rem !important;
 }
-div[data-testid="stDownloadButton"] button:hover { background: #0d9488 !important; }
 
 /* ── Plotly chart container ── */
 .stPlotlyChart {
-    border: 1px solid #1e293b;
+    border: 1px solid rgba(100,116,139,0.2);
     border-radius: 12px;
     overflow: hidden;
-    background: #1e293b;
-}
-
-/* ── Filter bar ── */
-.filter-bar {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 0.75rem 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
 }
 
 /* ── Badge update ── */
 .badge-update {
-    background: #0d3d2e;
+    background: rgba(16,185,129,0.15);
     border: 1px solid #10b981;
     border-radius: 20px;
-    padding: 3px 12px;
-    color: #6ee7b7;
-    font-size: 0.75rem;
-    font-weight: 500;
+    padding: 4px 14px;
+    color: #10b981;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.76rem;
+    font-weight: 600;
     white-space: nowrap;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Auto-refresh (tanpa sidebar warning)
+# Auto-refresh
 # ─────────────────────────────────────────────────────────────────────────────
 try:
     from streamlit_autorefresh import st_autorefresh
     st_autorefresh(interval=60 * 1000, key="auto_refresh_dashboard")
 except ImportError:
-    pass  # Nonaktif diam-diam, tidak perlu pesan sidebar
+    pass
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Konstanta
@@ -205,12 +212,31 @@ IDENTITY_COLS = [
     "nama_pcl", "nama_pml",
 ]
 
+# Pemetaan nama kolom teknis → nama tampilan
+COL_LABELS = {
+    "nama_pcl":  "Nama Pencacah",
+    "nama_pml":  "Nama Pengawas",
+    "nmkec":     "Kecamatan",
+    "nmdesa":    "Desa",
+    "nmkab":     "Kabupaten",
+    "nmsls":     "SLS",
+    "nmsubsls":  "Sub-SLS",
+    "total_data":"Total Muatan",
+    "regionCode":"Kode Wilayah",
+    "Progress (%)": "Progress (%)",
+    "Jumlah PCL": "Jumlah Pencacah",
+    "Selisih":   "Selisih",
+}
+
+def nice_col(c: str) -> str:
+    return COL_LABELS.get(c, c)
+
 DONE_KEYWORDS     = ["APPROVED", "SUBMITTED"]
 NOT_DONE_KEYWORDS = ["OPEN", "DRAFT"]
 
 PLOT_TEMPLATE = "plotly_dark"
-PLOT_BG       = "rgba(30,41,59,1)"
-PAPER_BG      = "rgba(30,41,59,1)"
+PLOT_BG       = "rgba(30,41,59,0)"
+PAPER_BG      = "rgba(30,41,59,0)"
 TEAL_PALETTE  = [
     "#14b8a6", "#0ea5e9", "#6366f1", "#f59e0b",
     "#ef4444", "#84cc16", "#ec4899", "#f97316",
@@ -248,8 +274,12 @@ def to_numeric_safe(df: pd.DataFrame, cols: list) -> pd.DataFrame:
             df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0)
     return df
 
+def rename_display(df: pd.DataFrame) -> pd.DataFrame:
+    """Rename kolom teknis ke nama tampilan untuk ditampilkan ke user."""
+    return df.rename(columns=nice_col)
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Load data otomatis dari LATEST_FILE
+# Load data otomatis
 # ─────────────────────────────────────────────────────────────────────────────
 if not os.path.exists(LATEST_FILE):
     st.error(
@@ -265,34 +295,34 @@ last_updated = datetime.fromtimestamp(
 ).strftime("%d %b %Y · %H:%M WIT")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Header — termasuk badge waktu update
+# Header
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="display:flex; align-items:center; justify-content:space-between;
-            flex-wrap:wrap; gap:10px; margin-bottom:0.8rem;">
-    <div style="display:flex; align-items:center; gap:12px;">
+<div style="display:flex;align-items:center;justify-content:space-between;
+            flex-wrap:wrap;gap:10px;margin-bottom:1rem;">
+    <div style="display:flex;align-items:center;gap:12px;">
         <div style="background:linear-gradient(135deg,#14b8a6,#0ea5e9);
                     width:44px;height:44px;border-radius:12px;
                     display:flex;align-items:center;justify-content:center;
                     font-size:1.4rem;flex-shrink:0;">📊</div>
         <div>
-            <h1 style="margin:0;color:#f1f5f9;font-size:1.55rem;font-weight:700;
-                       letter-spacing:-0.02em;line-height:1.2;">
+            <h1 style="margin:0;font-size:1.55rem;font-weight:700;
+                       letter-spacing:-0.02em;line-height:1.2;
+                       font-family:'Inter',sans-serif;">
                 SE2026 — Monitoring Status Pencacahan
             </h1>
-            <p style="margin:0;color:#64748b;font-size:0.8rem;">
-                Progress per PCL / Desa · Data otomatis dari scraping FASIH
+            <p style="margin:0;color:#64748b;font-size:0.8rem;
+                      font-family:'Inter',sans-serif;">
+                Progress per Pencacah / Desa · Data otomatis dari scraping FASIH
             </p>
         </div>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-        <span class="badge-update">🟢 Diperbarui: {last_updated}</span>
-    </div>
+    <span class="badge-update">🟢 Diperbarui: {last_updated}</span>
 </div>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Deteksi kolom
+# Deteksi kolom status
 # ─────────────────────────────────────────────────────────────────────────────
 status_cols  = detect_status_cols(df_raw)
 numeric_cols = status_cols + (["total_data"] if "total_data" in df_raw.columns else [])
@@ -306,44 +336,30 @@ if not status_cols:
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Filter bar — inline di halaman utama (bukan sidebar)
+# Filter bar — inline
 # ─────────────────────────────────────────────────────────────────────────────
-with st.container():
-    f1, f2, f3 = st.columns([2, 3, 1])
+f1, f2 = st.columns([2, 3])
 
-    with f1:
-        if "nmkec" in df_raw.columns:
-            all_kec = sorted(df_raw["nmkec"].dropna().unique().tolist())
-            sel_kec = st.multiselect(
-                "🏙️ Filter Kecamatan", all_kec,
-                default=[], placeholder="Semua kecamatan", label_visibility="collapsed"
-            )
-        else:
-            sel_kec = []
-            st.caption("(kolom kecamatan tidak tersedia)")
-
-    with f2:
-        if "nama_pcl" in df_raw.columns:
-            all_pcl = sorted(df_raw["nama_pcl"].dropna().unique().tolist())
-            sel_pcl = st.multiselect(
-                "👤 Filter PCL", all_pcl,
-                default=[], placeholder="👤 Cari nama PCL...", label_visibility="collapsed"
-            )
-        else:
-            sel_pcl = []
-            st.caption("(kolom nama_pcl tidak tersedia)")
-
-    with f3:
-        st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-        st.download_button(
-            "⬇️ Unduh CSV",
-            df_raw.to_csv(index=False).encode("utf-8"),
-            file_name="se2026_data.csv",
-            mime="text/csv",
-            use_container_width=True,
+with f1:
+    if "nmkec" in df_raw.columns:
+        all_kec = sorted(df_raw["nmkec"].dropna().unique().tolist())
+        sel_kec = st.multiselect(
+            "Kecamatan", all_kec,
+            default=[], placeholder="🏙️ Semua kecamatan",
         )
+    else:
+        sel_kec = []
 
-# Terapkan filter
+with f2:
+    if "nama_pcl" in df_raw.columns:
+        all_pcl = sorted(df_raw["nama_pcl"].dropna().unique().tolist())
+        sel_pcl = st.multiselect(
+            "Pencacah", all_pcl,
+            default=[], placeholder="👤 Cari nama pencacah...",
+        )
+    else:
+        sel_pcl = []
+
 df = df_raw.copy()
 if sel_kec and "nmkec" in df.columns:
     df = df[df["nmkec"].isin(sel_kec)]
@@ -356,7 +372,7 @@ if len(df) < len(df_raw):
 st.divider()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Hitung KPI
+# KPI
 # ─────────────────────────────────────────────────────────────────────────────
 n_pcl    = df["nama_pcl"].nunique() if "nama_pcl" in df.columns else 0
 n_pml    = df["nama_pml"].nunique() if "nama_pml" in df.columns else 0
@@ -367,37 +383,33 @@ done_cols     = [c for c in status_cols if any(k in c.upper() for k in DONE_KEYW
 not_done_cols = [c for c in status_cols if any(k in c.upper() for k in NOT_DONE_KEYWORDS)]
 rejected_cols = [c for c in status_cols if "REJECTED" in c.upper()]
 
-total_done     = int(df[done_cols].sum().sum())      if done_cols     else 0
-total_open     = int(df[not_done_cols].sum().sum())  if not_done_cols else 0
-total_rejected = int(df[rejected_cols].sum().sum())  if rejected_cols else 0
-pct_done       = total_done / total_data * 100        if total_data    else 0
+total_done     = int(df[done_cols].sum().sum())     if done_cols     else 0
+total_rejected = int(df[rejected_cols].sum().sum()) if rejected_cols else 0
+pct_done       = total_done / total_data * 100      if total_data    else 0
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KPI Cards
-# ─────────────────────────────────────────────────────────────────────────────
 k1, k2, k3, k4, k5, k6 = st.columns(6)
-k1.metric("Total PCL",      f"{n_pcl:,}")
-k2.metric("Total PML",      f"{n_pml:,}")
-k3.metric("Total Desa",     f"{n_desa:,}")
-k4.metric("Total Muatan",   f"{total_data:,}")
-k5.metric("Selesai (Done)", f"{total_done:,}", f"{pct_done:.1f}%")
-k6.metric("Ditolak",        f"{total_rejected:,}",
+k1.metric("Total Pencacah",  f"{n_pcl:,}")
+k2.metric("Total Pengawas",  f"{n_pml:,}")
+k3.metric("Total Desa",      f"{n_desa:,}")
+k4.metric("Total Muatan",    f"{total_data:,}")
+k5.metric("Selesai (Done)",  f"{total_done:,}", f"{pct_done:.1f}%")
+k6.metric("Ditolak",         f"{total_rejected:,}",
           f"{total_rejected/total_data*100:.1f}%" if total_data else "0%")
 
 st.divider()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TABS UTAMA
+# TABS
 # ─────────────────────────────────────────────────────────────────────────────
 tab_overview, tab_pcl, tab_desa, tab_raw = st.tabs([
     "📈 Distribusi Status",
-    "👤 Per PCL (Pencacah)",
+    "👤 Per Pencacah",
     "🏘️ Per Desa",
     "🗃️ Data Mentah",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — Distribusi Status Keseluruhan
+# TAB 1 — Distribusi Status
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_overview:
     st.subheader("Distribusi Status Keseluruhan")
@@ -421,7 +433,7 @@ with tab_overview:
         fig_bar.update_traces(textposition="outside", textfont_size=11)
         fig_bar.update_layout(
             **styled_chart_layout(showlegend=False, height=360),
-            xaxis=dict(showgrid=True, gridcolor="#1e293b"),
+            xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)"),
             yaxis=dict(showgrid=False),
         )
         st.plotly_chart(fig_bar, use_container_width=True)
@@ -439,8 +451,10 @@ with tab_overview:
             textfont_size=11,
             hovertemplate="<b>%{label}</b><br>%{value:,} usaha<br>%{percent}<extra></extra>",
         )
-        fig_pie.update_layout(**styled_chart_layout(height=360, showlegend=True,
-                              legend=dict(orientation="v", x=1.05)))
+        fig_pie.update_layout(**styled_chart_layout(
+            height=360, showlegend=True,
+            legend=dict(orientation="v", x=1.05),
+        ))
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with c_gauge:
@@ -449,17 +463,18 @@ with tab_overview:
             value=pct_done,
             number={"suffix": "%", "font": {"size": 36, "color": "#14b8a6",
                                             "family": "JetBrains Mono"}},
-            title={"text": "Overall Progress", "font": {"color": "#94a3b8", "size": 13}},
+            title={"text": "Overall Progress",
+                   "font": {"color": "#94a3b8", "size": 13, "family": "Inter"}},
             gauge={
                 "axis":      {"range": [0, 100], "tickcolor": "#475569",
                               "tickfont": {"color": "#64748b", "size": 10}},
                 "bar":       {"color": "#14b8a6", "thickness": 0.25},
-                "bgcolor":   "#0f172a",
-                "bordercolor": "#334155",
+                "bgcolor":   "rgba(0,0,0,0)",
+                "bordercolor": "rgba(100,116,139,0.3)",
                 "steps": [
-                    {"range": [0,  50], "color": "#1e293b"},
-                    {"range": [50, 80], "color": "#172554"},
-                    {"range": [80, 100],"color": "#0d3d2e"},
+                    {"range": [0,  50], "color": "rgba(30,41,59,0.6)"},
+                    {"range": [50, 80], "color": "rgba(23,37,84,0.6)"},
+                    {"range": [80,100], "color": "rgba(13,61,46,0.6)"},
                 ],
                 "threshold": {"line": {"color": "#0ea5e9", "width": 3},
                               "thickness": 0.8, "value": pct_done},
@@ -468,32 +483,12 @@ with tab_overview:
         fig_gauge.update_layout(**styled_chart_layout(height=360))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # ── Tren harian (jika ada scraped_at) ────────────────────────────────────
-    if "scraped_at" in df.columns:
-        st.markdown("---")
-        st.subheader("Ringkasan Snapshot")
-        try:
-            df["_date"] = pd.to_datetime(df["scraped_at"]).dt.date
-            trend = df.groupby("_date")[status_cols].sum().reset_index()
-            trend = trend.rename(columns={"_date": "Tanggal"})
-            if done_cols:
-                fig_trend = px.area(
-                    trend, x="Tanggal", y=done_cols,
-                    color_discrete_sequence=TEAL_PALETTE,
-                    template=PLOT_TEMPLATE,
-                    labels={"value": "Jumlah", "variable": "Status"},
-                )
-                fig_trend.update_layout(**styled_chart_layout(height=260))
-                st.plotly_chart(fig_trend, use_container_width=True)
-        except Exception:
-            pass
-
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — Per PCL (Pencacah)
+# TAB 2 — Per Pencacah (PCL)
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_pcl:
-    st.subheader("Monitoring Per PCL / Pencacah")
+    st.subheader("Monitoring Per Pencacah")
 
     if "nama_pcl" not in df.columns:
         st.warning("Kolom `nama_pcl` tidak ditemukan dalam data.")
@@ -509,12 +504,12 @@ with tab_pcl:
         if "total_data" in agg_pcl.columns:
             agg_pcl = agg_pcl.sort_values("total_data", ascending=False)
 
-        # ── Stacked bar per PCL ──────────────────────────────────────────────
+        # ── Stacked bar ──────────────────────────────────────────────────────
         max_show  = 30
         chart_pcl = agg_pcl.head(max_show)
         if len(agg_pcl) > max_show:
             st.caption(
-                f"Grafik menampilkan {max_show} PCL teratas dari {len(agg_pcl)} total. "
+                f"Grafik menampilkan {max_show} pencacah teratas dari {len(agg_pcl)} total. "
                 "Lihat tabel di bawah untuk data lengkap."
             )
 
@@ -531,61 +526,24 @@ with tab_pcl:
         fig_pcl.update_layout(
             barmode="stack",
             **styled_chart_layout(height=420),
-            xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10),
-            yaxis=dict(showgrid=True, gridcolor="#1e293b", title="Jumlah Usaha"),
+            xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10,
+                       title="Nama Pencacah"),
+            yaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
+                       title="Jumlah Usaha"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02,
                         xanchor="right", x=1, font_size=11),
         )
         st.plotly_chart(fig_pcl, use_container_width=True)
 
-        # ── Ranking Progress PCL ─────────────────────────────────────────────
-        if "Progress (%)" in agg_pcl.columns:
-            st.markdown("#### Ranking Progress PCL")
-            top_n  = st.slider("Tampilkan top-N PCL", 5, min(50, len(agg_pcl)),
-                               min(20, len(agg_pcl)), key="pcl_topn")
-            rank_df = agg_pcl.nlargest(top_n, "Progress (%)")[
-                ["nama_pcl", "total_data", "Progress (%)"] + done_cols
-            ].reset_index(drop=True)
-
-            fig_rank = px.bar(
-                rank_df.sort_values("Progress (%)"),
-                x="Progress (%)", y="nama_pcl",
-                orientation="h",
-                text="Progress (%)",
-                color="Progress (%)",
-                color_continuous_scale=["#ef4444", "#f59e0b", "#10b981"],
-                range_color=[0, 100],
-                template=PLOT_TEMPLATE,
-                labels={"nama_pcl": ""},
-            )
-            fig_rank.update_traces(
-                texttemplate="%{text:.1f}%",
-                textposition="outside",
-                textfont_size=10,
-            )
-            fig_rank.update_layout(
-                **styled_chart_layout(height=max(300, top_n * 22),
-                                      coloraxis_showscale=False),
-                xaxis=dict(range=[0, 115], showgrid=False),
-                yaxis=dict(showgrid=False),
-            )
-            st.plotly_chart(fig_rank, use_container_width=True)
-
-        # ── Tabel Detail per PCL ─────────────────────────────────────────────
-        st.markdown("#### Tabel Detail per PCL")
+        # ── Tabel Detail ─────────────────────────────────────────────────────
+        st.markdown("#### Tabel Detail per Pencacah")
 
         if "total_data" in agg_pcl.columns:
-            agg_pcl["_sum"]   = agg_pcl[status_cols].sum(axis=1)
+            agg_pcl["_sum"]    = agg_pcl[status_cols].sum(axis=1)
             agg_pcl["Selisih"] = agg_pcl["total_data"] - agg_pcl["_sum"]
             agg_pcl = agg_pcl.drop(columns=["_sum"])
 
-        col_cfg_pcl = {}
-        if "Progress (%)" in agg_pcl.columns:
-            col_cfg_pcl["Progress (%)"] = st.column_config.ProgressColumn(
-                "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
-            )
-
-        # Sisipkan kolom PML jika ada
+        # Sisipkan kolom Pengawas jika ada
         if "nama_pml" in df.columns:
             pml_map = df.groupby("nama_pcl")["nama_pml"].first().reset_index()
             agg_pcl = agg_pcl.merge(pml_map, on="nama_pcl", how="left")
@@ -594,21 +552,23 @@ with tab_pcl:
             ]
             agg_pcl = agg_pcl[col_order]
 
-        st.dataframe(agg_pcl, use_container_width=True,
+        # Rename kolom untuk tampilan
+        disp_pcl = rename_display(agg_pcl)
+
+        col_cfg_pcl = {}
+        if "Progress (%)" in disp_pcl.columns:
+            col_cfg_pcl["Progress (%)"] = st.column_config.ProgressColumn(
+                "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
+            )
+
+        st.dataframe(disp_pcl, use_container_width=True,
                      column_config=col_cfg_pcl, hide_index=True)
 
         if "Selisih" in agg_pcl.columns:
-            bad = agg_pcl[agg_pcl["Selisih"] != 0]
+            bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
             if not bad.empty:
-                with st.expander(f"⚠️ {len(bad)} PCL punya selisih total_data vs jumlah status"):
+                with st.expander(f"⚠️ {len(bad)} pencacah punya selisih total_data vs jumlah status"):
                     st.dataframe(bad, use_container_width=True, hide_index=True)
-
-        st.download_button(
-            "⬇️ Unduh Rekap Per PCL (CSV)",
-            agg_pcl.to_csv(index=False).encode("utf-8"),
-            file_name="se2026_rekap_pcl.csv",
-            mime="text/csv",
-        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -631,7 +591,6 @@ with tab_desa:
             ).round(1).fillna(0)
             agg_desa = agg_desa.sort_values("Progress (%)", ascending=False)
 
-        # Jumlah PCL per desa
         if "nama_pcl" in df.columns:
             pcl_per_desa = df.groupby(grp_keys)["nama_pcl"].nunique().reset_index(
                 name="Jumlah PCL")
@@ -647,6 +606,12 @@ with tab_desa:
                 hm_df["_label"] = hm_df["nmkec"] + " · " + hm_df["nmdesa"]
                 label_col = "_label"
 
+            hover_extra = {}
+            if "total_data" in hm_df.columns:
+                hover_extra["total_data"] = True
+            if "Jumlah PCL" in hm_df.columns:
+                hover_extra["Jumlah PCL"] = True
+
             fig_desa_bar = px.bar(
                 hm_df.sort_values("Progress (%)"),
                 x="Progress (%)", y=label_col,
@@ -657,10 +622,7 @@ with tab_desa:
                 range_color=[0, 100],
                 template=PLOT_TEMPLATE,
                 labels={label_col: ""},
-                hover_data={
-                    "total_data": True,
-                    **({ "Jumlah PCL": True } if "Jumlah PCL" in hm_df.columns else {}),
-                },
+                hover_data=hover_extra if hover_extra else None,
             )
             fig_desa_bar.update_traces(
                 texttemplate="%{text:.1f}%",
@@ -677,20 +639,21 @@ with tab_desa:
             )
             st.plotly_chart(fig_desa_bar, use_container_width=True)
 
-        # ── Proporsi Done vs Belum per Kecamatan ────────────────────────────
+        # ── Proporsi per Kecamatan ───────────────────────────────────────────
         if len(agg_desa) <= 80 and "nmkec" in agg_desa.columns and done_cols:
             st.markdown("#### Proporsi Penyelesaian per Kecamatan")
             kec_agg = df.groupby("nmkec")[agg_cols_d].sum().reset_index()
             if "total_data" in kec_agg.columns:
-                kec_agg["Done"]  = kec_agg[done_cols].sum(axis=1)
-                kec_agg["Belum"] = kec_agg["total_data"] - kec_agg["Done"]
+                kec_agg["Selesai"] = kec_agg[done_cols].sum(axis=1)
+                kec_agg["Belum"]   = kec_agg["total_data"] - kec_agg["Selesai"]
                 kec_melt = kec_agg.melt(
-                    id_vars="nmkec", value_vars=["Done", "Belum"],
+                    id_vars="nmkec", value_vars=["Selesai", "Belum"],
                     var_name="Status", value_name="Jumlah"
                 )
                 fig_kec = px.bar(
                     kec_melt, x="nmkec", y="Jumlah", color="Status",
-                    color_discrete_map={"Done": "#14b8a6", "Belum": "#334155"},
+                    color_discrete_map={"Selesai": "#14b8a6",
+                                        "Belum": "rgba(51,65,85,0.8)"},
                     barmode="stack",
                     template=PLOT_TEMPLATE,
                     labels={"nmkec": "Kecamatan"},
@@ -698,7 +661,8 @@ with tab_desa:
                 fig_kec.update_layout(
                     **styled_chart_layout(height=340),
                     xaxis=dict(tickangle=-30, showgrid=False),
-                    yaxis=dict(showgrid=True, gridcolor="#1e293b"),
+                    yaxis=dict(showgrid=True,
+                               gridcolor="rgba(100,116,139,0.15)"),
                     legend=dict(orientation="h", y=1.05),
                 )
                 st.plotly_chart(fig_kec, use_container_width=True)
@@ -706,22 +670,17 @@ with tab_desa:
         # ── Tabel Desa ────────────────────────────────────────────────────────
         st.markdown("#### Tabel Detail per Desa")
 
+        disp_desa = agg_desa.drop(columns=["_label"], errors="ignore")
+        disp_desa = rename_display(disp_desa)
+
         col_cfg_desa = {}
-        if "Progress (%)" in agg_desa.columns:
+        if "Progress (%)" in disp_desa.columns:
             col_cfg_desa["Progress (%)"] = st.column_config.ProgressColumn(
                 "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
             )
 
-        disp_desa = agg_desa.drop(columns=["_label"], errors="ignore")
         st.dataframe(disp_desa, use_container_width=True,
                      column_config=col_cfg_desa, hide_index=True)
-
-        st.download_button(
-            "⬇️ Unduh Rekap Per Desa (CSV)",
-            disp_desa.to_csv(index=False).encode("utf-8"),
-            file_name="se2026_rekap_desa.csv",
-            mime="text/csv",
-        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -736,12 +695,5 @@ with tab_raw:
         default=all_cols[:min(15, len(all_cols))],
         key="raw_cols",
     )
-    view_df = df[show_cols] if show_cols else df
+    view_df = rename_display(df[show_cols] if show_cols else df)
     st.dataframe(view_df, use_container_width=True, hide_index=True)
-
-    st.download_button(
-        "⬇️ Unduh Data Terfilter (CSV)",
-        df.to_csv(index=False).encode("utf-8"),
-        file_name="se2026_filtered.csv",
-        mime="text/csv",
-    )
