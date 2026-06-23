@@ -176,7 +176,7 @@ st.divider()
 # -----------------------------------------------------------------------------
 st.subheader("Progress per PPL/Pencacah")
 
-group_col = "username" if "username" in df.columns else df.columns[0]
+group_col = "nama_pcl" if "nama_pcl" in df.columns else df.columns[0]
 agg_cols = status_cols + (["total_data"] if "total_data" in df.columns else [])
 agg = df.groupby(group_col)[agg_cols].sum().reset_index()
 agg = agg.sort_values("total_data", ascending=False) if "total_data" in agg.columns else agg

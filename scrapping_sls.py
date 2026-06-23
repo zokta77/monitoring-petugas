@@ -92,6 +92,29 @@ def save_and_merge(new_data):
 
     df_new = pd.DataFrame(new_data)
     df_new["scraped_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    master = pd.read_excel("data/master_data.xlsx")
+
+    master["regionCode"] = master["regionCode"].astype(str)
+    df_new["regionCode"] = df_new["regionCode"].astype(str)
+
+    df_new = df_new.merge(
+        master[
+            [
+                "regionCode",
+                "nmkab",
+                "nmkec",
+                "nmdesa",
+                "nmsls",
+                "nmsubsls",
+                "pengawas",
+                "pencacah",
+                "nama_pcl",
+                "nama_pml"
+            ]
+        ],
+        on="regionCode",
+        how="left"
+    )
 
     # 1) Arsip histori - tetap ditambah (append), supaya bisa lihat tren dari waktu ke waktu
     if os.path.exists(backup_file):
