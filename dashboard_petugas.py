@@ -50,22 +50,16 @@ section[data-testid="stSidebar"] {
     max-width: 100%;
 }
 
-/* ── KPI Cards ── */
+/* ── KPI Cards — base ── */
 div[data-testid="stMetric"] {
-    border: 1px solid rgba(100,116,139,0.3);
     border-radius: 12px;
     padding: 1.1rem 1.2rem 1rem 1.4rem;
     position: relative;
     overflow: hidden;
+    /* default: mode terang */
+    background: #f1f5f9;
+    border: 1px solid rgba(100,116,139,0.2);
 }
-/* Mode gelap */
-@media (prefers-color-scheme: dark) {
-    div[data-testid="stMetric"] { background: #1e293b; }
-}
-/* Streamlit dark class */
-[data-theme="dark"] div[data-testid="stMetric"] { background: #1e293b; }
-[data-theme="light"] div[data-testid="stMetric"] { background: #f8fafc; }
-
 div[data-testid="stMetric"]::before {
     content: "";
     position: absolute;
@@ -74,6 +68,8 @@ div[data-testid="stMetric"]::before {
     background: linear-gradient(180deg, #14b8a6, #0ea5e9);
     border-radius: 12px 0 0 12px;
 }
+
+/* Mode terang — teks gelap */
 div[data-testid="stMetric"] label {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.72rem !important;
@@ -86,11 +82,38 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 1.75rem !important;
     font-weight: 700 !important;
+    color: #0f172a !important;
 }
 div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.8rem !important;
     color: #10b981 !important;
+}
+
+/* Mode gelap — background gelap, teks terang */
+[data-theme="dark"] div[data-testid="stMetric"] {
+    background: #1e293b !important;
+    border-color: rgba(100,116,139,0.3) !important;
+}
+[data-theme="dark"] div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #f1f5f9 !important;
+}
+[data-theme="dark"] div[data-testid="stMetric"] label {
+    color: #94a3b8 !important;
+}
+
+/* Fallback via OS preference */
+@media (prefers-color-scheme: dark) {
+    div[data-testid="stMetric"] {
+        background: #1e293b !important;
+        border-color: rgba(100,116,139,0.3) !important;
+    }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+        color: #f1f5f9 !important;
+    }
+    div[data-testid="stMetric"] label {
+        color: #94a3b8 !important;
+    }
 }
 
 /* ── Section headers ── */
