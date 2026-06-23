@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from config_se2026 import LATEST_FILE
 
@@ -96,7 +97,10 @@ else:
         st.stop()
     file_mtime = os.path.getmtime(LATEST_FILE)
     df_raw = load_data(LATEST_FILE, cache_key=file_mtime)
-    last_updated = datetime.fromtimestamp(file_mtime).strftime("%Y-%m-%d %H:%M:%S")
+    last_updated = datetime.fromtimestamp(
+    file_mtime,
+    tz=ZoneInfo("Asia/Jayapura")
+).strftime("%Y-%m-%d %H:%M:%S WIT")
 
 st.sidebar.success(f"🟢 Data terakhir diperbarui:\n{last_updated}")
 
