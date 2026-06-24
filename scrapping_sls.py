@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 import os
+import random
 import tempfile
 from datetime import datetime
 import schedule
@@ -249,6 +250,7 @@ def fetch_data():
             break
 
         page += 1
+        time.sleep(random.uniform(1, 3))  # delay acak 1-3 detik antar request
 
     if all_rows:
         save_and_merge(all_rows)
