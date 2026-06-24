@@ -59,7 +59,7 @@ div[data-testid="stMetric"] {
     position: relative;
     overflow: hidden;
 
-    background: #ffffff;
+    background: var(--secondary-background-color);
     border: 1px solid rgba(100,116,139,0.15);
 
     box-shadow:
@@ -89,7 +89,9 @@ div[data-testid="stMetric"] label {
     font-weight: 600 !important;
     letter-spacing: 0.08em !important;
     text-transform: uppercase !important;
-    color: #64748b !important;
+
+    color: var(--text-color) !important;
+    opacity: .7;
 }
 
 /* Nilai KPI */
@@ -98,7 +100,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 1.8rem !important;
     font-weight: 700 !important;
-    color: #0f172a !important;
+
+    color: var(--text-color) !important;
 }
 
 /* Delta KPI */
@@ -112,48 +115,13 @@ div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
 /* Tooltip Help (?) */
 
 div[data-testid="stMetric"] button {
-    color: #64748b !important;
+    color: var(--text-color) !important;
+    opacity: .6;
 }
 
 div[data-testid="stMetric"] button:hover {
     color: #14b8a6 !important;
-}
-
-/* DARK MODE */
-
-html[data-theme="dark"] div[data-testid="stMetric"] {
-    background: #1e293b !important;
-    border-color: rgba(148,163,184,0.15) !important;
-}
-
-html[data-theme="dark"] div[data-testid="stMetric"] label {
-    color: #94a3b8 !important;
-}
-
-html[data-theme="dark"] div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: #f8fafc !important;
-}
-
-html[data-theme="dark"] div[data-testid="stMetric"] button {
-    color: #94a3b8 !important;
-}
-
-html[data-theme="dark"] div[data-testid="stMetric"] button:hover {
-    color: #2dd4bf !important;
-}
-
-/* Fallback via OS preference */
-@media (prefers-color-scheme: dark) {
-    div[data-testid="stMetric"] {
-        background: #1e293b !important;
-        border-color: rgba(100,116,139,0.3) !important;
-    }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #f1f5f9 !important;
-    }
-    div[data-testid="stMetric"] label {
-        color: #94a3b8 !important;
-    }
+    opacity: 1;
 }
 
 /* ── Section headers ── */
