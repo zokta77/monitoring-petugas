@@ -51,26 +51,38 @@ section[data-testid="stSidebar"] {
     max-width: 100%;
 }
 
-/* ── KPI Cards — base ── */
+/* ───────────────── KPI Cards ───────────────── */
+
 div[data-testid="stMetric"] {
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 1.1rem 1.2rem 1rem 1.4rem;
     position: relative;
     overflow: hidden;
-    /* default: mode terang */
-    background: #f1f5f9;
-    border: 1px solid rgba(100,116,139,0.2);
+
+    background: #ffffff;
+    border: 1px solid rgba(100,116,139,0.15);
+
+    box-shadow:
+        0 1px 2px rgba(15,23,42,0.04),
+        0 4px 12px rgba(15,23,42,0.06);
 }
+
 div[data-testid="stMetric"]::before {
     content: "";
     position: absolute;
-    top: 0; left: 0;
-    width: 4px; height: 100%;
-    background: linear-gradient(180deg, #14b8a6, #0ea5e9);
-    border-radius: 12px 0 0 12px;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        #14b8a6,
+        #0ea5e9
+    );
 }
 
-/* Mode terang — teks gelap */
+/* Label KPI */
+
 div[data-testid="stMetric"] label {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.72rem !important;
@@ -79,42 +91,55 @@ div[data-testid="stMetric"] label {
     text-transform: uppercase !important;
     color: #64748b !important;
 }
+
+/* Nilai KPI */
+
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 1.75rem !important;
+    font-size: 1.8rem !important;
     font-weight: 700 !important;
     color: #0f172a !important;
 }
+
+/* Delta KPI */
+
 div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.8rem !important;
     color: #10b981 !important;
 }
 
-/* Mode gelap — background gelap, teks terang */
-[data-theme="dark"] div[data-testid="stMetric"] {
+/* Tooltip Help (?) */
+
+div[data-testid="stMetric"] button {
+    color: #64748b !important;
+}
+
+div[data-testid="stMetric"] button:hover {
+    color: #14b8a6 !important;
+}
+
+/* DARK MODE */
+
+html[data-theme="dark"] div[data-testid="stMetric"] {
     background: #1e293b !important;
-    border-color: rgba(100,116,139,0.3) !important;
+    border-color: rgba(148,163,184,0.15) !important;
 }
-[data-theme="dark"] div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: #f1f5f9 !important;
-}
-[data-theme="dark"] div[data-testid="stMetric"] label {
+
+html[data-theme="dark"] div[data-testid="stMetric"] label {
     color: #94a3b8 !important;
 }
 
-/* Fallback via OS preference */
-@media (prefers-color-scheme: dark) {
-    div[data-testid="stMetric"] {
-        background: #1e293b !important;
-        border-color: rgba(100,116,139,0.3) !important;
-    }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #f1f5f9 !important;
-    }
-    div[data-testid="stMetric"] label {
-        color: #94a3b8 !important;
-    }
+html[data-theme="dark"] div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] div[data-testid="stMetric"] button {
+    color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] div[data-testid="stMetric"] button:hover {
+    color: #2dd4bf !important;
 }
 
 /* ── Section headers ── */
@@ -212,6 +237,15 @@ div[data-baseweb="tag"] span {
     font-size: 0.76rem;
     font-weight: 600;
     white-space: nowrap;
+}
+            /* Warna ikon help metric */
+[data-testid="stMetric"] button {
+    color: #0f172a !important;
+}
+
+/* Hover */
+[data-testid="stMetric"] button:hover {
+    color: #14b8a6 !important;
 }
 </style>
 """, unsafe_allow_html=True)
