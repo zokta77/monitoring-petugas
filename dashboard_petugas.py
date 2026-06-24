@@ -343,7 +343,7 @@ st.markdown(f"""
             <h1 style="margin:0;font-size:1.55rem;font-weight:700;
                        letter-spacing:-0.02em;line-height:1.2;
                        font-family:'Inter',sans-serif;">
-                SE2026 — Monitoring Status Pencacahan
+                SE2026 — Monitoring Status Pencacahan KOTA AMBON 
             </h1>
             <p style="margin:0;color:#64748b;font-size:0.8rem;
                       font-family:'Inter',sans-serif;">
@@ -426,9 +426,17 @@ k1.metric("Total Pencacah",  f"{n_pcl:,}")
 k2.metric("Total Pengawas",  f"{n_pml:,}")
 k3.metric("Total Desa",      f"{n_desa:,}")
 k4.metric("Total Muatan",    f"{total_data:,}")
-k5.metric("Selesai (Done)",  f"{total_done:,}")
-k6.metric("Ditolak",         f"{total_rejected:,}")
+k5.metric(
+    "Selesai (Done)",
+    f"{total_done:,}",
+    help="Approved by Pengawas + Submitted by Pencacah"
+)
 
+k6.metric(
+    "Ditolak",
+    f"{total_rejected:,}",
+    help="Rejected by Pengawas"
+)
 st.divider()
 
 # ─────────────────────────────────────────────────────────────────────────────
