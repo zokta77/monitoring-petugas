@@ -772,7 +772,7 @@ with tab_target:
                 tk1.metric("Progress Saat Ini", f"{pct_now:.1f}%")
                 tk2.metric("Target Milestone", f"{target_pct:.0f}%")
                 tk3.metric("Hari Tersisa", f"{days_left} hari")
-                tk4.metric("Target Harian Tim", f"{target_harian_team:,} usaha/hari")
+                tk4.metric("Target Harian Tim", f"{target_harian_team:,}a/hari")
 
                 st.divider()
 
@@ -815,7 +815,7 @@ with tab_target:
                             coloraxis_showscale=False,
                         ),
                         xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
-                                   title="Target (usaha/hari)"),
+                                   title="Target (per hari)"),
                         yaxis=dict(showgrid=False),
                     )
                     st.plotly_chart(fig_target, use_container_width=True)
@@ -848,7 +848,7 @@ with tab_target:
                             "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
                         ),
                         "Target Harian": st.column_config.NumberColumn(
-                            "Target Harian (usaha/hari)",
+                            "Target Harian (per hari)",
                             help=f"Jumlah usaha yang harus diselesaikan per hari agar mencapai "
                                  f"{target_pct:.0f}% pada {target_date:%d %b %Y}",
                         ),
