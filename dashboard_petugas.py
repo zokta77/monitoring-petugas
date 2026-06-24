@@ -597,7 +597,11 @@ with tab_pcl:
 
         # Rename kolom untuk tampilan
         disp_pcl = rename_display(agg_pcl)
-
+        if "Selisih" in agg_pcl.columns:
+                    bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
+                    if not bad.empty:
+                        with st.expander(f"⚠️ {len(bad)} pencacah punya selisih total_data vs jumlah status"):
+                            st.dataframe(bad, use_container_width=True, hide_index=True)
         col_cfg_pcl = {}
         if "Progress (%)" in disp_pcl.columns:
             col_cfg_pcl["Progress (%)"] = st.column_config.ProgressColumn(
@@ -623,11 +627,7 @@ with tab_pcl:
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 key="download_pcl"
             )
-        if "Selisih" in agg_pcl.columns:
-            bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
-            if not bad.empty:
-                with st.expander(f"⚠️ {len(bad)} pencacah punya selisih total_data vs jumlah status"):
-                    st.dataframe(bad, use_container_width=True, hide_index=True)
+       
 
 
 # ══════════════════════════════════════════════════════════════════════════════
