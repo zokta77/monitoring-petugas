@@ -30,7 +30,7 @@ html, body,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
 .main,
-p, span, div, label, td, th, li, a, button {
+p, div, label, td, th, li, a, button {
     font-family: 'Inter', sans-serif !important;
 }
 
@@ -220,7 +220,7 @@ div[data-baseweb="tag"] span {
     font-weight: 600;
     white-space: nowrap;
 }
-            /* Warna ikon help metric */
+    /* Warna ikon help metric */
 [data-testid="stMetric"] button {
     color: #0f172a !important;
 }
