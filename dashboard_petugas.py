@@ -617,10 +617,11 @@ with tab_pcl:
             excel_pcl = to_excel(disp_pcl)
 
             st.download_button(
-                label="📊 Download Rekap Pencacah (Excel)",
+                label="📊 Download Rekap Pencacah",
                 data=excel_pcl,
-                file_name="rekap_pencacah_se2026.xlsx",
+                file_name="rekap_pencacah.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_pcl"
             )
         if "Selisih" in agg_pcl.columns:
             bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
@@ -762,8 +763,9 @@ with tab_raw:
     excel_data = to_excel(view_df)
 
     st.download_button(
-        label="📊 Download Excel",
+        label="📊 Download Data Mentah",
         data=excel_data,
-        file_name="data_scrapping_se2026.xlsx",
+        file_name="data_mentah.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_raw"
     )
