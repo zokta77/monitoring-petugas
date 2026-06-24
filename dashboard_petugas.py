@@ -612,10 +612,12 @@ with tab_pcl:
         # =========================
         # Download Rekap Pencacah
         # =========================
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
         st.download_button(
             label="📊 Download Rekap Pencacah (XLSX)",
             data=to_excel(disp_pcl),
-            file_name="rekap_pencacah.xlsx",
+            file_name=f"rekap_pencacah_{timestamp}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_pcl"
         )
