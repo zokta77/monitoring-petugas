@@ -142,6 +142,20 @@ html[data-theme="dark"] div[data-testid="stMetric"] button:hover {
     color: #2dd4bf !important;
 }
 
+/* Fallback via OS preference */
+@media (prefers-color-scheme: dark) {
+    div[data-testid="stMetric"] {
+        background: #1e293b !important;
+        border-color: rgba(100,116,139,0.3) !important;
+    }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+        color: #f1f5f9 !important;
+    }
+    div[data-testid="stMetric"] label {
+        color: #94a3b8 !important;
+    }
+}
+
 /* ── Section headers ── */
 h1, h2, h3, h4 {
     font-family: 'Inter', sans-serif !important;
