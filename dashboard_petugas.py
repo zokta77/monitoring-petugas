@@ -484,7 +484,7 @@ with tab_overview:
             y=status_totals.index,
             orientation="h",
             labels={"x": "Jumlah", "y": ""},
-            text=[f"{v:,}" for v in status_totals.values],
+             text=[f"{int(v):,}" for v in status_totals.values],
             color=status_totals.index,
             color_discrete_sequence=TEAL_PALETTE,
             template=PLOT_TEMPLATE,
