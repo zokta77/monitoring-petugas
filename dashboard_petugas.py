@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from io import BytesIO
 
 from config_se2026 import LATEST_FILE
 
@@ -300,7 +301,27 @@ def to_numeric_safe(df: pd.DataFrame, cols: list) -> pd.DataFrame:
 def rename_display(df: pd.DataFrame) -> pd.DataFrame:
     """Rename kolom teknis ke nama tampilan untuk ditampilkan ke user."""
     return df.rename(columns=nice_col)
+def to_excel(df):
+    output = BytesIO()
+    col1, col2 = st.columns(2)
 
+    with col1:
+        st.download_button(
+            "⬇️ CSV",
+            disp_pcl.to_csv(index=False).encode("utf-8"),
+            file_name="rekap_pencacah.csv",
+            mime="text/csv"
+        )
+
+    with col2:
+        st.download_button(
+            "📊 Excel",
+            to_excel(disp_pcl),
+            file_name="rekap_pencacah.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    return output.getvalue()
 # ─────────────────────────────────────────────────────────────────────────────
 # Load data otomatis
 # ─────────────────────────────────────────────────────────────────────────────
@@ -583,9 +604,24 @@ with tab_pcl:
                 "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
             )
 
-        st.dataframe(disp_pcl, use_container_width=True,
-                     column_config=col_cfg_pcl, hide_index=True)
+            st.dataframe(
+                disp_pcl,
+                use_container_width=True,
+                column_config=col_cfg_pcl,
+                hide_index=True
+            )
 
+            # =========================
+            # Download Rekap Pencacah
+            # =========================
+            excel_pcl = to_excel(disp_pcl)
+
+            st.download_button(
+                label="📊 Download Rekap Pencacah (Excel)",
+                data=excel_pcl,
+                file_name="rekap_pencacah_se2026.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
         if "Selisih" in agg_pcl.columns:
             bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
             if not bad.empty:
@@ -717,5 +753,17 @@ with tab_raw:
         default=all_cols[:min(15, len(all_cols))],
         key="raw_cols",
     )
+
     view_df = rename_display(df[show_cols] if show_cols else df)
+
     st.dataframe(view_df, use_container_width=True, hide_index=True)
+
+    # DOWNLOAD
+    excel_data = to_excel(view_df)
+
+    st.download_button(
+        label="📊 Download Excel",
+        data=excel_data,
+        file_name="data_scrapping_se2026.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
