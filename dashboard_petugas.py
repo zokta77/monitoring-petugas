@@ -772,7 +772,7 @@ with tab_target:
                 tk1.metric("Progress Saat Ini", f"{pct_now:.1f}%")
                 tk2.metric("Target Milestone", f"{target_pct:.0f}%")
                 tk3.metric("Hari Tersisa", f"{days_left} hari")
-                tk4.metric("Target Harian", f"{target_harian_team:,a/hari")
+                tk4.metric("Target Harian", f"{target_harian_team:,}/hari")
 
                 st.divider()
 
