@@ -588,7 +588,7 @@ with tab_pcl:
             xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10,
                        title="Nama Pencacah"),
             yaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
-                       title="Jumlah Usaha"),
+                       title="Jumlah Muatan"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02,
                         xanchor="right", x=1, font_size=11),
         )
@@ -849,7 +849,7 @@ with tab_target:
                         ),
                         "Target Harian": st.column_config.NumberColumn(
                             "Target Harian (per hari)",
-                            help=f"Jumlah usaha yang harus diselesaikan per hari agar mencapai "
+                            help=f"Jumlah muatan yang harus diselesaikan per hari agar mencapai "
                                  f"{target_pct:.0f}% pada {target_date:%d %b %Y}",
                         ),
                     },
