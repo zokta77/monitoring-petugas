@@ -364,7 +364,7 @@ st.markdown(f"""
             </h1>
             <p style="margin:0;color:#64748b;font-size:0.8rem;
                       font-family:'Inter',sans-serif;">
-                Progress per Pencacah / Desa · Data otomatis dari scraping FASIH
+                Progress per Pencacah / Desa · Data update dari FASIH-SM 
             </p>
         </div>
     </div>
