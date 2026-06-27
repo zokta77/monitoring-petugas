@@ -16,31 +16,22 @@ base_path = BASE_PATH                #FOLDER UNTUK MENYIMPAN DATA HASIL SCRAPPIN
 
 # ===================== GANTI COOKIE DI SINI =====================
 cookies = {
-    '_ga_G604FXJW6E': 'GS2.1.s1780902144$o1$g0$t1780902163$j41$l0$h0',
-    '_ga_K98R6MSKRH': 'GS2.1.s1780922743$o1$g1$t1780922897$j47$l0$h0',
-    '_ga_WQKDWE3S3T': 'GS2.1.s1780971857$o1$g0$t1780971857$j60$l0$h0',
-    '_ga_QPPE1C18C5': 'GS2.1.s1781251554$o2$g0$t1781252726$j60$l0$h0',
-    'cf_clearance': 'KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw',
-    '_ga_T7YPSCVK8R': 'GS2.1.s1782095603$o1$g0$t1782095607$j56$l0$h0',
-    '_ga': 'GA1.3.1484741960.1780902145',
-    '_ga_XXTTVXWHDB': 'GS2.3.s1782095624$o9$g1$t1782095696$j50$l0$h0',
-    'f5avraaaaaaaaaaaaaaaa_session_': 'CEIAONEJDHOOIIIKAMMLLGPPNFDFKFOEILJPFLLFDILFAFNLAMPECICECNMBMBBIFFODEEDJNLKPDDCMKDJAFBBHPBJIFPKNCPHBPEILAIDGKKAEAKHBDAIJDJNLKOGC',
-    'TS00000000076': '0868f8be6fab2800d7ed7281147db2ce2f10390f29db28fec082b0ef6294b6c3556bb8bf99a7ede237cbc7306eabfe0f087d4892f909d0003bb94fc262d13460ecc77314f0e2ebf3ddede0e6a985db90ef84efb499da119ffbb14025356179b618e726260cfe3ecaaec0c6da5adc3bcf0104fd05e6b772627b3908ffbe5f368fab4a7382be83790401e58ddbd698d2b5fd11966c9b34d601b1298a498213118ff19a62ded549e6be641180ab220e985b9b6d1b9a2c4ecc0e9d03f42d5f5b336a405181e73d45830a7700818bef71b6f019df737e449139c67990007540808c8045461573f377cb67d8f3571e525b3671c90f6ff4f225eac8cfbeffc274dfd604353bb676710927fd',
-    'TSPD_101_DID': '0868f8be6fab2800d7ed7281147db2ce2f10390f29db28fec082b0ef6294b6c3556bb8bf99a7ede237cbc7306eabfe0f087d4892f9063800ec2bf43d7a718ad6fd1fdb348318ba7871f17e08f69ec0573ad1a0482e13beca5138752682d8279a31d3193e82ca6274b1997579098d82c8',
-    'db8ca2b43ed851cc93e71fd5fd72bff7': 'ce25186e750651d5e1e61a27d48e3469',
-    'TS011f2d1a': '01266d26d02ea944c76d99b8038337affb0933050bd8724c4a6bf5cef107b1513cb8f7f160efdb6ca187556613eca2f9556f54a4b0',
-    'TSPD_101': '0868f8be6fab28002c7838ae51234909fd914006f6fb308511083873b035c267ab7984974585201b607382f2988923b208442e1edd0518000e5712532a3502255ca1732140a3428bba23ce13beb1c95e',
-    'XSRF-TOKEN': 'eb395f69-5714-48f5-b099-6e59329b735f',
-    'SESSION': 'ccdc0ca3-b58f-4acf-8bb7-d8ee0248b41e',
-    'TS5220f739077': '0868f8be6fab28008e8aa1a9f5a469349c99f97d538c0ab498c11e8db9a4b5e1fdeaa612a8a885db72c6256ef72972190885998678172000c65464eada6bc10b62d1ca75c8c709500607e83eaf1770ed3e4766495f661ef1',
-    'TS5220f739029': '0868f8be6fab28008e47993b9f3f33a4cde5b7d4b6a87989c8d07cf08906148b44ab33e5fab4361863ac12fec277e312',
-    'TSf1edb2d2027': '0868f8be6fab20003f34b4639505e48a821ed03fddab2d2d257754a05ba05f1768726d6ece0bf844086fc113421130005a9a82771fae38c9bbebbc47eba6e5e4301a9372d9d966f3ee31fa3e3ae92ed8db43d262fc12f42804acd5ac77d7af4d',
-    'TS0151fc2b': '0167a1c861485aae9db69194bee579ee0fb6e2d0eef4aadc618be5d1147752fe510a412a03bbcba2ee4e560da394c6aa6818e28aff',
+    'f5avraaaaaaaaaaaaaaaa_session_': 'JLICHBKPGDCGPEOLIKHDEFGEAODPJENBHFEEDINCCFEGPDOBDCKJAKENNHFLFCJNBFCDJMNPHNKEKLFBENJANGDNMNOIIGDIJOPMHMOJBCPAFOCMNKHNFMKCEANKCHLH',
+    'TS00000000076': '0868f8be6fab2800c2b3ec4c4edbdcbf644508a5da3e03a23119eb5622c85c2c9046d7f04d96d9c57d5ee3abbd8787d208feaddcc909d000059da88b2bd5a11651a3346913822c51461747d9696ff0d4f24c4a1f78aafe47ff1ad4c1b988a47ecdc316342489219b31f25f92f037f80e7affd5b24bdd061530bea6e52d49b570a762f7e494ce1ab25ffa66fbe13b475b02aa6678712291a54f7c9d65838a977f024db55cbaaf19c151351545dba501ca22fa1a29a2574aa8af3938ba830ef04581ec02961ad60099241ee22a2d0a716bda2e19f207d7fa91d2c30656d2dd6b3b13ebd8638c4ef286f338c646942c2af801f55c2a80ed8f3ecf9307b155a1cf750663465255aff6d8',
+    'TSPD_101_DID': '0868f8be6fab2800c2b3ec4c4edbdcbf644508a5da3e03a23119eb5622c85c2c9046d7f04d96d9c57d5ee3abbd8787d208feaddcc9063800cd704e10117a55e66035853900755e715e2baf96a5a6efff18666b71aacd716f0cbbd798176140f68cd6a6e49a1c36157cbc58e744afc73c',
+    'TS011f2d1a': '01266d26d0063e273bc11618d386e9f29a94faedfc5fb00cccacfb54e471ee335ab90a79a464170bf1d532e04b7c1169076a173369',
+    'TSPD_101': '0868f8be6fab28000cad452e10b91ceeecc2822e2bac17577628be74678bd0499ebe1a46dc19d6446514d3f525c5634f08edb544b0051800811bc8965452a8a45ca1732140a3428bba23ce13beb1c95e',
+    'XSRF-TOKEN': 'cb7567eb-145a-4e0b-8730-3ea495de0998',
+    'SESSION': 'bf4aac87-f256-4a7c-9fd3-f1cc0d35fe3b',
+    'db8ca2b43ed851cc93e71fd5fd72bff7': '9659465e252a0faffcb932a11d8b78ba',
+    'TS5220f739077': '0868f8be6fab2800f5bf99528013cf5aa2daa200ad8ae20e31906d6c81148ade35dec08a1e5b35771b34e9fa543ba9ff0819785401172000b72477ed81876b6e91611c7090382364733f43653baa10abf4685f3b65099e38',
+    'TS5220f739029': '0868f8be6fab2800990dbcd880e6f385a18c5d39cc2c1982eedc6d3099b147219b26dfa8a2a3cbcc696fc6840c59baa9',
+    'TSf1edb2d2027': '0868f8be6fab2000b8344fc5da5461f23d37ba4914730487e66faec3f41de95b17db520c382af2d0088102addc113000c7323651af3c1161d4f5c98687cd44fe67df9eea3b70731e4f0c1f2d8ea0fc61a91e791c5c5a0bafb50cef9674c46f1c',
 }
 
 headers = {
     'accept': '*/*',
-    'accept-language': 'en-US,en;q=0.9,id;q=0.8',
+    'accept-language': 'en-US,en;q=0.9',
     'content-type': 'application/json',
     'origin': 'https://fasih-sm.bps.go.id',
     'priority': 'u=1, i',
@@ -51,8 +42,8 @@ headers = {
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
-    'x-xsrf-token': 'eb395f69-5714-48f5-b099-6e59329b735f',
-    'cookie': '_ga_G604FXJW6E=GS2.1.s1780902144$o1$g0$t1780902163$j41$l0$h0; _ga_K98R6MSKRH=GS2.1.s1780922743$o1$g1$t1780922897$j47$l0$h0; _ga_WQKDWE3S3T=GS2.1.s1780971857$o1$g0$t1780971857$j60$l0$h0; _ga_QPPE1C18C5=GS2.1.s1781251554$o2$g0$t1781252726$j60$l0$h0; cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; _ga_T7YPSCVK8R=GS2.1.s1782095603$o1$g0$t1782095607$j56$l0$h0; _ga=GA1.3.1484741960.1780902145; _ga_XXTTVXWHDB=GS2.3.s1782095624$o9$g1$t1782095696$j50$l0$h0; f5avraaaaaaaaaaaaaaaa_session_=CEIAONEJDHOOIIIKAMMLLGPPNFDFKFOEILJPFLLFDILFAFNLAMPECICECNMBMBBIFFODEEDJNLKPDDCMKDJAFBBHPBJIFPKNCPHBPEILAIDGKKAEAKHBDAIJDJNLKOGC; TS00000000076=0868f8be6fab2800d7ed7281147db2ce2f10390f29db28fec082b0ef6294b6c3556bb8bf99a7ede237cbc7306eabfe0f087d4892f909d0003bb94fc262d13460ecc77314f0e2ebf3ddede0e6a985db90ef84efb499da119ffbb14025356179b618e726260cfe3ecaaec0c6da5adc3bcf0104fd05e6b772627b3908ffbe5f368fab4a7382be83790401e58ddbd698d2b5fd11966c9b34d601b1298a498213118ff19a62ded549e6be641180ab220e985b9b6d1b9a2c4ecc0e9d03f42d5f5b336a405181e73d45830a7700818bef71b6f019df737e449139c67990007540808c8045461573f377cb67d8f3571e525b3671c90f6ff4f225eac8cfbeffc274dfd604353bb676710927fd; TSPD_101_DID=0868f8be6fab2800d7ed7281147db2ce2f10390f29db28fec082b0ef6294b6c3556bb8bf99a7ede237cbc7306eabfe0f087d4892f9063800ec2bf43d7a718ad6fd1fdb348318ba7871f17e08f69ec0573ad1a0482e13beca5138752682d8279a31d3193e82ca6274b1997579098d82c8; db8ca2b43ed851cc93e71fd5fd72bff7=ce25186e750651d5e1e61a27d48e3469; TS011f2d1a=01266d26d02ea944c76d99b8038337affb0933050bd8724c4a6bf5cef107b1513cb8f7f160efdb6ca187556613eca2f9556f54a4b0; TSPD_101=0868f8be6fab28002c7838ae51234909fd914006f6fb308511083873b035c267ab7984974585201b607382f2988923b208442e1edd0518000e5712532a3502255ca1732140a3428bba23ce13beb1c95e; XSRF-TOKEN=eb395f69-5714-48f5-b099-6e59329b735f; SESSION=ccdc0ca3-b58f-4acf-8bb7-d8ee0248b41e; TS5220f739077=0868f8be6fab28008e8aa1a9f5a469349c99f97d538c0ab498c11e8db9a4b5e1fdeaa612a8a885db72c6256ef72972190885998678172000c65464eada6bc10b62d1ca75c8c709500607e83eaf1770ed3e4766495f661ef1; TS5220f739029=0868f8be6fab28008e47993b9f3f33a4cde5b7d4b6a87989c8d07cf08906148b44ab33e5fab4361863ac12fec277e312; TSf1edb2d2027=0868f8be6fab20003f34b4639505e48a821ed03fddab2d2d257754a05ba05f1768726d6ece0bf844086fc113421130005a9a82771fae38c9bbebbc47eba6e5e4301a9372d9d966f3ee31fa3e3ae92ed8db43d262fc12f42804acd5ac77d7af4d; TS0151fc2b=0167a1c861485aae9db69194bee579ee0fb6e2d0eef4aadc618be5d1147752fe510a412a03bbcba2ee4e560da394c6aa6818e28aff',
+    'x-xsrf-token': 'cb7567eb-145a-4e0b-8730-3ea495de0998',
+    'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=JLICHBKPGDCGPEOLIKHDEFGEAODPJENBHFEEDINCCFEGPDOBDCKJAKENNHFLFCJNBFCDJMNPHNKEKLFBENJANGDNMNOIIGDIJOPMHMOJBCPAFOCMNKHNFMKCEANKCHLH; TS00000000076=0868f8be6fab2800c2b3ec4c4edbdcbf644508a5da3e03a23119eb5622c85c2c9046d7f04d96d9c57d5ee3abbd8787d208feaddcc909d000059da88b2bd5a11651a3346913822c51461747d9696ff0d4f24c4a1f78aafe47ff1ad4c1b988a47ecdc316342489219b31f25f92f037f80e7affd5b24bdd061530bea6e52d49b570a762f7e494ce1ab25ffa66fbe13b475b02aa6678712291a54f7c9d65838a977f024db55cbaaf19c151351545dba501ca22fa1a29a2574aa8af3938ba830ef04581ec02961ad60099241ee22a2d0a716bda2e19f207d7fa91d2c30656d2dd6b3b13ebd8638c4ef286f338c646942c2af801f55c2a80ed8f3ecf9307b155a1cf750663465255aff6d8; TSPD_101_DID=0868f8be6fab2800c2b3ec4c4edbdcbf644508a5da3e03a23119eb5622c85c2c9046d7f04d96d9c57d5ee3abbd8787d208feaddcc9063800cd704e10117a55e66035853900755e715e2baf96a5a6efff18666b71aacd716f0cbbd798176140f68cd6a6e49a1c36157cbc58e744afc73c; TS011f2d1a=01266d26d0063e273bc11618d386e9f29a94faedfc5fb00cccacfb54e471ee335ab90a79a464170bf1d532e04b7c1169076a173369; TSPD_101=0868f8be6fab28000cad452e10b91ceeecc2822e2bac17577628be74678bd0499ebe1a46dc19d6446514d3f525c5634f08edb544b0051800811bc8965452a8a45ca1732140a3428bba23ce13beb1c95e; XSRF-TOKEN=cb7567eb-145a-4e0b-8730-3ea495de0998; SESSION=bf4aac87-f256-4a7c-9fd3-f1cc0d35fe3b; db8ca2b43ed851cc93e71fd5fd72bff7=9659465e252a0faffcb932a11d8b78ba; TS5220f739077=0868f8be6fab2800f5bf99528013cf5aa2daa200ad8ae20e31906d6c81148ade35dec08a1e5b35771b34e9fa543ba9ff0819785401172000b72477ed81876b6e91611c7090382364733f43653baa10abf4685f3b65099e38; TS5220f739029=0868f8be6fab2800990dbcd880e6f385a18c5d39cc2c1982eedc6d3099b147219b26dfa8a2a3cbcc696fc6840c59baa9; TSf1edb2d2027=0868f8be6fab2000b8344fc5da5461f23d37ba4914730487e66faec3f41de95b17db520c382af2d0088102addc113000c7323651af3c1161d4f5c98687cd44fe67df9eea3b70731e4f0c1f2d8ea0fc61a91e791c5c5a0bafb50cef9674c46f1c',
 }
 
 json_data = {
@@ -76,7 +67,6 @@ json_data = {
     },
     'regionSummaryLevel': 6,
 }
-
 # ================================================================
 
 if not os.path.exists(base_path):
@@ -199,21 +189,71 @@ def auto_push_github():
         print(f"❌ Error push GitHub: {e}")
  
  
+def request_with_backoff(session, method, url, max_retries=3, **kwargs):
+    """Request dengan retry + exponential backoff untuk error sementara (network/5xx).
+
+    Kalau dapat 403/429 berulang sampai max_retries, INI BUKAN dianggap 'masih bisa dicoba
+    cara lain' - melainkan sinyal untuk berhenti (circuit breaker). Sengaja TIDAK mencoba
+    menyamarkan request lebih jauh; tujuannya cuma menghindari nge-hantam endpoint yang sama
+    berkali-kali dalam waktu singkat saat ada gangguan sesaat.
+    """
+    delay = 2
+    response = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = session.request(method, url, **kwargs)
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  Network error (percobaan {attempt}/{max_retries}): {e}")
+            if attempt == max_retries:
+                raise
+            time.sleep(delay)
+            delay *= 2
+            continue
+
+        if response.status_code == 200:
+            return response
+
+        if response.status_code in (403, 429):
+            print(f"⚠️  Status {response.status_code} (percobaan {attempt}/{max_retries}) - "
+                  f"kemungkinan rate-limited/diblokir sementara.")
+            if attempt == max_retries:
+                raise RuntimeError(
+                    f"Berhenti: status {response.status_code} berulang {max_retries}x. "
+                    "Sistem sepertinya menahan request ini - cek manual lewat browser, "
+                    "atau koordinasi ke admin FASIH, sebelum mencoba lagi."
+                )
+            time.sleep(delay)
+            delay *= 2
+            continue
+
+        # status error lain (5xx, dll) - anggap transient, retry juga
+        if attempt < max_retries:
+            time.sleep(delay)
+            delay *= 2
+            continue
+        return response  # serahkan ke pemanggil untuk dilog seperti biasa
+
+    return response
+
+
 def fetch_data():
     all_rows = []
     page = 0
     size = 10
+    session = requests.Session()
 
     while True:
         json_data['page'] = page
         json_data['size'] = size
 
-        response = requests.post(
-            URL_DATA,
-            cookies=cookies,
-            headers=headers,
-            json=json_data,
-        )
+        try:
+            response = request_with_backoff(
+                session, "POST", URL_DATA,
+                cookies=cookies, headers=headers, json=json_data,
+            )
+        except (RuntimeError, requests.exceptions.RequestException) as e:
+            print(f"🛑 Berhenti scraping: {e}")
+            break
 
         if response.status_code != 200:
             print(f"❌ Error di page {page}")
@@ -250,7 +290,7 @@ def fetch_data():
             break
 
         page += 1
-        time.sleep(random.uniform(1, 3))  # delay acak 1-3 detik antar request
+        time.sleep(random.uniform(1, 2))  # delay acak 1-3 detik antar request
 
     if all_rows:
         save_and_merge(all_rows)
