@@ -610,6 +610,8 @@ with tab_pcl:
                 c for c in agg_pcl.columns if c not in ["nama_pcl", "nama_pml"]
             ]
             agg_pcl = agg_pcl[col_order]
+            # Urutkan tabel detail berdasarkan nama Pengawas, lalu nama Pencacah
+            agg_pcl = agg_pcl.sort_values(["nama_pml", "nama_pcl"], na_position="last").reset_index(drop=True)
 
         # Rename kolom untuk tampilan
         disp_pcl = rename_display(agg_pcl)
