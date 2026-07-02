@@ -6,32 +6,39 @@ import tempfile
 from datetime import datetime
 import schedule
 import time
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from config_se2026 import NAMA_KABUPATEN, BASE_PATH, LATEST_FILE, archive_filename
 
 # ================= SETTINGS =================
-URL_DATA = 'https://fasih-sm.bps.go.id/app/api/analytic/api/v2/assignment/report-progress-by-responsibility' 
-base_path = BASE_PATH                #FOLDER UNTUK MENYIMPAN DATA HASIL SCRAPPING
-# ==========================================================
+URL_DATA = 'https://fasih-sm.bps.go.id/app/api/analytic/api/v2/assignment/report-progress-by-responsibility'
+base_path = BASE_PATH
 
+# ===== KONFIGURASI SELENIUM =====
+# Cara cek path: buka chrome://version di profil yang sudah login FASIH
+# lihat baris "Profile Path" → folder induknya = CHROME_PROFILE_DIR
+CHROME_PROFILE_DIR  = r"C:\Users\Dell\AppData\Local\Google\Chrome\User Data"
+CHROME_PROFILE_NAME = "Profil 1"   # ganti sesuai profil (Default / Profile 1 / dst)
+FASIH_HOME_URL      = "https://fasih-sm.bps.go.id/app/"
+# ==========================================================
 
 # ===================== GANTI COOKIE DI SINI =====================
 cookies = {
-    'f5avraaaaaaaaaaaaaaaa_session_': 'IMGEHCPIODAJJLLKAIDLANGCFMFIDAPCBOLMHAKEJLDOFJJGMDNKBALELFFCIHFCDPGDJHAKCFODIMNLDALAGJIMDFEJHEMKKBIJGFDDIIDGEGAODPAKLEOBBMEGJHPH',
+    'f5avraaaaaaaaaaaaaaaa_session_': 'FMEINPFFFJKKFJJLBCEKGEGONCBFGDGIKENNPEPADCBJDMCGJPMMGENPNJMBABEHHKEDAJJFLJLLKNPAEDNAHEOPAOOMKLFDOFMDJHMJPIFKBOKOOEJBBLIJEFALINNO',
+    'f5_cspm': '1234',
     'cf_clearance': 'KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw',
-    'db8ca2b43ed851cc93e71fd5fd72bff7': 'fa562932fc28ca0b3fccefa0da837e6b',
-    'XSRF-TOKEN': '897c433f-58c1-4253-90b1-7eb38362df83',
-    'JSESSIONID': '5DC74262F6F8C9E391AC5A56EFC8BC38',
-    'SESSION': '4e9e8d5c-96ec-4b65-99e2-d68f52ef0a0b',
-    'TS018af012': '0167a1c861d9f977d4ad34e59cc2f2b52eb25fc8d733b35d035cd9387fb248da0d6971119ddb6065e8bcd76d559f196190f1eda48e5e0a4aeb8cf3e131cb6f5f214191995763171114b01df82acaff237db0c5b9a7',
-    'TS0151fc2b': '0167a1c8610a0fa7db56cc7c61b2f0563ff035091a191943ae422dee95bcdfdd8f2247135be641a92a5a2cfa49690e7bd9227a45d0',
-    'TS00000000076': '0868f8be6fab28005f306d49c9d3c8932a6b568fd4c8ebb3588ac9c64971bdf3aca993269101fa6f7590c562e919f0a508ac95f72c09d000e8d7c51769e548736c4bf5b274d951595e8a4a9f1fa29fb4657670a0f52e1180f09c53775190976a67573d043aabeabd8e1a2f9b466d31c3e32ca5fde92d4f46a9e932252b67000a148c87759337b640a9d7ac281432e548e00946d44b200760d13837354c0950fbd3f09560d60672a9b59f40617c1b68e5bf5f80b3a97ba34a661a8e0bc6571b67d6d6dd5026b43b0f25360275368b8189ae000d06ad5634fffdb4a39fe0b1b6076232ccb24bff7b0925b69fe8f0ebb8db11ccb3152052f373110c04356a5cb318fc50f9ffa1586896',
-    'TSPD_101_DID': '0868f8be6fab28005f306d49c9d3c8932a6b568fd4c8ebb3588ac9c64971bdf3aca993269101fa6f7590c562e919f0a508ac95f72c063800fb1516c052a9211066acc64929fe120c6d215cb5d5ec0b50ecf17e8d046a9bf727369acb1eb388ce3a1ad7f763c82e4f1d5bb632c258f8ff',
-    'TS011f2d1a': '01266d26d019cd02b482e7b2ed49f153be7fdbad83c755096832ec227adcc47a128fc4f89aad2b2cce9ee77be1a907be5faf5dc747',
-    'TSPD_101': '0868f8be6fab2800ba5c3463f8a7f7382279f4e4c388c0c0ff0ed675cc8e1f4dfbb0f3790eafefaf8b9e597cfe0d453e083c9a59cf0518007d5e33088576536c5ca1732140a3428bba23ce13beb1c95e',
-    'f5avraaaaaaaaaaaaaaaa_session_': 'PJGKHCGGBFCDIOGBPIBLIBCFPEFBBEDBLLBICFNJIEGFFHAKDEKNKJFCHHNIFBGKEKGDNBDBFFLBINMAPIIALCHAEFOOFKPFOLNOKPDMNDGOBCPIOJNKOKHMLPGGNEBL',
-    'TS5220f739077': '0868f8be6fab28003dfd89fa5230d86880b65bc4691b094d41ecf4d75db79166e476a91889a5369b49b8ebad15cf3dd008efda4d8017200075493d10644a8f533b11f0ed105e728a49edddfaadb389c3d06fae0ce931a7c8',
-    'TS5220f739029': '0868f8be6fab28006816bb8abc460a65e2aaa016b3d08b33d9dcf42e5fb385ba740bbcb6275b646586663249ce0074ad',
-    'TSf1edb2d2027': '0868f8be6fab20009b74a238e34cb6f0c2b15b96e9b4f61647cb787df8badf77007d23d251b7cfbd082b87e567113000878d67727dcb23a2665b5682d72fb1ef5b9ad9555a64302e2ef691ff196ad1ceb2a79179dd7293741b23887e9093894a',
+    'db8ca2b43ed851cc93e71fd5fd72bff7': '9a32fc3ce04039d14660c4f4c4ac4aa2',
+    'XSRF-TOKEN': '8ad306c3-4d47-4be0-8bc0-3b9abf8efbf4',
+    'f5avr1980069168aaaaaaaaaaaaaaaa_cspm_': 'CJIOMLELKNECBAJAKCJPJDIGADDOJPDLDGEGMIBNBIOBNJKDMFEHEACHPAGMDGDOHDOCIKOBJFDBFOEOONCAIECCAPAAPKLLOCFGODIBBHLPAFJIKPFEFGKFGACJHGAK',
+    'SESSION': '1838a08b-9f92-4edf-b3fd-67162f028672',
+    'TS00000000076': '0868f8be6fab2800687d07c48d7959bfaae4cbb6c4c4e37a4cdcdb848ba1d519be89546098983bdb6b7973db280576da086250011a09d0008860960bf622be4951a8fe159d4b78cc5943b27125027a9074dfce8e81b0b53f1f281731ee486fb0331984e73ed333971f702cd8ca4955c93db115816f4ef2d568a42b0c5922a180f5e0648a746f7c4f6f4b7fefb51aef3a8a73e498e0b08f1f0d647c1bd766819320da938b53cf5b13815b3d02b5804da4cac8bdfaf20dff958e586cfd1b6e1fd5cf264d090cae4ab54098f8bc8457fea60a6f3e587ce0fd0a0be2e03e74d531ade5d5c2585a8f5fb388d03ef74011bcf9b7e8e22388f055504e2d800e1f22ef7e3aa42aae7353b7ea',
+    'TSPD_101_DID': '0868f8be6fab2800687d07c48d7959bfaae4cbb6c4c4e37a4cdcdb848ba1d519be89546098983bdb6b7973db280576da086250011a063800eacc834937df8d92ee609728481a3fd035e87be869ecbc0fc4a461dd921946243329d3443429a56cc369835a2454df88ac62184bb290f4a2',
+    'TS011f2d1a': '01266d26d06b158d40f39281c58309dd9473115b38177cd0c7083781d30fd7e040027aa80367acdc64591c83dba5d03dfbab3a657c',
+    'TSPD_101': '0868f8be6fab28007e1739b433797b5f717c88ea2c83999ccbb06e3f45c7f149177d23bd0663cfb121bf8b731f250427084b8bef4a0518008538e012fd03fa535ca1732140a3428bba23ce13beb1c95e',
+    'f5avraaaaaaaaaaaaaaaa_session_': 'FPGKMEJJCGHGFKMBPKPEEAMDDHIMLAFHKBCPNIFIGCFLAKJCEALLBFHPGPBMLJCGGFMDFBABNJGBNCOJCFCANFLNCOPAHFBBLMNIFHPDFIILCLCMCNGLLMCBFAKNMKJI',
+    'TS5220f739077': '0868f8be6fab280028352a7a896789c60afa1e85600a55669909b89bead0f743cff6ee02cfd948217939e959a8955c1b083594f6e61720005eda8dcd9b12d4bfbd4733dfce892c45468f51cd89b9b71cc40c7f63043325a4',
+    'TS5220f739029': '0868f8be6fab2800f178b06a27e385ddab875846f0c9e83aa03fb08ba52f1c577ce4c098ddb62661eb5cdb3ab25398f5',
+    'TSf1edb2d2027': '0868f8be6fab20009ef17a24eb7035f09a55ac5e4c36f230cc27761bb362683227a0353d15f73f390879030bed1130003bffae554efd20ae48dba6a53bba32ebc9c614988c888ebd85fbbe111732860a98cf568d8598fe6b0e8a1ffe1aaf4356',
 }
 
 headers = {
@@ -47,8 +54,8 @@ headers = {
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36',
-    'x-xsrf-token': '897c433f-58c1-4253-90b1-7eb38362df83',
-    # 'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=IMGEHCPIODAJJLLKAIDLANGCFMFIDAPCBOLMHAKEJLDOFJJGMDNKBALELFFCIHFCDPGDJHAKCFODIMNLDALAGJIMDFEJHEMKKBIJGFDDIIDGEGAODPAKLEOBBMEGJHPH; cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; db8ca2b43ed851cc93e71fd5fd72bff7=fa562932fc28ca0b3fccefa0da837e6b; XSRF-TOKEN=897c433f-58c1-4253-90b1-7eb38362df83; JSESSIONID=5DC74262F6F8C9E391AC5A56EFC8BC38; SESSION=4e9e8d5c-96ec-4b65-99e2-d68f52ef0a0b; TS018af012=0167a1c861d9f977d4ad34e59cc2f2b52eb25fc8d733b35d035cd9387fb248da0d6971119ddb6065e8bcd76d559f196190f1eda48e5e0a4aeb8cf3e131cb6f5f214191995763171114b01df82acaff237db0c5b9a7; TS0151fc2b=0167a1c8610a0fa7db56cc7c61b2f0563ff035091a191943ae422dee95bcdfdd8f2247135be641a92a5a2cfa49690e7bd9227a45d0; TS00000000076=0868f8be6fab28005f306d49c9d3c8932a6b568fd4c8ebb3588ac9c64971bdf3aca993269101fa6f7590c562e919f0a508ac95f72c09d000e8d7c51769e548736c4bf5b274d951595e8a4a9f1fa29fb4657670a0f52e1180f09c53775190976a67573d043aabeabd8e1a2f9b466d31c3e32ca5fde92d4f46a9e932252b67000a148c87759337b640a9d7ac281432e548e00946d44b200760d13837354c0950fbd3f09560d60672a9b59f40617c1b68e5bf5f80b3a97ba34a661a8e0bc6571b67d6d6dd5026b43b0f25360275368b8189ae000d06ad5634fffdb4a39fe0b1b6076232ccb24bff7b0925b69fe8f0ebb8db11ccb3152052f373110c04356a5cb318fc50f9ffa1586896; TSPD_101_DID=0868f8be6fab28005f306d49c9d3c8932a6b568fd4c8ebb3588ac9c64971bdf3aca993269101fa6f7590c562e919f0a508ac95f72c063800fb1516c052a9211066acc64929fe120c6d215cb5d5ec0b50ecf17e8d046a9bf727369acb1eb388ce3a1ad7f763c82e4f1d5bb632c258f8ff; TS011f2d1a=01266d26d019cd02b482e7b2ed49f153be7fdbad83c755096832ec227adcc47a128fc4f89aad2b2cce9ee77be1a907be5faf5dc747; TSPD_101=0868f8be6fab2800ba5c3463f8a7f7382279f4e4c388c0c0ff0ed675cc8e1f4dfbb0f3790eafefaf8b9e597cfe0d453e083c9a59cf0518007d5e33088576536c5ca1732140a3428bba23ce13beb1c95e; f5avraaaaaaaaaaaaaaaa_session_=PJGKHCGGBFCDIOGBPIBLIBCFPEFBBEDBLLBICFNJIEGFFHAKDEKNKJFCHHNIFBGKEKGDNBDBFFLBINMAPIIALCHAEFOOFKPFOLNOKPDMNDGOBCPIOJNKOKHMLPGGNEBL; TS5220f739077=0868f8be6fab28003dfd89fa5230d86880b65bc4691b094d41ecf4d75db79166e476a91889a5369b49b8ebad15cf3dd008efda4d8017200075493d10644a8f533b11f0ed105e728a49edddfaadb389c3d06fae0ce931a7c8; TS5220f739029=0868f8be6fab28006816bb8abc460a65e2aaa016b3d08b33d9dcf42e5fb385ba740bbcb6275b646586663249ce0074ad; TSf1edb2d2027=0868f8be6fab20009b74a238e34cb6f0c2b15b96e9b4f61647cb787df8badf77007d23d251b7cfbd082b87e567113000878d67727dcb23a2665b5682d72fb1ef5b9ad9555a64302e2ef691ff196ad1ceb2a79179dd7293741b23887e9093894a',
+    'x-xsrf-token': '8ad306c3-4d47-4be0-8bc0-3b9abf8efbf4',
+    'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=FMEINPFFFJKKFJJLBCEKGEGONCBFGDGIKENNPEPADCBJDMCGJPMMGENPNJMBABEHHKEDAJJFLJLLKNPAEDNAHEOPAOOMKLFDOFMDJHMJPIFKBOKOOEJBBLIJEFALINNO; f5_cspm=1234; cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; db8ca2b43ed851cc93e71fd5fd72bff7=9a32fc3ce04039d14660c4f4c4ac4aa2; XSRF-TOKEN=8ad306c3-4d47-4be0-8bc0-3b9abf8efbf4; f5avr1980069168aaaaaaaaaaaaaaaa_cspm_=CJIOMLELKNECBAJAKCJPJDIGADDOJPDLDGEGMIBNBIOBNJKDMFEHEACHPAGMDGDOHDOCIKOBJFDBFOEOONCAIECCAPAAPKLLOCFGODIBBHLPAFJIKPFEFGKFGACJHGAK; SESSION=1838a08b-9f92-4edf-b3fd-67162f028672; TS00000000076=0868f8be6fab2800687d07c48d7959bfaae4cbb6c4c4e37a4cdcdb848ba1d519be89546098983bdb6b7973db280576da086250011a09d0008860960bf622be4951a8fe159d4b78cc5943b27125027a9074dfce8e81b0b53f1f281731ee486fb0331984e73ed333971f702cd8ca4955c93db115816f4ef2d568a42b0c5922a180f5e0648a746f7c4f6f4b7fefb51aef3a8a73e498e0b08f1f0d647c1bd766819320da938b53cf5b13815b3d02b5804da4cac8bdfaf20dff958e586cfd1b6e1fd5cf264d090cae4ab54098f8bc8457fea60a6f3e587ce0fd0a0be2e03e74d531ade5d5c2585a8f5fb388d03ef74011bcf9b7e8e22388f055504e2d800e1f22ef7e3aa42aae7353b7ea; TSPD_101_DID=0868f8be6fab2800687d07c48d7959bfaae4cbb6c4c4e37a4cdcdb848ba1d519be89546098983bdb6b7973db280576da086250011a063800eacc834937df8d92ee609728481a3fd035e87be869ecbc0fc4a461dd921946243329d3443429a56cc369835a2454df88ac62184bb290f4a2; TS011f2d1a=01266d26d06b158d40f39281c58309dd9473115b38177cd0c7083781d30fd7e040027aa80367acdc64591c83dba5d03dfbab3a657c; TSPD_101=0868f8be6fab28007e1739b433797b5f717c88ea2c83999ccbb06e3f45c7f149177d23bd0663cfb121bf8b731f250427084b8bef4a0518008538e012fd03fa535ca1732140a3428bba23ce13beb1c95e; f5avraaaaaaaaaaaaaaaa_session_=FPGKMEJJCGHGFKMBPKPEEAMDDHIMLAFHKBCPNIFIGCFLAKJCEALLBFHPGPBMLJCGGFMDFBABNJGBNCOJCFCANFLNCOPAHFBBLMNIFHPDFIILCLCMCNGLLMCBFAKNMKJI; TS5220f739077=0868f8be6fab280028352a7a896789c60afa1e85600a55669909b89bead0f743cff6ee02cfd948217939e959a8955c1b083594f6e61720005eda8dcd9b12d4bfbd4733dfce892c45468f51cd89b9b71cc40c7f63043325a4; TS5220f739029=0868f8be6fab2800f178b06a27e385ddab875846f0c9e83aa03fb08ba52f1c577ce4c098ddb62661eb5cdb3ab25398f5; TSf1edb2d2027=0868f8be6fab20009ef17a24eb7035f09a55ac5e4c36f230cc27761bb362683227a0353d15f73f390879030bed1130003bffae554efd20ae48dba6a53bba32ebc9c614988c888ebd85fbbe111732860a98cf568d8598fe6b0e8a1ffe1aaf4356',
 }
 
 json_data = {
@@ -76,6 +83,7 @@ json_data = {
 
 
 # ================================================================
+
 
 if not os.path.exists(base_path):
     os.makedirs(base_path)
@@ -197,6 +205,70 @@ def auto_push_github():
         print(f"❌ Error push GitHub: {e}")
  
  
+def refresh_cookies():
+    """
+    Buka Chrome pakai profil yang sudah login SSO BPS, ambil cookies segar,
+    lalu update variabel global cookies & headers secara otomatis.
+    Dipanggil otomatis ketika session terdeteksi expired.
+ 
+    Syarat:
+    - VPN BPS sudah konek
+    - Profil Chrome di CHROME_PROFILE_DIR/CHROME_PROFILE_NAME sudah pernah
+      login manual ke FASIH minimal sekali
+    - Tidak ada window Chrome lain yang sedang memakai profil yang sama
+    """
+    global cookies
+ 
+    print("🔄 Session expired — membuka browser untuk ambil cookies segar...")
+    options = Options()
+    options.add_argument(f"--user-data-dir={CHROME_PROFILE_DIR}")
+    options.add_argument(f"--profile-directory={CHROME_PROFILE_NAME}")
+    # Aktifkan baris di bawah setelah yakin jalan (browser gak muncul di layar):
+    # options.add_argument("--headless=new")
+ 
+    driver = webdriver.Chrome(options=options)
+    try:
+        driver.get(FASIH_HOME_URL)
+        time.sleep(6)   # tunggu redirect SSO + halaman selesai load
+ 
+        fresh = {c["name"]: c["value"] for c in driver.get_cookies()}
+ 
+        if not fresh.get("SESSION") and not fresh.get("XSRF-TOKEN"):
+            raise RuntimeError(
+                "Cookies SESSION/XSRF-TOKEN tidak ditemukan. "
+                "Buka Chrome dengan profil ini dan login manual ke FASIH dulu."
+            )
+ 
+        cookies.update(fresh)
+        headers["x-xsrf-token"] = fresh.get("XSRF-TOKEN", headers["x-xsrf-token"])
+        print(f"✅ Cookies segar berhasil diambil ({len(fresh)} cookie). Lanjut scraping...")
+    finally:
+        driver.quit()
+ 
+ 
+def is_session_expired(response):
+    """
+    Deteksi apakah session sudah expired berdasarkan respons API.
+    FASIH/Keycloak biasanya redirect ke halaman login (HTML) saat session habis —
+    sehingga Content-Type bukan JSON, atau JSON-nya tidak punya field 'data'.
+    """
+    content_type = response.headers.get("Content-Type", "")
+    if "text/html" in content_type:
+        return True
+ 
+    try:
+        body = response.json()
+        # Kalau response JSON tapi field 'data' hilang dan ada pesan error auth
+        if body.get("status") in (401, 403):
+            return True
+        if "login" in str(body).lower() or "unauthorized" in str(body).lower():
+            return True
+        return False
+    except Exception:
+        # Kalau response sama sekali gak bisa di-parse sebagai JSON → HTML login page
+        return True
+ 
+ 
 def request_with_backoff(session, method, url, max_retries=3, **kwargs):
     """Request dengan retry + exponential backoff untuk error sementara (network/5xx).
 
@@ -249,6 +321,8 @@ def fetch_data():
     page = 0
     size = 10
     session = requests.Session()
+    max_refresh = 2          # maksimal berapa kali boleh refresh cookies dalam 1 run
+    refresh_count = 0
 
     while True:
         json_data['page'] = page
@@ -263,34 +337,54 @@ def fetch_data():
             print(f"🛑 Berhenti scraping: {e}")
             break
 
+        # ── Deteksi session expired → auto-refresh cookies lalu ulangi page ini ──
+        if response.status_code in (200,) and is_session_expired(response) or \
+           response.status_code in (302, 401):
+            if refresh_count >= max_refresh:
+                print(f"🛑 Session expired lagi setelah {max_refresh}x refresh. "
+                      "Kemungkinan profil Chrome perlu login manual ulang.")
+                break
+            try:
+                refresh_cookies()
+                refresh_count += 1
+                # Reset session agar cookies baru ikut terpakai
+                session = requests.Session()
+                print(f"↩️  Mengulang page {page} dengan cookies baru...")
+                time.sleep(2)
+                continue   # ulangi iterasi loop dengan page yang sama
+            except Exception as e:
+                print(f"🛑 Gagal refresh cookies: {e}")
+                break
+
         if response.status_code != 200:
-            print(f"❌ Error di page {page}")
-            print(f"Status Code: {response.status_code}")
-            print(response.text[:1000])
+            print(f"❌ Error di page {page} | Status: {response.status_code}")
+            print(response.text[:500])
             break
 
-        json_res = response.json()
-        data_block = json_res.get("data", {})
-        data = data_block.get("content", [])
-        is_last = data_block.get("last", True)
+        try:
+            json_res    = response.json()
+        except Exception:
+            print(f"❌ Response bukan JSON di page {page}. Kemungkinan session expired.")
+            break
 
-        print(f"📄 Page {page} | jumlah data: {len(data)} | last: {is_last}")
+        data_block  = json_res.get("data", {})
+        data        = data_block.get("content", [])
+        is_last     = data_block.get("last", True)
 
-        # 🔽 Flatten
+        print(f"📄 Page {page} | data: {len(data)} | last: {is_last}")
+
         for user in data:
             for region in user.get("regionSummary", []):
                 row = {
-                    "userId": user.get("userId"),
-                    "username": user.get("username"),
-                    "email": user.get("email"),
-                    "role": user.get("roleName"),
+                    "userId":     user.get("userId"),
+                    "username":   user.get("username"),
+                    "email":      user.get("email"),
+                    "role":       user.get("roleName"),
                     "regionCode": region.get("regionCode"),
                     "total_data": region.get("total"),
                 }
-
                 for status in region.get("statusBreakdown", []):
                     row[status.get("status")] = status.get("count")
-
                 all_rows.append(row)
 
         if is_last:
@@ -298,7 +392,7 @@ def fetch_data():
             break
 
         page += 1
-        time.sleep(random.uniform(1, 2))  # delay acak 1-3 detik antar request
+        time.sleep(random.uniform(1, 2))
 
     if all_rows:
         save_and_merge(all_rows)
@@ -315,7 +409,7 @@ if __name__ == "__main__":
     # Menjadwalkan job setiap 1 jam
     schedule.every(1).hours.do(job)
 
-    print("⏱️  Script berjalan otomatis setiap 3 jam. Tekan Ctrl+C untuk menghentikan.")
+    print("⏱️  Script berjalan otomatis setiap 1 jam. Tekan Ctrl+C untuk menghentikan.")
 
     # Jalankan fungsi satu kali saat script pertama kali dibuka (opsional)
     job()
