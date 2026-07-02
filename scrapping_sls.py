@@ -311,7 +311,7 @@ def job():
 
 if __name__ == "__main__":
     # Menjadwalkan job setiap 1 jam
-    schedule.every(3).hours.do(job)
+    schedule.every(1).hours.do(job)
 
     print("⏱️  Script berjalan otomatis setiap 3 jam. Tekan Ctrl+C untuk menghentikan.")
 
