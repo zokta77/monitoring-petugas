@@ -436,7 +436,7 @@ rejected_cols = [c for c in status_cols if "REJECTED" in c.upper()]
 
 total_done     = int(df[done_cols].sum().sum())     if done_cols     else 0
 total_rejected = int(df[rejected_cols].sum().sum()) if rejected_cols else 0
-pct_done       = total_done / total_data * 100      if total_data    else 0
+pct_done       = ((total_done+total_rejected) / total_data * 100)      if total_data    else 0
 
 k1, k2, k3, k4, k5, k6 = st.columns(6)
 k1.metric("Total Pencacah",  f"{n_pcl:,}")
