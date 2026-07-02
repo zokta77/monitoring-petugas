@@ -520,7 +520,7 @@ with tab_overview:
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
             value=pct_done,
-            number={"suffix": "%", "font": {"size": 36, "color": "#14b8a6",
+            number={"suffix": "%", "valueformat": ".2f","font": {"size": 36, "color": "#14b8a6",
                                             "family": "JetBrains Mono"}},
             title={"text": "Overall Progress",
                    "font": {"color": "#94a3b8", "size": 13, "family": "Inter"}},
