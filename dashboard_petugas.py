@@ -575,19 +575,24 @@ with tab_overview:
         else:
             agg_desa_map["Progress"] = 0
 
+       Mantap! Tampilan dashboardnya sudah hampir sempurna. Untuk memunculkan tooltip (kotak info saat kursor di-hover ke peta) yang berisi semua data status (APPROVED, SUBMITTED, dll), kita perlu sedikit "mengakali" cara kerja Folium.
+
+Secara bawaan, fungsi folium.Choropleth itu bagus untuk mewarnai peta, tapi agak kaku untuk menampilkan tooltip multi-kolom. Solusi terbaiknya adalah: kita suntikkan data dari Pandas DataFrame langsung ke dalam properties file GeoJSON-nya, lalu kita tumpuk layer transparan di atas peta untuk memunculkan datanya saat di-hover.
+
+Berikut adalah pembaruan kodenya. Kamu cukup mengganti seluruh bagian "3. Logika Render Peta" di dalam file kamu menjadi kode di bawah ini:
+
+Python
         # 3. Logika Render Peta
         if st.session_state.selected_kecamatan is None:
             st.markdown("**Level: Kecamatan** (Klik area kecamatan pada peta untuk melihat detail level desa)")
 
-            # Inisialisasi peta dasar (Koordinat Teluk Ambon)
             m_kec = folium.Map(location=[-3.69, 128.18], zoom_start=11)
 
-            # Layer Choropleth Kecamatan
+            # --- Layer Choropleth (Hanya untuk Warna Dasar) ---
             folium.Choropleth(
                 geo_data=geo_kec,
                 data=agg_kec_map,
                 columns=['nmkec', 'Progress'],
-                # PENTING: Sesuaikan 'NAMA_KEC' dengan nama atribut di dalam file kecamatan.geojson kamu!
                 key_on='feature.properties.nmkec', 
                 fill_color='YlGnBu',
                 fill_opacity=0.7,
@@ -596,12 +601,42 @@ with tab_overview:
                 name='Progress Kecamatan'
             ).add_to(m_kec)
 
-            # Render di Streamlit dan tangkap interaksi
+            # --- TAMBAHAN: Layer Transparan untuk Tooltip Hover Kecamatan ---
+            # 1. Konversi DataFrame ke Dictionary agar mudah dicari
+            kec_dict = agg_kec_map.set_index('nmkec').to_dict(orient='index')
+
+            # 2. Suntikkan data dari Pandas ke dalam Properties GeoJSON
+            for feature in geo_kec['features']:
+                k_name = feature['properties'].get('nmkec')
+                if k_name in kec_dict:
+                    feature['properties']['Progress Hover'] = f"{kec_dict[k_name]['Progress']:.2f}%"
+                    for col in status_cols:
+                        feature['properties'][col] = int(kec_dict[k_name].get(col, 0))
+                else:
+                    feature['properties']['Progress Hover'] = "0.0%"
+                    for col in status_cols:
+                        feature['properties'][col] = 0
+
+            # 3. Setup kolom apa saja yang mau ditampilkan di tooltip
+            tooltip_fields_kec = ['nmkec', 'Progress Hover'] + status_cols
+            tooltip_aliases_kec = ['Kecamatan', 'Progress (%)'] + status_cols
+
+            # 4. Tumpuk layer GeoJSON transparan
+            folium.GeoJson(
+                geo_kec,
+                style_function=lambda x: {'fillOpacity': 0.0001, 'weight': 0}, # Dibuat nyaris tembus pandang
+                tooltip=folium.GeoJsonTooltip(
+                    fields=tooltip_fields_kec,
+                    aliases=tooltip_aliases_kec,
+                    style="background-color: white; color: #333; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+                )
+            ).add_to(m_kec)
+            # ----------------------------------------------------------------
+
+            # Render di Streamlit
             map_data = st_folium(m_kec, width=None, height=500, key="map_kec", returned_objects=["last_active_drawing"])
 
-            # Jika area diklik, simpan nama kecamatan ke session_state lalu refresh
             if map_data and map_data.get('last_active_drawing'):
-                # Sesuaikan juga 'NAMA_KEC' di bawah ini dengan atribut geojson kamu
                 clicked_kec = map_data['last_active_drawing']['properties']['nmkec'] 
                 st.session_state.selected_kecamatan = clicked_kec
                 st.rerun()
@@ -617,36 +652,57 @@ with tab_overview:
                     st.session_state.selected_kecamatan = None
                     st.rerun()
 
-            # Filter data khusus kecamatan yang diklik
             df_desa_filtered = agg_desa_map[agg_desa_map['nmkec'] == kec_aktif]
-
-            # Filter GeoJSON desa agar peta tidak keberatan me-render seluruh desa
-            # Sesuaikan 'NAMA_KEC' dengan atribut di dalam desa.geojson kamu
+            
             geo_desa_filtered = {
                 "type": "FeatureCollection",
                 "features": [f for f in geo_desa['features'] if f['properties'].get('nmkec') == kec_aktif] 
             }
+            geo_desa_rendered = geo_desa_filtered if geo_desa_filtered['features'] else geo_desa
 
             m_desa = folium.Map(location=[-3.69, 128.18], zoom_start=12)
 
+            # --- Layer Choropleth (Warna Dasar Desa) ---
             folium.Choropleth(
-                geo_data=geo_desa_filtered if geo_desa_filtered['features'] else geo_desa,
+                geo_data=geo_desa_rendered,
                 data=df_desa_filtered,
                 columns=['nmdesa', 'Progress'],
-                # PENTING: Sesuaikan 'NAMA_DESA' dengan nama atribut di desa.geojson kamu!
                 key_on='feature.properties.nmdesa', 
                 fill_color='YlGnBu',
                 fill_opacity=0.8,
                 line_opacity=0.5,
-                legend_name=f'Progress Desa di Kec. {kec_aktif} (%)'
+                legend_name=f'Progress Kelurahan/Desa (%)'
             ).add_to(m_desa)
 
-            st_folium(m_desa, width=None, height=500, key="map_desa")
+            # --- TAMBAHAN: Layer Transparan untuk Tooltip Hover Desa ---
+            desa_dict = df_desa_filtered.set_index('nmdesa').to_dict(orient='index')
 
-    except FileNotFoundError:
-        st.info("💡 **Tips:** Letakkan file `kecamatan.geojson` dan `desa.geojson` di dalam folder yang sama dengan script ini untuk mengaktifkan fitur peta.")
-    except Exception as e:
-        st.error(f"Gagal memuat peta: {e}")
+            for feature in geo_desa_rendered['features']:
+                d_name = feature['properties'].get('nmdesa')
+                if d_name in desa_dict:
+                    feature['properties']['Progress Hover'] = f"{desa_dict[d_name]['Progress']:.2f}%"
+                    for col in status_cols:
+                        feature['properties'][col] = int(desa_dict[d_name].get(col, 0))
+                else:
+                    feature['properties']['Progress Hover'] = "0.0%"
+                    for col in status_cols:
+                        feature['properties'][col] = 0
+
+            tooltip_fields_desa = ['nmdesa', 'Progress Hover'] + status_cols
+            tooltip_aliases_desa = ['Desa/Kelurahan', 'Progress (%)'] + status_cols
+
+            folium.GeoJson(
+                geo_desa_rendered,
+                style_function=lambda x: {'fillOpacity': 0.0001, 'weight': 0},
+                tooltip=folium.GeoJsonTooltip(
+                    fields=tooltip_fields_desa,
+                    aliases=tooltip_aliases_desa,
+                    style="background-color: white; color: #333; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+                )
+            ).add_to(m_desa)
+            # -----------------------------------------------------------
+
+            st_folium(m_desa, width=None, height=500, key="map_desa")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Per Pencacah (PCL)
