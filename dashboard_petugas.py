@@ -602,7 +602,7 @@ with tab_overview:
             # Jika area diklik, simpan nama kecamatan ke session_state lalu refresh
             if map_data and map_data.get('last_active_drawing'):
                 # Sesuaikan juga 'NAMA_KEC' di bawah ini dengan atribut geojson kamu
-                clicked_kec = map_data['last_active_drawing']['properties']['NAMA_KEC'] 
+                clicked_kec = map_data['last_active_drawing']['properties']['nmkec'] 
                 st.session_state.selected_kecamatan = clicked_kec
                 st.rerun()
 
