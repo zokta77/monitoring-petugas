@@ -7,6 +7,9 @@ import os
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from io import BytesIO
+import folium
+from streamlit_folium import st_folium
+import json
 
 from config_se2026 import LATEST_FILE
 
@@ -271,6 +274,7 @@ COL_LABELS = {
 
 def nice_col(c: str) -> str:
     return COL_LABELS.get(c, c)
+
 
 DONE_KEYWORDS     = ["APPROVED", "SUBMITTED"]
 NOT_DONE_KEYWORDS = ["OPEN", "DRAFT"]
@@ -542,6 +546,107 @@ with tab_overview:
         fig_gauge.update_layout(**styled_chart_layout(height=360))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
+    st.divider()
+    st.subheader("🗺️ Peta Progress Wilayah")
+
+    # Menggunakan try-except agar dashboard tidak error jika file geojson belum ada
+    try:
+        with open('kecamatan.geojson', 'r') as f:
+            geo_kec = json.load(f)
+        with open('desa.geojson', 'r') as f:
+            geo_desa = json.load(f)
+
+        # 1. State Management untuk Peta
+        if 'selected_kecamatan' not in st.session_state:
+            st.session_state.selected_kecamatan = None
+
+        # 2. Persiapan Data (Menghitung Progress per Kecamatan & Desa)
+        # Aggregasi Kecamatan
+        agg_kec_map = df.groupby("nmkec")[status_cols + ["total_data"]].sum().reset_index()
+        if done_cols and "total_data" in agg_kec_map.columns:
+            agg_kec_map["Progress"] = (agg_kec_map[done_cols].sum(axis=1) / agg_kec_map["total_data"].replace(0, pd.NA) * 100).fillna(0)
+        else:
+            agg_kec_map["Progress"] = 0
+
+        # Aggregasi Desa
+        agg_desa_map = df.groupby(["nmkec", "nmdesa"])[status_cols + ["total_data"]].sum().reset_index()
+        if done_cols and "total_data" in agg_desa_map.columns:
+            agg_desa_map["Progress"] = (agg_desa_map[done_cols].sum(axis=1) / agg_desa_map["total_data"].replace(0, pd.NA) * 100).fillna(0)
+        else:
+            agg_desa_map["Progress"] = 0
+
+        # 3. Logika Render Peta
+        if st.session_state.selected_kecamatan is None:
+            st.markdown("**Level: Kecamatan** (Klik area kecamatan pada peta untuk melihat detail level desa)")
+
+            # Inisialisasi peta dasar (Koordinat Teluk Ambon)
+            m_kec = folium.Map(location=[-3.69, 128.18], zoom_start=11)
+
+            # Layer Choropleth Kecamatan
+            folium.Choropleth(
+                geo_data=geo_kec,
+                data=agg_kec_map,
+                columns=['nmkec', 'Progress'],
+                # PENTING: Sesuaikan 'NAMA_KEC' dengan nama atribut di dalam file kecamatan.geojson kamu!
+                key_on='feature.properties.NAMA_KEC', 
+                fill_color='YlGnBu',
+                fill_opacity=0.7,
+                line_opacity=0.2,
+                legend_name='Progress Pencacahan (%)',
+                name='Progress Kecamatan'
+            ).add_to(m_kec)
+
+            # Render di Streamlit dan tangkap interaksi
+            map_data = st_folium(m_kec, width=None, height=500, key="map_kec", returned_objects=["last_active_drawing"])
+
+            # Jika area diklik, simpan nama kecamatan ke session_state lalu refresh
+            if map_data and map_data.get('last_active_drawing'):
+                # Sesuaikan juga 'NAMA_KEC' di bawah ini dengan atribut geojson kamu
+                clicked_kec = map_data['last_active_drawing']['properties']['NAMA_KEC'] 
+                st.session_state.selected_kecamatan = clicked_kec
+                st.rerun()
+
+        else:
+            kec_aktif = st.session_state.selected_kecamatan
+            
+            col_title, col_btn = st.columns([3, 1])
+            with col_title:
+                st.markdown(f"**Level: Desa (Kecamatan {kec_aktif})**")
+            with col_btn:
+                if st.button("⬅ Kembali ke Peta Kecamatan", use_container_width=True):
+                    st.session_state.selected_kecamatan = None
+                    st.rerun()
+
+            # Filter data khusus kecamatan yang diklik
+            df_desa_filtered = agg_desa_map[agg_desa_map['nmkec'] == kec_aktif]
+
+            # Filter GeoJSON desa agar peta tidak keberatan me-render seluruh desa
+            # Sesuaikan 'NAMA_KEC' dengan atribut di dalam desa.geojson kamu
+            geo_desa_filtered = {
+                "type": "FeatureCollection",
+                "features": [f for f in geo_desa['features'] if f['properties'].get('NAMA_KEC') == kec_aktif] 
+            }
+
+            m_desa = folium.Map(location=[-3.69, 128.18], zoom_start=12)
+
+            folium.Choropleth(
+                geo_data=geo_desa_filtered if geo_desa_filtered['features'] else geo_desa,
+                data=df_desa_filtered,
+                columns=['nmdesa', 'Progress'],
+                # PENTING: Sesuaikan 'NAMA_DESA' dengan nama atribut di desa.geojson kamu!
+                key_on='feature.properties.NAMA_DESA', 
+                fill_color='YlGnBu',
+                fill_opacity=0.8,
+                line_opacity=0.5,
+                legend_name=f'Progress Desa di Kec. {kec_aktif} (%)'
+            ).add_to(m_desa)
+
+            st_folium(m_desa, width=None, height=500, key="map_desa")
+
+    except FileNotFoundError:
+        st.info("💡 **Tips:** Letakkan file `kecamatan.geojson` dan `desa.geojson` di dalam folder yang sama dengan script ini untuk mengaktifkan fitur peta.")
+    except Exception as e:
+        st.error(f"Gagal memuat peta: {e}")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Per Pencacah (PCL)
