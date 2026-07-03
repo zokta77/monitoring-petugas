@@ -588,7 +588,7 @@ with tab_overview:
                 data=agg_kec_map,
                 columns=['nmkec', 'Progress'],
                 # PENTING: Sesuaikan 'NAMA_KEC' dengan nama atribut di dalam file kecamatan.geojson kamu!
-                key_on='feature.properties.NAMA_KEC', 
+                key_on='feature.properties.nmkec', 
                 fill_color='YlGnBu',
                 fill_opacity=0.7,
                 line_opacity=0.2,
@@ -624,7 +624,7 @@ with tab_overview:
             # Sesuaikan 'NAMA_KEC' dengan atribut di dalam desa.geojson kamu
             geo_desa_filtered = {
                 "type": "FeatureCollection",
-                "features": [f for f in geo_desa['features'] if f['properties'].get('NAMA_KEC') == kec_aktif] 
+                "features": [f for f in geo_desa['features'] if f['properties'].get('nmkec') == kec_aktif] 
             }
 
             m_desa = folium.Map(location=[-3.69, 128.18], zoom_start=12)
@@ -634,7 +634,7 @@ with tab_overview:
                 data=df_desa_filtered,
                 columns=['nmdesa', 'Progress'],
                 # PENTING: Sesuaikan 'NAMA_DESA' dengan nama atribut di desa.geojson kamu!
-                key_on='feature.properties.NAMA_DESA', 
+                key_on='feature.properties.nmdesa', 
                 fill_color='YlGnBu',
                 fill_opacity=0.8,
                 line_opacity=0.5,
