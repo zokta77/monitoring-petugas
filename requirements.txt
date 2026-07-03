@@ -5,3 +5,5 @@ openpyxl
 numpy
 requests
 streamlit-autorefresh
+folium
+streamlit-folium
