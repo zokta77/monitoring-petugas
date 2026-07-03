@@ -627,7 +627,7 @@ with tab_overview:
             # ----------------------------------------------------------------
 
             # Render di Streamlit
-            map_data = st_folium(m_kec, width=None, height=1000, key="map_kec", returned_objects=["last_active_drawing"])
+            map_data = st_folium(m_kec, width=None, height=800, key="map_kec", returned_objects=["last_active_drawing"])
 
             if map_data and map_data.get('last_active_drawing'):
                 clicked_kec = map_data['last_active_drawing']['properties']['nmkec'] 
