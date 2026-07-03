@@ -575,14 +575,7 @@ with tab_overview:
         else:
             agg_desa_map["Progress"] = 0
 
-       Mantap! Tampilan dashboardnya sudah hampir sempurna. Untuk memunculkan tooltip (kotak info saat kursor di-hover ke peta) yang berisi semua data status (APPROVED, SUBMITTED, dll), kita perlu sedikit "mengakali" cara kerja Folium.
-
-Secara bawaan, fungsi folium.Choropleth itu bagus untuk mewarnai peta, tapi agak kaku untuk menampilkan tooltip multi-kolom. Solusi terbaiknya adalah: kita suntikkan data dari Pandas DataFrame langsung ke dalam properties file GeoJSON-nya, lalu kita tumpuk layer transparan di atas peta untuk memunculkan datanya saat di-hover.
-
-Berikut adalah pembaruan kodenya. Kamu cukup mengganti seluruh bagian "3. Logika Render Peta" di dalam file kamu menjadi kode di bawah ini:
-
-Python
-        # 3. Logika Render Peta
+       # 3. Logika Render Peta
         if st.session_state.selected_kecamatan is None:
             st.markdown("**Level: Kecamatan** (Klik area kecamatan pada peta untuk melihat detail level desa)")
 
@@ -703,6 +696,10 @@ Python
             # -----------------------------------------------------------
 
             st_folium(m_desa, width=None, height=500, key="map_desa")
+    except FileNotFoundError:
+        st.info("💡 **Tips:** Letakkan file `kecamatan.geojson` dan `desa.geojson` di dalam folder yang sama dengan script ini untuk mengaktifkan fitur peta.")
+    except Exception as e:
+        st.error(f"Gagal memuat peta: {e}")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Per Pencacah (PCL)
