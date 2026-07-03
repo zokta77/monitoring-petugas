@@ -695,7 +695,7 @@ with tab_overview:
             ).add_to(m_desa)
             # -----------------------------------------------------------
 
-            st_folium(m_desa, width=None, height=500, key="map_desa")
+            st_folium(m_desa, width=None, height=800, key="map_desa")
     except FileNotFoundError:
         st.info("💡 **Tips:** Letakkan file `kecamatan.geojson` dan `desa.geojson` di dalam folder yang sama dengan script ini untuk mengaktifkan fitur peta.")
     except Exception as e:
