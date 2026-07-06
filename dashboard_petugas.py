@@ -84,6 +84,7 @@ div[data-testid="stMetric"]::before {
         #0ea5e9
     );
 }
+            
 
 /* Label KPI */
 
@@ -1159,4 +1160,27 @@ with tab_raw:
 
     st.dataframe(view_df, use_container_width=True, hide_index=True)
 
-    st.caption("© Zulfaa Dwi Oktavian (BPS Kota Ambon) 2026")
+# ============================
+# Footer (muncul di semua halaman)
+# ============================
+st.markdown("""
+<style>
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+    color: gray;
+    background-color: white;
+    border-top: 1px solid #ddd;
+    z-index: 999;
+}
+</style>
+
+<div class="footer">
+    © 2026 Zulfaa Dwi Oktavian (BPS Kota Ambon)
+</div>
+""", unsafe_allow_html=True)
