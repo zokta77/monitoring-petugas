@@ -1158,3 +1158,5 @@ with tab_raw:
     view_df = rename_display(df[show_cols] if show_cols else df)
 
     st.dataframe(view_df, use_container_width=True, hide_index=True)
+
+    st.caption("© Zulfaa Dwi Oktavian (BPS Kota Ambon) 2026")
