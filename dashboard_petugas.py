@@ -14,7 +14,6 @@ import json
 
 from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN, HISTORY_PATH
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Konfigurasi halaman
 # ─────────────────────────────────────────────────────────────────────────────
@@ -342,7 +341,7 @@ def to_excel(df):
 # Histori multi-hari (untuk rekap progress harian per pencacah)
 # ─────────────────────────────────────────────────────────────────────────────
 def _history_files():
-    pattern = os.path.join(BASE_PATH, f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx")
+    pattern = os.path.join(HISTORY_PATH, f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx")
     return [f for f in glob.glob(pattern) if not f.endswith("_LATEST.xlsx")]
 
 
@@ -397,14 +396,39 @@ def build_daily_recap(pcl_name: str):
     - "Selisih" / delta harian = snapshot hari ini dikurangi snapshot hari
       sebelumnya → ini yang merepresentasikan "berapa yang baru submit/draft/
       approve HARI ITU".
+
+    Return: (daily, delta, diag) — diag berisi info diagnostik untuk membantu
+    menemukan penyebab spesifik kalau data kosong (bukan cuma pesan generik).
     """
+    files = _history_files()
+    diag = {
+        "history_path": HISTORY_PATH,
+        "pattern": os.path.join(HISTORY_PATH, f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx"),
+        "n_files": len(files),
+        "files": files,
+        "n_rows_total": 0,
+        "has_nama_pcl_col": False,
+        "n_rows_for_pcl": 0,
+        "n_unique_dates": 0,
+        "sample_names": [],
+    }
+
     hist = load_history(cache_key=_history_cache_key())
-    if hist.empty or "nama_pcl" not in hist.columns:
-        return None, None
+    if hist.empty:
+        return None, None, diag
+
+    diag["n_rows_total"] = len(hist)
+    diag["has_nama_pcl_col"] = "nama_pcl" in hist.columns
+
+    if not diag["has_nama_pcl_col"]:
+        return None, None, diag
+
+    diag["sample_names"] = sorted(hist["nama_pcl"].dropna().unique().tolist())[:10]
 
     sub = hist[hist["nama_pcl"] == pcl_name].copy()
+    diag["n_rows_for_pcl"] = len(sub)
     if sub.empty:
-        return None, None
+        return None, None, diag
 
     hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
     agg_dict = {c: "last" for c in hist_status_cols}
@@ -418,6 +442,7 @@ def build_daily_recap(pcl_name: str):
            .sort_values("tanggal")
            .reset_index(drop=True)
     )
+    diag["n_unique_dates"] = len(daily)
 
     # ── Delta harian: hari pertama dipakai sebagai baseline (delta = nilai itu sendiri) ──
     delta = daily.copy()
@@ -425,22 +450,64 @@ def build_daily_recap(pcl_name: str):
     for c in cols_to_diff:
         delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
 
-    return daily, delta
+    return daily, delta, diag
 
 
 def render_pencacah_daily_panel(pcl_name: str):
     """Tampilkan tabel + line chart rekap progress harian untuk 1 pencacah yang diklik."""
-    daily, delta = build_daily_recap(pcl_name)
+    daily, delta, diag = build_daily_recap(pcl_name)
 
     st.markdown(f"##### 📅 Rekap Progress Harian — {pcl_name}")
 
-    if daily is None or daily.empty:
-        st.info(
-            "Belum ada data histori multi-hari untuk pencacah ini. Fitur ini membaca "
-            "file arsip hasil scraping (`SCRAPING_REKAP_SE2026_..._<timestamp>.xlsx`), "
-            "jadi butuh setidaknya beberapa hari scraping berjalan."
-        )
+    if daily is None:
+        # ── Bedakan penyebabnya, jangan cuma pesan generik ──────────────────
+        if diag["n_files"] == 0:
+            st.warning(
+                f"Tidak ditemukan file arsip sama sekali di folder:\n\n`{diag['history_path']}`\n\n"
+                f"Pola nama file yang dicari: `{os.path.basename(diag['pattern'])}`\n\n"
+                "Kemungkinan: `scrapping_sls.py` belum pernah dijalankan di PC ini, atau "
+                "`BASE_PATH`/`NAMA_KABUPATEN` di `config_se2026.py` berbeda dari yang dipakai scraper."
+            )
+        elif diag["n_rows_total"] == 0:
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip, tapi semuanya kosong/gagal dibaca "
+                "(kemungkinan formatnya rusak atau kolom `scraped_at` tidak ada)."
+            )
+        elif not diag["has_nama_pcl_col"]:
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
+                "kolom `nama_pcl` tidak ada di dalamnya. Ini berarti file arsip itu dibuat "
+                "SEBELUM fitur merge ke `master_data.xlsx` ditambahkan — data lama ini tidak "
+                "akan pernah punya nama_pcl. Rekap harian akan mulai muncul dari scraping "
+                "berikutnya yang sudah ter-merge."
+            )
+        elif diag["n_rows_for_pcl"] == 0:
+            sample = ", ".join(diag["sample_names"][:5]) or "(tidak ada nama terbaca)"
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
+                f"tidak ada baris dengan nama pencacah **persis** `{pcl_name}`. "
+                f"Contoh nama yang ADA di histori: {sample}...\n\n"
+                "Kemungkinan penyebab: ejaan/spasi nama_pcl di master_data.xlsx berubah, atau "
+                "pencacah ini baru ditambahkan setelah file-file arsip lama dibuat."
+            )
+        else:
+            st.info(
+                "Belum ada data histori multi-hari untuk pencacah ini. Fitur ini butuh "
+                "setidaknya beberapa hari scraping berjalan."
+            )
+
+        with st.expander("🔍 Info diagnostik teknis"):
+            st.json({k: v for k, v in diag.items() if k != "files"})
+            if diag["files"]:
+                st.caption("File arsip yang terbaca:")
+                st.code("\n".join(os.path.basename(f) for f in diag["files"]))
         return
+
+    if len(daily) < 2:
+        st.info(
+            f"Baru ada **1 hari** data ({daily['tanggal'].iloc[0]}) untuk pencacah ini. "
+            "Line chart & tren delta akan muncul setelah ada data di hari berikutnya."
+        )
 
     st.caption(
         "📌 Kalau 1 hari discraping berkali-kali, yang dipakai adalah snapshot "
