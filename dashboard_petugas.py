@@ -522,8 +522,8 @@ def render_pencacah_daily_panel(pcl_name: str):
     reject_cols  = [c for c in delta.columns if "REJECT"  in c.upper()]
 
     tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
-    if "total_data" in daily.columns:
-        tampil["Total Muatan"] = daily["total_data"]
+    # if "total_data" in daily.columns:
+    #     tampil["Total Muatan"] = daily["total_data"]
     
     # 2. Masukkan data ke DataFrame berdasarkan urutan alur data yang diinginkan
     if draft_cols:
