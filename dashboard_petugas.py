@@ -664,13 +664,12 @@ def render_overall_daily_panel():
                 yaxis="y2"
             ))
         fig_line.update_layout(
-            # Masukkan margin ke dalam styled_chart_layout agar menimpa default-nya
-            **styled_chart_layout(height=380, margin=dict(l=10, r=10, t=20, b=10)),
-            xaxis=dict(title="Tanggal", showgrid=False, type="date"),
-            yaxis=dict(title="Jumlah Status (Baru)", showgrid=True, gridcolor="rgba(100,116,139,0.15)", side="left"),
-            yaxis2=dict(title="Progress Keseluruhan (%)", overlaying="y", side="right", range=[0, 105], showgrid=False),
-            legend=dict(orientation="h", y=1.15)
-        )
+                    **styled_chart_layout(height=380),
+                    xaxis=dict(title="Tanggal", showgrid=False, type="date"),
+                    yaxis=dict(title="Jumlah Status (Baru)", showgrid=True, gridcolor="rgba(100,116,139,0.15)", side="left"),
+                    yaxis2=dict(title="Progress Keseluruhan (%)", overlaying="y", side="right", range=[0, 105], showgrid=False),
+                    legend=dict(orientation="h", y=1.15)
+                )
         st.plotly_chart(fig_line, use_container_width=True)
         
         with st.expander("Tampilkan Data Tabel Keseluruhan"):
