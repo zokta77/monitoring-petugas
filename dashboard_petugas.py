@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import glob
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from io import BytesIO
@@ -11,7 +12,7 @@ import folium
 from streamlit_folium import st_folium
 import json
 
-from config_se2026 import LATEST_FILE
+from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Konfigurasi halaman
@@ -334,6 +335,161 @@ def to_excel(df):
         df.to_excel(writer, index=False, sheet_name="Rekap Pencacah")
 
     return output.getvalue()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Histori multi-hari (untuk rekap progress harian per pencacah)
+# ─────────────────────────────────────────────────────────────────────────────
+def _history_files():
+    pattern = os.path.join(BASE_PATH, f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx")
+    return [f for f in glob.glob(pattern) if not f.endswith("_LATEST.xlsx")]
+
+
+def _history_cache_key():
+    files = _history_files()
+    if not files:
+        return "empty"
+    return (len(files), round(max(os.path.getmtime(f) for f in files), 0))
+
+
+@st.cache_data(show_spinner=False)
+def load_history(cache_key=None) -> pd.DataFrame:
+    """Baca SEMUA file arsip hasil scraping (bukan cuma snapshot terbaru),
+    dipakai untuk membangun rekap progress harian per pencacah."""
+    files = _history_files()
+    if not files:
+        return pd.DataFrame()
+
+    frames = []
+    for f in files:
+        try:
+            frames.append(pd.read_excel(f))
+        except Exception:
+            continue
+    if not frames:
+        return pd.DataFrame()
+
+    hist = pd.concat(frames, ignore_index=True)
+    hist.columns = [str(c).strip() for c in hist.columns]
+
+    if "scraped_at" not in hist.columns:
+        return pd.DataFrame()
+
+    hist["scraped_at"] = pd.to_datetime(hist["scraped_at"], errors="coerce")
+    hist = hist.dropna(subset=["scraped_at"])
+    hist["tanggal"] = hist["scraped_at"].dt.date
+
+    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
+    numeric_cols_h = hist_status_cols + (["total_data"] if "total_data" in hist.columns else [])
+    hist = to_numeric_safe(hist, numeric_cols_h)
+
+    return hist
+
+
+def build_daily_recap(pcl_name: str):
+    """
+    Bangun rekap progress harian untuk 1 pencacah dari data arsip histori.
+
+    - Kalau 1 hari discraping beberapa kali → diambil snapshot TERAKHIR hari itu
+      (karena angka status bersifat KUMULATIF, bukan dijumlah mentah — menjumlah
+      mentah snapshot yang sama akan melipatgandakan angka secara keliru).
+    - "Selisih" / delta harian = snapshot hari ini dikurangi snapshot hari
+      sebelumnya → ini yang merepresentasikan "berapa yang baru submit/draft/
+      approve HARI ITU".
+    """
+    hist = load_history(cache_key=_history_cache_key())
+    if hist.empty or "nama_pcl" not in hist.columns:
+        return None, None
+
+    sub = hist[hist["nama_pcl"] == pcl_name].copy()
+    if sub.empty:
+        return None, None
+
+    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
+    agg_dict = {c: "last" for c in hist_status_cols}
+    if "total_data" in sub.columns:
+        agg_dict["total_data"] = "last"
+
+    daily = (
+        sub.sort_values("scraped_at")
+           .groupby("tanggal", as_index=False)
+           .agg(agg_dict)
+           .sort_values("tanggal")
+           .reset_index(drop=True)
+    )
+
+    # ── Delta harian: hari pertama dipakai sebagai baseline (delta = nilai itu sendiri) ──
+    delta = daily.copy()
+    cols_to_diff = hist_status_cols + (["total_data"] if "total_data" in daily.columns else [])
+    for c in cols_to_diff:
+        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
+
+    return daily, delta
+
+
+def render_pencacah_daily_panel(pcl_name: str):
+    """Tampilkan tabel + line chart rekap progress harian untuk 1 pencacah yang diklik."""
+    daily, delta = build_daily_recap(pcl_name)
+
+    st.markdown(f"##### 📅 Rekap Progress Harian — {pcl_name}")
+
+    if daily is None or daily.empty:
+        st.info(
+            "Belum ada data histori multi-hari untuk pencacah ini. Fitur ini membaca "
+            "file arsip hasil scraping (`SCRAPING_REKAP_SE2026_..._<timestamp>.xlsx`), "
+            "jadi butuh setidaknya beberapa hari scraping berjalan."
+        )
+        return
+
+    st.caption(
+        "📌 Kalau 1 hari discraping berkali-kali, yang dipakai adalah snapshot "
+        "**terakhir** hari itu (angka status bersifat kumulatif, bukan dijumlah mentah). "
+        "Kolom di bawah menunjukkan **selisih (baru bertambah) dibanding hari sebelumnya**."
+    )
+
+    submit_cols  = [c for c in delta.columns if "SUBMIT"  in c.upper()]
+    draft_cols   = [c for c in delta.columns if "DRAFT"   in c.upper()]
+    approve_cols = [c for c in delta.columns if "APPROV"  in c.upper()]
+
+    tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
+    if "total_data" in daily.columns:
+        tampil["Total Muatan"] = daily["total_data"]
+    if submit_cols:
+        tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
+    if draft_cols:
+        tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
+    if approve_cols:
+        tampil["Approve (Baru)"] = delta[approve_cols].sum(axis=1).astype(int)
+
+    st.dataframe(tampil, use_container_width=True, hide_index=True)
+
+    line_cols = [c for c in ["Submit (Baru)", "Draft (Baru)", "Approve (Baru)"] if c in tampil.columns]
+    if line_cols:
+        line_colors = {
+            "Submit (Baru)": "#0ea5e9",
+            "Draft (Baru)": "#f59e0b",
+            "Approve (Baru)": "#14b8a6",
+        }
+        fig_line = go.Figure()
+        for c in line_cols:
+            fig_line.add_trace(go.Scatter(
+                x=tampil["Tanggal"], y=tampil[c],
+                mode="lines+markers", name=c,
+                line=dict(width=2.5, color=line_colors.get(c)),
+                marker=dict(size=7),
+            ))
+        fig_line.update_layout(
+            **styled_chart_layout(height=340),
+            xaxis=dict(title="Tanggal", showgrid=False, type="date"),
+            yaxis=dict(title="Jumlah Baru per Hari", showgrid=True,
+                       gridcolor="rgba(100,116,139,0.15)"),
+            legend=dict(orientation="h", y=1.15),
+        )
+        st.plotly_chart(fig_line, use_container_width=True)
+    else:
+        st.info("Kolom status Submit/Draft/Approve tidak terdeteksi untuk membuat line chart.")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Load data otomatis
 # ─────────────────────────────────────────────────────────────────────────────
@@ -789,12 +945,39 @@ with tab_pcl:
                 format="%.1f%%"
             )
 
-        st.dataframe(
-            disp_pcl,
-            use_container_width=True,
-            column_config=col_cfg_pcl,
-            hide_index=True
-        )
+        st.caption("💡 Klik salah satu baris di tabel untuk melihat rekap progress harian pencacah tersebut.")
+
+        try:
+            pcl_table_event = st.dataframe(
+                disp_pcl,
+                use_container_width=True,
+                column_config=col_cfg_pcl,
+                hide_index=True,
+                on_select="rerun",
+                selection_mode="single-row",
+                key="pcl_detail_table",
+            )
+            selected_rows = (
+                list(pcl_table_event.selection.rows)
+                if pcl_table_event and pcl_table_event.selection else []
+            )
+        except TypeError:
+            st.dataframe(
+                disp_pcl,
+                use_container_width=True,
+                column_config=col_cfg_pcl,
+                hide_index=True,
+            )
+            selected_rows = []
+            st.warning(
+                "⚠️ Fitur klik-baris butuh Streamlit versi lebih baru. "
+                "Jalankan `pip install -U streamlit` lalu restart dashboard untuk mengaktifkannya."
+            )
+
+        if selected_rows and "Nama Pencacah" in disp_pcl.columns:
+            clicked_name = disp_pcl.iloc[selected_rows[0]]["Nama Pencacah"]
+            st.divider()
+            render_pencacah_daily_panel(clicked_name)
 
         # =========================
         # Download Rekap Pencacah
