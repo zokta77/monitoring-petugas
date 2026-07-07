@@ -453,45 +453,118 @@ def build_daily_recap(pcl_name: str):
     return daily, delta, diag
 
 
-def build_overall_daily_recap():
-    """Bangun rekap progress harian kumulatif untuk KESELURUHAN pencacah."""
-    hist = load_history(cache_key=_history_cache_key())
-    if hist.empty or "nama_pcl" not in hist.columns:
-        return None, None
+def render_pencacah_daily_panel(pcl_name: str):
+    """Tampilkan tabel + line chart rekap progress harian untuk 1 pencacah yang diklik."""
+    daily, delta, diag = build_daily_recap(pcl_name)
 
-    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
-    
-    # 1. Ambil snapshot TERAKHIR per pencacah untuk tiap harinya
-    agg_dict_pcl = {c: "last" for c in hist_status_cols}
-    if "total_data" in hist.columns:
-        agg_dict_pcl["total_data"] = "last"
-        
-    snapshot_per_pcl = (
-        hist.sort_values("scraped_at")
-            .groupby(["tanggal", "nama_pcl"], as_index=False)
-            .agg(agg_dict_pcl)
-    )
-    
-    # 2. Jumlahkan semua pencacah untuk mendapatkan total harian se-Kabupaten/Kota
-    agg_dict_total = {c: "sum" for c in hist_status_cols}
-    if "total_data" in snapshot_per_pcl.columns:
-        agg_dict_total["total_data"] = "sum"
-        
-    daily = (
-        snapshot_per_pcl.groupby("tanggal", as_index=False)
-            .agg(agg_dict_total)
-            .sort_values("tanggal")
-            .reset_index(drop=True)
-    )
-    
-    # 3. Hitung delta (selisih) dari hari ke hari
-    delta = daily.copy()
-    cols_to_diff = hist_status_cols + (["total_data"] if "total_data" in daily.columns else [])
-    for c in cols_to_diff:
-        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
-        
-    return daily, delta
+    st.markdown(f"##### 📅 Rekap Progress Harian — {pcl_name}")
 
+    if daily is None:
+        # ── Bedakan penyebabnya, jangan cuma pesan generik ──────────────────
+        if diag["n_files"] == 0:
+            st.warning(
+                f"Tidak ditemukan file arsip sama sekali di folder:\n\n`{diag['history_path']}`\n\n"
+                f"Pola nama file yang dicari: `{os.path.basename(diag['pattern'])}`\n\n"
+                "Kemungkinan: `scrapping_sls.py` belum pernah dijalankan di PC ini, atau "
+                "`BASE_PATH`/`NAMA_KABUPATEN` di `config_se2026.py` berbeda dari yang dipakai scraper."
+            )
+        elif diag["n_rows_total"] == 0:
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip, tapi semuanya kosong/gagal dibaca "
+                "(kemungkinan formatnya rusak atau kolom `scraped_at` tidak ada)."
+            )
+        elif not diag["has_nama_pcl_col"]:
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
+                "kolom `nama_pcl` tidak ada di dalamnya. Ini berarti file arsip itu dibuat "
+                "SEBELUM fitur merge ke `master_data.xlsx` ditambahkan — data lama ini tidak "
+                "akan pernah punya nama_pcl. Rekap harian akan mulai muncul dari scraping "
+                "berikutnya yang sudah ter-merge."
+            )
+        elif diag["n_rows_for_pcl"] == 0:
+            sample = ", ".join(diag["sample_names"][:5]) or "(tidak ada nama terbaca)"
+            st.warning(
+                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
+                f"tidak ada baris dengan nama pencacah **persis** `{pcl_name}`. "
+                f"Contoh nama yang ADA di histori: {sample}...\n\n"
+                "Kemungkinan penyebab: ejaan/spasi nama_pcl di master_data.xlsx berubah, atau "
+                "pencacah ini baru ditambahkan setelah file-file arsip lama dibuat."
+            )
+        else:
+            st.info(
+                "Belum ada data histori multi-hari untuk pencacah ini. Fitur ini butuh "
+                "setidaknya beberapa hari scraping berjalan."
+            )
+
+        with st.expander("🔍 Info diagnostik teknis"):
+            st.json({k: v for k, v in diag.items() if k != "files"})
+            if diag["files"]:
+                st.caption("File arsip yang terbaca:")
+                st.code("\n".join(os.path.basename(f) for f in diag["files"]))
+        return
+
+    if len(daily) < 2:
+        st.info(
+            f"Baru ada **1 hari** data ({daily['tanggal'].iloc[0]}) untuk pencacah ini. "
+            "Line chart & tren delta akan muncul setelah ada data di hari berikutnya."
+        )
+
+    st.caption(
+        "📌 Kalau 1 hari discraping berkali-kali, yang dipakai adalah snapshot "
+        "**terakhir** hari itu (angka status bersifat kumulatif, bukan dijumlah mentah). "
+        "Kolom di bawah menunjukkan **selisih (baru bertambah) dibanding hari sebelumnya**."
+    )
+
+    # 1. Tambahkan deteksi kolom untuk REJECT
+    submit_cols  = [c for c in delta.columns if "SUBMIT"  in c.upper()]
+    draft_cols   = [c for c in delta.columns if "DRAFT"   in c.upper()]
+    approve_cols = [c for c in delta.columns if "APPROV"  in c.upper()]
+    reject_cols  = [c for c in delta.columns if "REJECT"  in c.upper()]
+
+    tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
+    # if "total_data" in daily.columns:
+    #     tampil["Total Muatan"] = daily["total_data"]
+    
+    # 2. Masukkan data ke DataFrame berdasarkan urutan alur data yang diinginkan
+    if draft_cols:
+        tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
+    if submit_cols:
+        tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
+    if approve_cols:
+        tampil["Approve (Baru)"] = delta[approve_cols].sum(axis=1).astype(int)
+    if reject_cols:
+        tampil["Reject (Baru)"] = delta[reject_cols].sum(axis=1).astype(int)
+
+    st.dataframe(tampil, use_container_width=True, hide_index=True)
+
+    # 3. Update daftar kolom yang akan diplot beserta warna spesifiknya
+    line_cols = [c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"] if c in tampil.columns]
+    
+    if line_cols:
+        line_colors = {
+            "Draft (Baru)": "#f59e0b",    # Amber
+            "Submit (Baru)": "#0ea5e9",   # Biru
+            "Approve (Baru)": "#14b8a6",  # Teal/Hijau
+            "Reject (Baru)": "#ef4444",   # Merah
+        }
+        fig_line = go.Figure()
+        for c in line_cols:
+            fig_line.add_trace(go.Scatter(
+                x=tampil["Tanggal"], y=tampil[c],
+                mode="lines+markers", name=c,
+                line=dict(width=2.5, color=line_colors.get(c)),
+                marker=dict(size=7),
+            ))
+        fig_line.update_layout(
+            **styled_chart_layout(height=340),
+            xaxis=dict(title="Tanggal", showgrid=False, type="date"),
+            yaxis=dict(title="Jumlah Baru per Hari", showgrid=True,
+                       gridcolor="rgba(100,116,139,0.15)"),
+            legend=dict(orientation="h", y=1.15),
+        )
+        st.plotly_chart(fig_line, use_container_width=True)
+    else:
+        st.info("Kolom status Draft/Submit/Approve/Reject tidak terdeteksi untuk membuat line chart.")
 def build_overall_daily_recap():
     """Bangun rekap progress harian kumulatif untuk KESELURUHAN pencacah."""
     hist = load_history(cache_key=_history_cache_key())
@@ -603,7 +676,6 @@ def render_overall_daily_panel():
         
         with st.expander("Tampilkan Data Tabel Keseluruhan"):
             st.dataframe(tampil, use_container_width=True, hide_index=True)
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Load data otomatis
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1090,6 +1162,11 @@ with tab_pcl:
                 "⚠️ Fitur klik-baris butuh Streamlit versi lebih baru. "
                 "Jalankan `pip install -U streamlit` lalu restart dashboard untuk mengaktifkannya."
             )
+
+        if selected_rows and "Nama Pencacah" in disp_pcl.columns:
+            clicked_name = disp_pcl.iloc[selected_rows[0]]["Nama Pencacah"]
+            st.divider()
+            render_pencacah_daily_panel(clicked_name)
 
         # =========================
         # Download Rekap Pencacah
