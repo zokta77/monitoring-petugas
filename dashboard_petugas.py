@@ -515,28 +515,37 @@ def render_pencacah_daily_panel(pcl_name: str):
         "Kolom di bawah menunjukkan **selisih (baru bertambah) dibanding hari sebelumnya**."
     )
 
+    # 1. Tambahkan deteksi kolom untuk REJECT
     submit_cols  = [c for c in delta.columns if "SUBMIT"  in c.upper()]
     draft_cols   = [c for c in delta.columns if "DRAFT"   in c.upper()]
     approve_cols = [c for c in delta.columns if "APPROV"  in c.upper()]
+    reject_cols  = [c for c in delta.columns if "REJECT"  in c.upper()]
 
     tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
     if "total_data" in daily.columns:
         tampil["Total Muatan"] = daily["total_data"]
-    if submit_cols:
-        tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
+    
+    # 2. Masukkan data ke DataFrame berdasarkan urutan alur data yang diinginkan
     if draft_cols:
         tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
+    if submit_cols:
+        tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
     if approve_cols:
         tampil["Approve (Baru)"] = delta[approve_cols].sum(axis=1).astype(int)
+    if reject_cols:
+        tampil["Reject (Baru)"] = delta[reject_cols].sum(axis=1).astype(int)
 
     st.dataframe(tampil, use_container_width=True, hide_index=True)
 
-    line_cols = [c for c in ["Submit (Baru)", "Draft (Baru)", "Approve (Baru)"] if c in tampil.columns]
+    # 3. Update daftar kolom yang akan diplot beserta warna spesifiknya
+    line_cols = [c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"] if c in tampil.columns]
+    
     if line_cols:
         line_colors = {
-            "Submit (Baru)": "#0ea5e9",
-            "Draft (Baru)": "#f59e0b",
-            "Approve (Baru)": "#14b8a6",
+            "Draft (Baru)": "#f59e0b",    # Amber
+            "Submit (Baru)": "#0ea5e9",   # Biru
+            "Approve (Baru)": "#14b8a6",  # Teal/Hijau
+            "Reject (Baru)": "#ef4444",   # Merah
         }
         fig_line = go.Figure()
         for c in line_cols:
@@ -555,8 +564,7 @@ def render_pencacah_daily_panel(pcl_name: str):
         )
         st.plotly_chart(fig_line, use_container_width=True)
     else:
-        st.info("Kolom status Submit/Draft/Approve tidak terdeteksi untuk membuat line chart.")
-
+        st.info("Kolom status Draft/Submit/Approve/Reject tidak terdeteksi untuk membuat line chart.")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Load data otomatis
