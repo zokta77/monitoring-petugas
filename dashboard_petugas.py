@@ -977,7 +977,10 @@ with tab_overview:
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_pcl:
     st.subheader("Monitoring Per Pencacah")
-
+    # ---> TAMBAHKAN PEMANGGILAN FUNGSI DI SINI <---
+    render_overall_daily_panel()
+    st.divider()
+    # ----------------------------------------------
     if "nama_pcl" not in df.columns:
         st.warning("Kolom `nama_pcl` tidak ditemukan dalam data.")
     else:
@@ -1088,16 +1091,6 @@ with tab_pcl:
                 "Jalankan `pip install -U streamlit` lalu restart dashboard untuk mengaktifkannya."
             )
 
-    # ---> TAMBAHKAN PEMANGGILAN FUNGSI DI SINI <---
-        render_overall_daily_panel()
-        st.divider()
-        # ----------------------------------------------
-
-        if "nama_pcl" not in df.columns:
-            st.warning("Kolom `nama_pcl` tidak ditemukan dalam data.")
-        else:
-            agg_cols = status_cols + (["total_data"] if "total_data" in df.columns else [])
-            agg_pcl  = df.groupby("nama_pcl")[agg_cols].sum().reset_index()
         # =========================
         # Download Rekap Pencacah
         # =========================
