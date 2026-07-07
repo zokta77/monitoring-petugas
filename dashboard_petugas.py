@@ -12,7 +12,8 @@ import folium
 from streamlit_folium import st_folium
 import json
 
-from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN
+from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN, HISTORY_PATH
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Konfigurasi halaman
