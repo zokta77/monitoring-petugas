@@ -622,8 +622,8 @@ def render_overall_daily_panel():
     done_cols_daily = [c for c in daily.columns if any(k in c.upper() for k in DONE_KEYWORDS)]
 
     tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
-    if "total_data" in daily.columns:
-        tampil["Total Muatan"] = daily["total_data"]
+    # if "total_data" in daily.columns:
+    #     tampil["Total Muatan"] = daily["total_data"]
         
     # Hitung Persentase
     if done_cols_daily and "total_data" in daily.columns:
