@@ -626,9 +626,9 @@ def render_overall_daily_panel():
     #     tampil["Total Muatan"] = daily["total_data"]
         
     # Hitung Persentase
-    if done_cols_daily and "total_data" in daily.columns:
-        daily_done = daily[done_cols_daily].sum(axis=1)
-        tampil["Progress Keseluruhan (%)"] = (daily_done / daily["total_data"].replace(0, pd.NA) * 100).round(2).fillna(0)
+    # if done_cols_daily and "total_data" in daily.columns:
+    #     daily_done = daily[done_cols_daily].sum(axis=1)
+    #     tampil["Progress Keseluruhan (%)"] = (daily_done / daily["total_data"].replace(0, pd.NA) * 100).round(2).fillna(0)
         
     if draft_cols: tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
     if submit_cols: tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
@@ -1066,35 +1066,35 @@ with tab_pcl:
             agg_pcl = agg_pcl.sort_values("total_data", ascending=False)
 
         # ── Stacked bar ──────────────────────────────────────────────────────
-        max_show  = 30
-        chart_pcl = agg_pcl.head(max_show)
-        if len(agg_pcl) > max_show:
-            st.caption(
-                f"Grafik menampilkan {max_show} pencacah teratas dari {len(agg_pcl)} total. "
-                "Lihat tabel di bawah untuk data lengkap."
-            )
+        # max_show  = 30
+        # chart_pcl = agg_pcl.head(max_show)
+        # if len(agg_pcl) > max_show:
+        #     st.caption(
+        #         f"Grafik menampilkan {max_show} pencacah teratas dari {len(agg_pcl)} total. "
+        #         "Lihat tabel di bawah untuk data lengkap."
+        #     )
 
-        fig_pcl = go.Figure()
-        for i, c in enumerate(status_cols):
-            if c in chart_pcl.columns:
-                fig_pcl.add_trace(go.Bar(
-                    name=c,
-                    x=chart_pcl["nama_pcl"],
-                    y=chart_pcl[c],
-                    marker_color=TEAL_PALETTE[i % len(TEAL_PALETTE)],
-                    hovertemplate="<b>%{x}</b><br>" + c + ": %{y:,}<extra></extra>",
-                ))
-        fig_pcl.update_layout(
-            barmode="stack",
-            **styled_chart_layout(height=420),
-            xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10,
-                       title="Nama Pencacah"),
-            yaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
-                       title="Jumlah Muatan"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                        xanchor="right", x=1, font_size=11),
-        )
-        st.plotly_chart(fig_pcl, use_container_width=True)
+        # fig_pcl = go.Figure()
+        # for i, c in enumerate(status_cols):
+        #     if c in chart_pcl.columns:
+        #         fig_pcl.add_trace(go.Bar(
+        #             name=c,
+        #             x=chart_pcl["nama_pcl"],
+        #             y=chart_pcl[c],
+        #             marker_color=TEAL_PALETTE[i % len(TEAL_PALETTE)],
+        #             hovertemplate="<b>%{x}</b><br>" + c + ": %{y:,}<extra></extra>",
+        #         ))
+        # fig_pcl.update_layout(
+        #     barmode="stack",
+        #     **styled_chart_layout(height=420),
+        #     xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10,
+        #                title="Nama Pencacah"),
+        #     yaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
+        #                title="Jumlah Muatan"),
+        #     legend=dict(orientation="h", yanchor="bottom", y=1.02,
+        #                 xanchor="right", x=1, font_size=11),
+        # )
+        # st.plotly_chart(fig_pcl, use_container_width=True)
 
         # ── Tabel Detail ─────────────────────────────────────────────────────
         st.markdown("#### Tabel Detail per Pencacah")
