@@ -1530,6 +1530,17 @@ with tab_raw:
 
     st.dataframe(view_df, use_container_width=True, hide_index=True)
 
+    # --- TAMBAHAN: Tombol Download Data Mentah ---
+    timestamp_raw = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    st.download_button(
+        label="📥 Download Data Mentah (XLSX)",
+        data=to_excel(view_df),
+        file_name=f"data_mentah_se2026_{timestamp_raw}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_raw"
+    )
+
 # ============================
 # Footer (muncul di semua halaman)
 # ============================
