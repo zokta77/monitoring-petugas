@@ -340,22 +340,95 @@ def to_excel(df):
 # ─────────────────────────────────────────────────────────────────────────────
 # Histori multi-hari (untuk rekap progress harian per pencacah)
 # ─────────────────────────────────────────────────────────────────────────────
+# ==========================================================
+# PATCH REKAP HARIAN PROGRESS PETUGAS
+# Ganti blok fungsi lama mulai dari _history_files()
+# sampai render_overall_daily_panel() dengan kode ini.
+# Pastikan import di bagian atas file utama sudah ada:
+# import os, glob, re
+# import pandas as pd
+# import streamlit as st
+# import plotly.graph_objects as go
+# ==========================================================
+
+import re
+
+
 def _history_files():
-    pattern = os.path.join(HISTORY_PATH, f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx")
-    return [f for f in glob.glob(pattern) if not f.endswith("_LATEST.xlsx")]
+    """Ambil semua file arsip scraping, kecuali file LATEST."""
+    pattern = os.path.join(
+        HISTORY_PATH,
+        f"SCRAPING_REKAP_SE2026_{NAMA_KABUPATEN}_*.xlsx"
+    )
+    files = glob.glob(pattern)
+    return sorted([
+        f for f in files
+        if not os.path.basename(f).upper().endswith("_LATEST.XLSX")
+    ])
 
 
 def _history_cache_key():
     files = _history_files()
     if not files:
         return "empty"
-    return (len(files), round(max(os.path.getmtime(f) for f in files), 0))
+    return (
+        len(files),
+        round(max(os.path.getmtime(f) for f in files), 0),
+        tuple(os.path.basename(f) for f in files),
+    )
+
+
+def _parse_scraped_at_from_filename(path: str):
+    """
+    Backup kalau kolom scraped_at belum ada.
+    Contoh nama file:
+    SCRAPING_REKAP_SE2026_AMBON_20260707_130000.xlsx
+    """
+    base = os.path.basename(path)
+    m = re.search(r"_(\d{8})_(\d{6})\.xlsx$", base, flags=re.IGNORECASE)
+    if not m:
+        return pd.NaT
+
+    return pd.to_datetime(
+        m.group(1) + m.group(2),
+        format="%Y%m%d%H%M%S",
+        errors="coerce"
+    )
+
+
+def _name_key(value) -> str:
+    """Normalisasi nama agar tidak gagal hanya karena spasi/huruf besar-kecil."""
+    if pd.isna(value):
+        return ""
+    return str(value).strip().upper()
+
+
+def _history_status_cols(df: pd.DataFrame):
+    """Kolom status numerik yang dipakai untuk rekap."""
+    ignore = {"tanggal", "scraped_at", "snapshot_at"}
+    return [
+        c for c in detect_status_cols(df)
+        if str(c) not in ignore and not str(c).startswith("_")
+    ]
+
+
+def _numeric_recap_cols(df: pd.DataFrame):
+    cols = _history_status_cols(df)
+    if "total_data" in df.columns:
+        cols.append("total_data")
+    return list(dict.fromkeys(cols))
 
 
 @st.cache_data(show_spinner=False)
 def load_history(cache_key=None) -> pd.DataFrame:
-    """Baca SEMUA file arsip hasil scraping (bukan cuma snapshot terbaru),
-    dipakai untuk membangun rekap progress harian per pencacah."""
+    """
+    Membaca semua arsip scraping.
+
+    Catatan penting:
+    - File histori TIDAK dijumlah langsung, karena 1 hari bisa discraping berkali-kali.
+    - Setiap file dianggap sebagai 1 snapshot.
+    - Snapshot terakhir per tanggal akan dipilih pada fungsi berikutnya.
+    """
     files = _history_files()
     if not files:
         return pd.DataFrame()
@@ -363,42 +436,174 @@ def load_history(cache_key=None) -> pd.DataFrame:
     frames = []
     for f in files:
         try:
-            frames.append(pd.read_excel(f))
+            temp = pd.read_excel(f)
+            temp.columns = [str(c).strip() for c in temp.columns]
+
+            fallback_time = _parse_scraped_at_from_filename(f)
+
+            if "scraped_at" in temp.columns:
+                temp["scraped_at"] = pd.to_datetime(temp["scraped_at"], errors="coerce")
+                if pd.notna(fallback_time):
+                    temp["scraped_at"] = temp["scraped_at"].fillna(fallback_time)
+            else:
+                temp["scraped_at"] = fallback_time
+
+            temp["_source_file"] = os.path.basename(f)
+            temp["_file_mtime"] = os.path.getmtime(f)
+            frames.append(temp)
         except Exception:
             continue
+
     if not frames:
         return pd.DataFrame()
 
     hist = pd.concat(frames, ignore_index=True)
-    hist.columns = [str(c).strip() for c in hist.columns]
-
-    if "scraped_at" not in hist.columns:
-        return pd.DataFrame()
-
     hist["scraped_at"] = pd.to_datetime(hist["scraped_at"], errors="coerce")
     hist = hist.dropna(subset=["scraped_at"])
+
+    if hist.empty:
+        return pd.DataFrame()
+
     hist["tanggal"] = hist["scraped_at"].dt.date
 
-    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
-    numeric_cols_h = hist_status_cols + (["total_data"] if "total_data" in hist.columns else [])
-    hist = to_numeric_safe(hist, numeric_cols_h)
+    if "nama_pcl" in hist.columns:
+        hist["nama_pcl"] = hist["nama_pcl"].where(hist["nama_pcl"].notna(), "")
+        hist["nama_pcl"] = hist["nama_pcl"].astype(str).str.strip()
+        hist["_nama_pcl_key"] = hist["nama_pcl"].map(_name_key)
+
+    numeric_cols = _numeric_recap_cols(hist)
+    if numeric_cols:
+        hist = to_numeric_safe(hist, numeric_cols)
+        hist[numeric_cols] = hist[numeric_cols].fillna(0)
 
     return hist
 
 
+def _latest_snapshot_each_day(hist: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ambil HANYA snapshot/file terakhir pada setiap tanggal.
+
+    Contoh:
+    - 7 Juli scraping 08.00, 13.00, 16.00 -> yang dipakai 16.00
+    - 8 Juli scraping 10.00, 14.00 -> yang dipakai 14.00
+    Delta 8 Juli = snapshot 8 Juli terakhir - snapshot 7 Juli terakhir.
+    """
+    if hist.empty:
+        return hist
+
+    meta = (
+        hist.groupby(["tanggal", "_source_file"], as_index=False)
+            .agg(
+                snapshot_at=("scraped_at", "max"),
+                file_mtime=("_file_mtime", "max")
+            )
+    )
+
+    latest_files = (
+        meta.sort_values(["tanggal", "snapshot_at", "file_mtime"])
+            .groupby("tanggal", as_index=False)
+            .tail(1)[["tanggal", "_source_file", "snapshot_at"]]
+    )
+
+    out = hist.merge(
+        latest_files,
+        on=["tanggal", "_source_file"],
+        how="inner"
+    )
+    return out
+
+
+def _aggregate_snapshot(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
+    """
+    Menjumlahkan kolom status dalam snapshot terpilih.
+    Aman untuk data yang 1 PCL terdiri dari beberapa baris/SLS.
+    Kalau datanya sudah 1 baris per PCL, hasilnya tetap sama.
+    """
+    numeric_cols = _numeric_recap_cols(df)
+    if not numeric_cols:
+        return df[group_cols].drop_duplicates().reset_index(drop=True)
+
+    rec = (
+        df.groupby(group_cols, as_index=False)[numeric_cols]
+          .sum(min_count=1)
+          .fillna(0)
+    )
+    return rec
+
+
+def _add_daily_delta(daily: pd.DataFrame) -> pd.DataFrame:
+    """Selisih harian = kumulatif hari ini - kumulatif tanggal sebelumnya."""
+    delta = daily.copy()
+    status_cols = _history_status_cols(daily)
+
+    for c in status_cols:
+        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
+
+    return delta
+
+
+def _status_groups(df: pd.DataFrame):
+    """Kelompokkan kolom status agar tampilan tabel/grafik rapi."""
+    cols = list(df.columns)
+    return {
+        "draft":   [c for c in cols if "DRAFT" in str(c).upper()],
+        "submit":  [c for c in cols if "SUBMIT" in str(c).upper()],
+        "approve": [c for c in cols if "APPROV" in str(c).upper()],
+        "reject":  [c for c in cols if "REJECT" in str(c).upper()],
+    }
+
+
+def _sum_cols(df: pd.DataFrame, cols: list[str]):
+    if not cols:
+        return pd.Series([0] * len(df), index=df.index)
+    return df[cols].sum(axis=1)
+
+
+def _format_daily_table(daily: pd.DataFrame, delta: pd.DataFrame) -> pd.DataFrame:
+    groups = _status_groups(daily)
+
+    tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
+
+    if "snapshot_at" in daily.columns:
+        tampil["Snapshot Terakhir"] = pd.to_datetime(
+            daily["snapshot_at"], errors="coerce"
+        ).dt.strftime("%H:%M")
+
+    if "total_data" in daily.columns:
+        tampil["Total Muatan"] = daily["total_data"].round(0).astype(int)
+
+    # Kumulatif posisi terakhir pada hari itu
+    if groups["draft"]:
+        tampil["Draft (Kumulatif)"] = _sum_cols(daily, groups["draft"]).round(0).astype(int)
+    if groups["submit"]:
+        tampil["Submit (Kumulatif)"] = _sum_cols(daily, groups["submit"]).round(0).astype(int)
+    if groups["approve"]:
+        tampil["Approve (Kumulatif)"] = _sum_cols(daily, groups["approve"]).round(0).astype(int)
+    if groups["reject"]:
+        tampil["Reject (Kumulatif)"] = _sum_cols(daily, groups["reject"]).round(0).astype(int)
+
+    # Selisih dibanding tanggal sebelumnya
+    if groups["draft"]:
+        tampil["Draft (Baru)"] = _sum_cols(delta, groups["draft"]).round(0).astype(int)
+    if groups["submit"]:
+        tampil["Submit (Baru)"] = _sum_cols(delta, groups["submit"]).round(0).astype(int)
+    if groups["approve"]:
+        tampil["Approve (Baru)"] = _sum_cols(delta, groups["approve"]).round(0).astype(int)
+    if groups["reject"]:
+        tampil["Reject (Baru)"] = _sum_cols(delta, groups["reject"]).round(0).astype(int)
+
+    return tampil
+
+
 def build_daily_recap(pcl_name: str):
     """
-    Bangun rekap progress harian untuk 1 pencacah dari data arsip histori.
+    Rekap harian untuk 1 pencacah.
 
-    - Kalau 1 hari discraping beberapa kali → diambil snapshot TERAKHIR hari itu
-      (karena angka status bersifat KUMULATIF, bukan dijumlah mentah — menjumlah
-      mentah snapshot yang sama akan melipatgandakan angka secara keliru).
-    - "Selisih" / delta harian = snapshot hari ini dikurangi snapshot hari
-      sebelumnya → ini yang merepresentasikan "berapa yang baru submit/draft/
-      approve HARI ITU".
-
-    Return: (daily, delta, diag) — diag berisi info diagnostik untuk membantu
-    menemukan penyebab spesifik kalau data kosong (bukan cuma pesan generik).
+    Aturan:
+    1. Dari semua arsip, ambil snapshot terakhir per tanggal.
+    2. Filter nama_pcl.
+    3. Hitung kumulatif per tanggal.
+    4. Hitung delta/selisih antar tanggal.
     """
     files = _history_files()
     diag = {
@@ -423,78 +628,66 @@ def build_daily_recap(pcl_name: str):
     if not diag["has_nama_pcl_col"]:
         return None, None, diag
 
-    diag["sample_names"] = sorted(hist["nama_pcl"].dropna().unique().tolist())[:10]
+    diag["sample_names"] = sorted([
+        x for x in hist["nama_pcl"].dropna().unique().tolist()
+        if str(x).strip()
+    ])[:10]
 
-    sub = hist[hist["nama_pcl"] == pcl_name].copy()
+    latest = _latest_snapshot_each_day(hist)
+    key = _name_key(pcl_name)
+    sub = latest[latest["_nama_pcl_key"] == key].copy()
+
     diag["n_rows_for_pcl"] = len(sub)
     if sub.empty:
         return None, None, diag
 
-    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
-    agg_dict = {c: "last" for c in hist_status_cols}
-    if "total_data" in sub.columns:
-        agg_dict["total_data"] = "last"
+    daily = _aggregate_snapshot(sub, ["tanggal"])
 
-    daily = (
-        sub.sort_values("scraped_at")
-           .groupby("tanggal", as_index=False)
-           .agg(agg_dict)
-           .sort_values("tanggal")
-           .reset_index(drop=True)
+    # Simpan jam snapshot terakhir yang digunakan per tanggal
+    snap_time = (
+        sub.groupby("tanggal", as_index=False)["snapshot_at"]
+           .max()
     )
-    diag["n_unique_dates"] = len(daily)
+    daily = daily.merge(snap_time, on="tanggal", how="left")
+    daily = daily.sort_values("tanggal").reset_index(drop=True)
 
-    # ── Delta harian: hari pertama dipakai sebagai baseline (delta = nilai itu sendiri) ──
-    delta = daily.copy()
-    cols_to_diff = hist_status_cols + (["total_data"] if "total_data" in daily.columns else [])
-    for c in cols_to_diff:
-        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
+    diag["n_unique_dates"] = len(daily)
+    delta = _add_daily_delta(daily)
 
     return daily, delta, diag
 
 
 def render_pencacah_daily_panel(pcl_name: str):
-    """Tampilkan tabel + line chart rekap progress harian untuk 1 pencacah yang diklik."""
+    """Panel rekap harian untuk 1 pencacah."""
     daily, delta, diag = build_daily_recap(pcl_name)
 
     st.markdown(f"##### 📅 Rekap Progress Harian — {pcl_name}")
 
     if daily is None:
-        # ── Bedakan penyebabnya, jangan cuma pesan generik ──────────────────
         if diag["n_files"] == 0:
             st.warning(
-                f"Tidak ditemukan file arsip sama sekali di folder:\n\n`{diag['history_path']}`\n\n"
-                f"Pola nama file yang dicari: `{os.path.basename(diag['pattern'])}`\n\n"
-                "Kemungkinan: `scrapping_sls.py` belum pernah dijalankan di PC ini, atau "
-                "`BASE_PATH`/`NAMA_KABUPATEN` di `config_se2026.py` berbeda dari yang dipakai scraper."
+                f"Tidak ditemukan file arsip di folder:\n\n`{diag['history_path']}`\n\n"
+                f"Pola nama file yang dicari: `{os.path.basename(diag['pattern'])}`"
             )
         elif diag["n_rows_total"] == 0:
             st.warning(
-                f"Ditemukan {diag['n_files']} file arsip, tapi semuanya kosong/gagal dibaca "
-                "(kemungkinan formatnya rusak atau kolom `scraped_at` tidak ada)."
+                f"Ditemukan {diag['n_files']} file arsip, tapi semuanya kosong/gagal dibaca, "
+                "atau tidak memiliki informasi waktu scraping."
             )
         elif not diag["has_nama_pcl_col"]:
             st.warning(
-                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
-                "kolom `nama_pcl` tidak ada di dalamnya. Ini berarti file arsip itu dibuat "
-                "SEBELUM fitur merge ke `master_data.xlsx` ditambahkan — data lama ini tidak "
-                "akan pernah punya nama_pcl. Rekap harian akan mulai muncul dari scraping "
-                "berikutnya yang sudah ter-merge."
+                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), "
+                "tetapi kolom `nama_pcl` belum ada. Rekap per petugas akan muncul setelah "
+                "hasil scraping sudah digabung dengan `master_data.xlsx`."
             )
         elif diag["n_rows_for_pcl"] == 0:
             sample = ", ".join(diag["sample_names"][:5]) or "(tidak ada nama terbaca)"
             st.warning(
-                f"Ditemukan {diag['n_files']} file arsip ({diag['n_rows_total']:,} baris), tapi "
-                f"tidak ada baris dengan nama pencacah **persis** `{pcl_name}`. "
-                f"Contoh nama yang ADA di histori: {sample}...\n\n"
-                "Kemungkinan penyebab: ejaan/spasi nama_pcl di master_data.xlsx berubah, atau "
-                "pencacah ini baru ditambahkan setelah file-file arsip lama dibuat."
+                f"Tidak ada histori untuk pencacah **{pcl_name}** pada snapshot terakhir harian.\n\n"
+                f"Contoh nama yang ada di histori: {sample}"
             )
         else:
-            st.info(
-                "Belum ada data histori multi-hari untuk pencacah ini. Fitur ini butuh "
-                "setidaknya beberapa hari scraping berjalan."
-            )
+            st.info("Belum ada data histori untuk pencacah ini.")
 
         with st.expander("🔍 Info diagnostik teknis"):
             st.json({k: v for k, v in diag.items() if k != "files"})
@@ -503,141 +696,117 @@ def render_pencacah_daily_panel(pcl_name: str):
                 st.code("\n".join(os.path.basename(f) for f in diag["files"]))
         return
 
-    if len(daily) < 2:
-        st.info(
-            f"Baru ada **1 hari** data ({daily['tanggal'].iloc[0]}) untuk pencacah ini. "
-            "Line chart & tren delta akan muncul setelah ada data di hari berikutnya."
-        )
-
     st.caption(
-        "📌 Kalau 1 hari discraping berkali-kali, yang dipakai adalah snapshot "
-        "**terakhir** hari itu (angka status bersifat kumulatif, bukan dijumlah mentah). "
-        "Kolom di bawah menunjukkan **selisih (baru bertambah) dibanding hari sebelumnya**."
+        "📌 Jika dalam 1 tanggal scraping dilakukan berkali-kali, dashboard memakai "
+        "snapshot terakhir pada tanggal tersebut. Kolom `(Baru)` adalah selisih bersih "
+        "dibanding snapshot terakhir tanggal sebelumnya."
     )
 
-    # 1. Tambahkan deteksi kolom untuk REJECT
-    submit_cols  = [c for c in delta.columns if "SUBMIT"  in c.upper()]
-    draft_cols   = [c for c in delta.columns if "DRAFT"   in c.upper()]
-    approve_cols = [c for c in delta.columns if "APPROV"  in c.upper()]
-    reject_cols  = [c for c in delta.columns if "REJECT"  in c.upper()]
-
-    tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
-    # if "total_data" in daily.columns:
-    #     tampil["Total Muatan"] = daily["total_data"]
-    
-    # 2. Masukkan data ke DataFrame berdasarkan urutan alur data yang diinginkan
-    if draft_cols:
-        tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
-    if submit_cols:
-        tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
-    if approve_cols:
-        tampil["Approve (Baru)"] = delta[approve_cols].sum(axis=1).astype(int)
-    if reject_cols:
-        tampil["Reject (Baru)"] = delta[reject_cols].sum(axis=1).astype(int)
-
+    tampil = _format_daily_table(daily, delta)
     st.dataframe(tampil, use_container_width=True, hide_index=True)
 
-    # 3. Update daftar kolom yang akan diplot beserta warna spesifiknya
-    line_cols = [c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"] if c in tampil.columns]
-    
-    if line_cols:
-        line_colors = {
-            "Draft (Baru)": "#f59e0b",    # Amber
-            "Submit (Baru)": "#0ea5e9",   # Biru
-            "Approve (Baru)": "#14b8a6",  # Teal/Hijau
-            "Reject (Baru)": "#ef4444",   # Merah
-        }
-        fig_line = go.Figure()
-        for c in line_cols:
-            fig_line.add_trace(go.Scatter(
-                x=tampil["Tanggal"], y=tampil[c],
-                mode="lines+markers", name=c,
-                line=dict(width=2.5, color=line_colors.get(c)),
-                marker=dict(size=7),
-            ))
-        fig_line.update_layout(
-            **styled_chart_layout(height=340),
-            xaxis=dict(title="Tanggal", showgrid=False, type="date"),
-            yaxis=dict(title="Jumlah Baru per Hari", showgrid=True,
-                       gridcolor="rgba(100,116,139,0.15)"),
-            legend=dict(orientation="h", y=1.15),
-        )
-        st.plotly_chart(fig_line, use_container_width=True)
-    else:
-        st.info("Kolom status Draft/Submit/Approve/Reject tidak terdeteksi untuk membuat line chart.")
+    if len(daily) < 2:
+        st.info("Baru ada 1 tanggal histori. Grafik tren akan lebih bermakna setelah ada scraping hari berikutnya.")
+        return
+
+    line_cols = [
+        c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"]
+        if c in tampil.columns
+    ]
+
+    if not line_cols:
+        st.info("Kolom status Draft/Submit/Approve/Reject tidak terdeteksi untuk membuat grafik.")
+        return
+
+    line_colors = {
+        "Draft (Baru)": "#f59e0b",
+        "Submit (Baru)": "#0ea5e9",
+        "Approve (Baru)": "#14b8a6",
+        "Reject (Baru)": "#ef4444",
+    }
+
+    fig_line = go.Figure()
+    for c in line_cols:
+        fig_line.add_trace(go.Scatter(
+            x=tampil["Tanggal"],
+            y=tampil[c],
+            mode="lines+markers",
+            name=c,
+            line=dict(width=2.5, color=line_colors.get(c)),
+            marker=dict(size=7),
+        ))
+
+    fig_line.update_layout(
+        **styled_chart_layout(height=340),
+        xaxis=dict(title="Tanggal", showgrid=False, type="date"),
+        yaxis=dict(
+            title="Jumlah Baru per Hari",
+            showgrid=True,
+            gridcolor="rgba(100,116,139,0.15)"
+        ),
+        legend=dict(orientation="h", y=1.15),
+    )
+    st.plotly_chart(fig_line, use_container_width=True)
+
+
 def build_overall_daily_recap():
-    """Bangun rekap progress harian kumulatif untuk KESELURUHAN pencacah."""
+    """
+    Rekap harian keseluruhan petugas.
+
+    Aturan:
+    1. Ambil snapshot terakhir per tanggal.
+    2. Rekap dulu per tanggal + nama_pcl agar aman jika 1 PCL punya banyak baris.
+    3. Jumlahkan semua petugas per tanggal.
+    4. Hitung delta antar tanggal.
+    """
     hist = load_history(cache_key=_history_cache_key())
     if hist.empty or "nama_pcl" not in hist.columns:
         return None, None
 
-    hist_status_cols = [c for c in detect_status_cols(hist) if c != "tanggal"]
-    
-    # 1. Ambil snapshot TERAKHIR per pencacah untuk tiap harinya
-    agg_dict_pcl = {c: "last" for c in hist_status_cols}
-    if "total_data" in hist.columns:
-        agg_dict_pcl["total_data"] = "last"
-        
-    snapshot_per_pcl = (
-        hist.sort_values("scraped_at")
-            .groupby(["tanggal", "nama_pcl"], as_index=False)
-            .agg(agg_dict_pcl)
-    )
-    
-    # 2. Jumlahkan semua pencacah untuk mendapatkan total harian se-Kabupaten/Kota
-    agg_dict_total = {c: "sum" for c in hist_status_cols}
-    if "total_data" in snapshot_per_pcl.columns:
-        agg_dict_total["total_data"] = "sum"
-        
-    daily = (
-        snapshot_per_pcl.groupby("tanggal", as_index=False)
-            .agg(agg_dict_total)
-            .sort_values("tanggal")
-            .reset_index(drop=True)
-    )
-    
-    # 3. Hitung delta (selisih) dari hari ke hari
-    delta = daily.copy()
-    cols_to_diff = hist_status_cols + (["total_data"] if "total_data" in daily.columns else [])
-    for c in cols_to_diff:
-        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
-        
+    latest = _latest_snapshot_each_day(hist)
+    if latest.empty:
+        return None, None
+
+    per_pcl = _aggregate_snapshot(latest, ["tanggal", "nama_pcl"])
+    daily = _aggregate_snapshot(per_pcl, ["tanggal"])
+
+    snap_time = latest.groupby("tanggal", as_index=False)["snapshot_at"].max()
+    daily = daily.merge(snap_time, on="tanggal", how="left")
+    daily = daily.sort_values("tanggal").reset_index(drop=True)
+
+    delta = _add_daily_delta(daily)
     return daily, delta
 
+
 def render_overall_daily_panel():
-    """Tampilkan grafik tren harian untuk keseluruhan wilayah."""
+    """Panel rekap harian keseluruhan wilayah/petugas."""
     daily, delta = build_overall_daily_recap()
-    
-    if daily is None or len(daily) < 2:
-        st.info("Belum ada data histori multi-hari yang cukup untuk menampilkan tren keseluruhan wilayah.")
+
+    if daily is None or daily.empty:
+        st.info("Belum ada data histori yang cukup untuk menampilkan rekap harian keseluruhan.")
         return
 
-    st.markdown("#### 📈 Tren Progress Harian Keseluruhan")
-    st.caption("Grafik di bawah menunjukkan total penambahan data (Baru) setiap hari untuk **seluruh pencacah**.")
+    st.markdown("#### 📈 Tren Progress Harian Keseluruhan Petugas")
+    st.caption(
+        "Dashboard memakai snapshot terakhir pada setiap tanggal. Kolom `(Baru)` adalah "
+        "selisih bersih dibanding snapshot terakhir tanggal sebelumnya."
+    )
 
-    submit_cols  = [c for c in delta.columns if "SUBMIT"  in c.upper()]
-    draft_cols   = [c for c in delta.columns if "DRAFT"   in c.upper()]
-    approve_cols = [c for c in delta.columns if "APPROV"  in c.upper()]
-    reject_cols  = [c for c in delta.columns if "REJECT"  in c.upper()]
-    done_cols_daily = [c for c in daily.columns if any(k in c.upper() for k in DONE_KEYWORDS)]
+    tampil = _format_daily_table(daily, delta)
 
-    tampil = pd.DataFrame({"Tanggal": daily["tanggal"]})
-    # if "total_data" in daily.columns:
-    #     tampil["Total Muatan"] = daily["total_data"]
-        
-    # Hitung Persentase
-    # if done_cols_daily and "total_data" in daily.columns:
-    #     daily_done = daily[done_cols_daily].sum(axis=1)
-    #     tampil["Progress Keseluruhan (%)"] = (daily_done / daily["total_data"].replace(0, pd.NA) * 100).round(2).fillna(0)
-        
-    if draft_cols: tampil["Draft (Baru)"] = delta[draft_cols].sum(axis=1).astype(int)
-    if submit_cols: tampil["Submit (Baru)"] = delta[submit_cols].sum(axis=1).astype(int)
-    if approve_cols: tampil["Approve (Baru)"] = delta[approve_cols].sum(axis=1).astype(int)
-    if reject_cols: tampil["Reject (Baru)"] = delta[reject_cols].sum(axis=1).astype(int)
+    # Hitung progress kumulatif jika ada total_data dan kolom approve/done
+    groups = _status_groups(daily)
+    if "total_data" in daily.columns and groups["approve"]:
+        done = _sum_cols(daily, groups["approve"])
+        total = daily["total_data"].replace(0, pd.NA)
+        tampil["Progress Approve (%)"] = (done / total * 100).round(2).fillna(0)
 
-    line_cols = [c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"] if c in tampil.columns]
-    
-    if line_cols or "Progress Keseluruhan (%)" in tampil.columns:
+    line_cols = [
+        c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"]
+        if c in tampil.columns
+    ]
+
+    if len(daily) >= 2 and line_cols:
         fig_line = go.Figure()
         line_colors = {
             "Draft (Baru)": "#f59e0b",
@@ -648,32 +817,51 @@ def render_overall_daily_panel():
 
         for c in line_cols:
             fig_line.add_trace(go.Scatter(
-                x=tampil["Tanggal"], y=tampil[c],
-                mode="lines+markers", name=c,
+                x=tampil["Tanggal"],
+                y=tampil[c],
+                mode="lines+markers",
+                name=c,
                 line=dict(width=2.5, color=line_colors.get(c)),
                 marker=dict(size=7),
-                yaxis="y1"
+                yaxis="y1",
             ))
-            
-        if "Progress Keseluruhan (%)" in tampil.columns:
+
+        if "Progress Approve (%)" in tampil.columns:
             fig_line.add_trace(go.Scatter(
-                x=tampil["Tanggal"], y=tampil["Progress Keseluruhan (%)"],
-                mode="lines+markers", name="Progress (%)",
-                line=dict(width=3.5, color="#8b5cf6", dash="dot"),
-                marker=dict(size=9, symbol="diamond"),
-                yaxis="y2"
+                x=tampil["Tanggal"],
+                y=tampil["Progress Approve (%)"],
+                mode="lines+markers",
+                name="Progress Approve (%)",
+                line=dict(width=3, color="#8b5cf6", dash="dot"),
+                marker=dict(size=8, symbol="diamond"),
+                yaxis="y2",
             ))
+
         fig_line.update_layout(
-                    **styled_chart_layout(height=380),
-                    xaxis=dict(title="Tanggal", showgrid=False, type="date"),
-                    yaxis=dict(title="Jumlah Status (Baru)", showgrid=True, gridcolor="rgba(100,116,139,0.15)", side="left"),
-                    yaxis2=dict(title="Progress Keseluruhan (%)", overlaying="y", side="right", range=[0, 105], showgrid=False),
-                    legend=dict(orientation="h", y=1.15)
-                )
+            **styled_chart_layout(height=380),
+            xaxis=dict(title="Tanggal", showgrid=False, type="date"),
+            yaxis=dict(
+                title="Jumlah Baru per Hari",
+                showgrid=True,
+                gridcolor="rgba(100,116,139,0.15)",
+                side="left"
+            ),
+            yaxis2=dict(
+                title="Progress Approve (%)",
+                overlaying="y",
+                side="right",
+                range=[0, 105],
+                showgrid=False
+            ),
+            legend=dict(orientation="h", y=1.15),
+        )
         st.plotly_chart(fig_line, use_container_width=True)
-        
-        with st.expander("Tampilkan Data Tabel Keseluruhan"):
-            st.dataframe(tampil, use_container_width=True, hide_index=True)
+    elif len(daily) < 2:
+        st.info("Baru ada 1 tanggal histori. Grafik tren akan muncul setelah ada scraping hari berikutnya.")
+
+    with st.expander("Tampilkan Data Tabel Keseluruhan"):
+        st.dataframe(tampil, use_container_width=True, hide_index=True)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Load data otomatis
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1057,44 +1245,20 @@ with tab_pcl:
         agg_cols = status_cols + (["total_data"] if "total_data" in df.columns else [])
         agg_pcl  = df.groupby("nama_pcl")[agg_cols].sum().reset_index()
 
-        if "total_data" in agg_pcl.columns and done_cols:
+        # Progress = Submit + Approve + Reject / Total Data
+        progress_cols = [
+            c for c in agg_pcl.columns
+            if any(k in c.upper() for k in ["SUBMIT", "APPROV", "REJECT", "DITOLAK"])
+        ]
+
+        if "total_data" in agg_pcl.columns and progress_cols:
             agg_pcl["Progress (%)"] = (
-                agg_pcl[done_cols].sum(axis=1)
+                agg_pcl[progress_cols].sum(axis=1)
                 / agg_pcl["total_data"].replace(0, pd.NA) * 100
             ).round(1).fillna(0)
+
         if "total_data" in agg_pcl.columns:
             agg_pcl = agg_pcl.sort_values("total_data", ascending=False)
-
-        # ── Stacked bar ──────────────────────────────────────────────────────
-        # max_show  = 30
-        # chart_pcl = agg_pcl.head(max_show)
-        # if len(agg_pcl) > max_show:
-        #     st.caption(
-        #         f"Grafik menampilkan {max_show} pencacah teratas dari {len(agg_pcl)} total. "
-        #         "Lihat tabel di bawah untuk data lengkap."
-        #     )
-
-        # fig_pcl = go.Figure()
-        # for i, c in enumerate(status_cols):
-        #     if c in chart_pcl.columns:
-        #         fig_pcl.add_trace(go.Bar(
-        #             name=c,
-        #             x=chart_pcl["nama_pcl"],
-        #             y=chart_pcl[c],
-        #             marker_color=TEAL_PALETTE[i % len(TEAL_PALETTE)],
-        #             hovertemplate="<b>%{x}</b><br>" + c + ": %{y:,}<extra></extra>",
-        #         ))
-        # fig_pcl.update_layout(
-        #     barmode="stack",
-        #     **styled_chart_layout(height=420),
-        #     xaxis=dict(tickangle=-40, showgrid=False, tickfont_size=10,
-        #                title="Nama Pencacah"),
-        #     yaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
-        #                title="Jumlah Muatan"),
-        #     legend=dict(orientation="h", yanchor="bottom", y=1.02,
-        #                 xanchor="right", x=1, font_size=11),
-        # )
-        # st.plotly_chart(fig_pcl, use_container_width=True)
 
         # ── Tabel Detail ─────────────────────────────────────────────────────
         st.markdown("#### Tabel Detail per Pencacah")
