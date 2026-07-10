@@ -965,24 +965,43 @@ total_data = int(df["total_data"].sum()) if "total_data" in df.columns else int(
 
 done_cols     = [c for c in status_cols if any(k in c.upper() for k in DONE_KEYWORDS)]
 not_done_cols = [c for c in status_cols if any(k in c.upper() for k in NOT_DONE_KEYWORDS)]
-rejected_cols = [c for c in status_cols if "REJECTED" in c.upper()]
+draft_cols    = [c for c in status_cols if "DRAFT" in c.upper()]
+submit_cols   = [c for c in status_cols if "SUBMIT" in c.upper()]
+approve_cols  = [c for c in status_cols if "APPROV" in c.upper()]
+rejected_cols = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
 
+# Progress TANPA draft = Submit + Approve + Reject
+progress_without_draft_cols = list(dict.fromkeys(submit_cols + approve_cols + rejected_cols))
+
+# Progress TERMASUK draft = Draft + Submit + Approve + Reject
+progress_with_draft_cols = list(dict.fromkeys(draft_cols + submit_cols + approve_cols + rejected_cols))
+
+total_draft    = int(df[draft_cols].sum().sum())    if draft_cols    else 0
 total_done     = int(df[done_cols].sum().sum())     if done_cols     else 0
 total_rejected = int(df[rejected_cols].sum().sum()) if rejected_cols else 0
-pct_done       = ((total_done+total_rejected) / total_data * 100)      if total_data    else 0
 
-k1, k2, k3, k4, k5, k6 = st.columns(6)
+total_progress_without_draft = int(df[progress_without_draft_cols].sum().sum()) if progress_without_draft_cols else 0
+total_progress_with_draft    = int(df[progress_with_draft_cols].sum().sum())    if progress_with_draft_cols    else 0
+
+pct_progress_without_draft = (total_progress_without_draft / total_data * 100) if total_data else 0
+pct_progress_with_draft    = (total_progress_with_draft / total_data * 100)    if total_data else 0
+
+k1, k2, k3, k4, k5, k6, k7 = st.columns(7)
 k1.metric("Total Pencacah",  f"{n_pcl:,}")
 k2.metric("Total Pengawas",  f"{n_pml:,}")
 k3.metric("Total Desa",      f"{n_desa:,}")
 k4.metric("Total Muatan",    f"{total_data:,}")
 k5.metric(
+    "Draft",
+    f"{total_draft:,}",
+    help="Jumlah muatan yang masih berstatus Draft"
+)
+k6.metric(
     "Selesai (Done)",
     f"{total_done:,}",
     help="Approved by Pengawas + Submitted by Pencacah"
 )
-
-k6.metric(
+k7.metric(
     "Ditolak",
     f"{total_rejected:,}",
     help="Rejected by Pengawas"
@@ -1006,74 +1025,116 @@ tab_overview, tab_pcl, tab_target, tab_desa, tab_raw = st.tabs([
 with tab_overview:
     st.subheader("Distribusi Status Keseluruhan")
 
-    status_totals = df[status_cols].sum().sort_values(ascending=False)
-    status_totals = status_totals[status_totals > 0]
+    status_totals_all = df[status_cols].sum().sort_values(ascending=False)
+    status_totals_all = status_totals_all[status_totals_all > 0]
 
-    c_bar, c_pie, c_gauge = st.columns([3, 2, 2])
+    # Versi tanpa draft: kolom Draft tidak ditampilkan di distribusi,
+    # dan Draft tidak dihitung dalam persentase progress.
+    status_cols_without_draft = [c for c in status_cols if c not in draft_cols]
+    status_totals_without_draft = df[status_cols_without_draft].sum().sort_values(ascending=False) if status_cols_without_draft else pd.Series(dtype=float)
+    status_totals_without_draft = status_totals_without_draft[status_totals_without_draft > 0]
 
-    with c_bar:
-        fig_bar = px.bar(
-            x=status_totals.values,
-            y=status_totals.index,
-            orientation="h",
-            labels={"x": "Jumlah", "y": ""},
-             text=[f"{int(v):,}" for v in status_totals.values],
-            color=status_totals.index,
-            color_discrete_sequence=TEAL_PALETTE,
-            template=PLOT_TEMPLATE,
-        )
-        fig_bar.update_traces(textposition="outside", textfont_size=11)
-        fig_bar.update_layout(
-            **styled_chart_layout(showlegend=False, height=360),
-            xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)"),
-            yaxis=dict(showgrid=False),
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
+    def render_status_distribution(status_totals_view, pct_value, title_gauge, total_progress_value, caption_text):
+        st.caption(caption_text)
 
-    with c_pie:
-        fig_pie = px.pie(
-            values=status_totals.values,
-            names=status_totals.index,
-            hole=0.55,
-            color_discrete_sequence=TEAL_PALETTE,
-            template=PLOT_TEMPLATE,
-        )
-        fig_pie.update_traces(
-            textinfo="percent",
-            textfont_size=11,
-            hovertemplate="<b>%{label}</b><br>%{value:,} usaha<br>%{percent}<extra></extra>",
-        )
-        fig_pie.update_layout(**styled_chart_layout(
-            height=360, showlegend=True,
-            legend=dict(orientation="v", x=1.05),
-        ))
-        st.plotly_chart(fig_pie, use_container_width=True)
+        if status_totals_view.empty:
+            st.info("Belum ada status bernilai lebih dari 0 untuk versi ini.")
+            return
 
-    with c_gauge:
-        fig_gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=pct_done,
-            number={"suffix": "%", "valueformat": ".2f","font": {"size": 36, "color": "#14b8a6",
-                                            "family": "JetBrains Mono"}},
-            title={"text": "Overall Progress",
-                   "font": {"color": "#94a3b8", "size": 13, "family": "Inter"}},
-            gauge={
-                "axis":      {"range": [0, 100], "tickcolor": "#475569",
-                              "tickfont": {"color": "#64748b", "size": 10}},
-                "bar":       {"color": "#14b8a6", "thickness": 0.25},
-                "bgcolor":   "rgba(0,0,0,0)",
-                "bordercolor": "rgba(100,116,139,0.3)",
-                "steps": [
-                    {"range": [0,  50], "color": "rgba(30,41,59,0.6)"},
-                    {"range": [50, 80], "color": "rgba(23,37,84,0.6)"},
-                    {"range": [80,100], "color": "rgba(13,61,46,0.6)"},
-                ],
-                "threshold": {"line": {"color": "#0ea5e9", "width": 3},
-                              "thickness": 0.8, "value": pct_done},
-            },
-        ))
-        fig_gauge.update_layout(**styled_chart_layout(height=360))
-        st.plotly_chart(fig_gauge, use_container_width=True)
+        c_bar, c_pie, c_gauge = st.columns([3, 2, 2])
+
+        with c_bar:
+            fig_bar = px.bar(
+                x=status_totals_view.values,
+                y=status_totals_view.index,
+                orientation="h",
+                labels={"x": "Jumlah", "y": ""},
+                text=[f"{int(v):,}" for v in status_totals_view.values],
+                color=status_totals_view.index,
+                color_discrete_sequence=TEAL_PALETTE,
+                template=PLOT_TEMPLATE,
+            )
+            fig_bar.update_traces(textposition="outside", textfont_size=11)
+            fig_bar.update_layout(
+                **styled_chart_layout(showlegend=False, height=360),
+                xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)"),
+                yaxis=dict(showgrid=False),
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+        with c_pie:
+            fig_pie = px.pie(
+                values=status_totals_view.values,
+                names=status_totals_view.index,
+                hole=0.55,
+                color_discrete_sequence=TEAL_PALETTE,
+                template=PLOT_TEMPLATE,
+            )
+            fig_pie.update_traces(
+                textinfo="percent",
+                textfont_size=11,
+                hovertemplate="<b>%{label}</b><br>%{value:,} usaha<br>%{percent}<extra></extra>",
+            )
+            fig_pie.update_layout(**styled_chart_layout(
+                height=360, showlegend=True,
+                legend=dict(orientation="v", x=1.05),
+            ))
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        with c_gauge:
+            st.metric(
+                "Jumlah Progress",
+                f"{total_progress_value:,}",
+                help="Pembilang yang dipakai untuk menghitung persentase progress pada gauge."
+            )
+
+            fig_gauge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=pct_value,
+                number={"suffix": "%", "valueformat": ".2f", "font": {"size": 36, "color": "#14b8a6",
+                                                "family": "JetBrains Mono"}},
+                title={"text": title_gauge,
+                       "font": {"color": "#94a3b8", "size": 13, "family": "Inter"}},
+                gauge={
+                    "axis":      {"range": [0, 100], "tickcolor": "#475569",
+                                  "tickfont": {"color": "#64748b", "size": 10}},
+                    "bar":       {"color": "#14b8a6", "thickness": 0.25},
+                    "bgcolor":   "rgba(0,0,0,0)",
+                    "bordercolor": "rgba(100,116,139,0.3)",
+                    "steps": [
+                        {"range": [0,  50], "color": "rgba(30,41,59,0.6)"},
+                        {"range": [50, 80], "color": "rgba(23,37,84,0.6)"},
+                        {"range": [80,100], "color": "rgba(13,61,46,0.6)"},
+                    ],
+                    "threshold": {"line": {"color": "#0ea5e9", "width": 3},
+                                  "thickness": 0.8, "value": pct_value},
+                },
+            ))
+            fig_gauge.update_layout(**styled_chart_layout(height=300))
+            st.plotly_chart(fig_gauge, use_container_width=True)
+
+    tab_no_draft, tab_with_draft = st.tabs([
+        "Progress tanpa Draft",
+        "Progress termasuk Draft",
+    ])
+
+    with tab_no_draft:
+        render_status_distribution(
+            status_totals_without_draft,
+            pct_progress_without_draft,
+            "Progress Tanpa Draft",
+            total_progress_without_draft,
+            "Rumus: (Submit + Approve + Reject) / Total Muatan. Draft tidak dihitung sebagai progress.",
+        )
+
+    with tab_with_draft:
+        render_status_distribution(
+            status_totals_all,
+            pct_progress_with_draft,
+            "Progress Termasuk Draft",
+            total_progress_with_draft,
+            "Rumus: (Draft + Submit + Approve + Reject) / Total Muatan. Draft ikut dihitung sebagai progress.",
+        )
 
     st.divider()
     st.subheader("🗺️ Peta Progress Wilayah")
