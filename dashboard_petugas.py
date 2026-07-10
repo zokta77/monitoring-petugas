@@ -1011,9 +1011,10 @@ st.divider()
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────────────────────
-tab_overview, tab_pcl, tab_target, tab_desa, tab_raw = st.tabs([
+tab_overview, tab_pcl, tab_pml, tab_target, tab_desa, tab_raw = st.tabs([
     "📈 Distribusi Status",
     "👤 Per Pencacah",
+    "🧑‍💼 Per Pengawas",
     "🎯 Target Harian",
     "🏘️ Per Desa",
     "🗃️ Data Mentah",
@@ -1085,7 +1086,7 @@ with tab_overview:
             st.metric(
                 "Jumlah Progress",
                 f"{total_progress_value:,}",
-                help="Pembilang yang dipakai untuk menghitung persentase progress pada gauge."
+                # help="Pembilang yang dipakai untuk menghitung persentase progress pada gauge."
             )
 
             fig_gauge = go.Figure(go.Indicator(
@@ -1404,6 +1405,151 @@ with tab_pcl:
             key="download_pcl"
         )
        
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 3 — Per Pengawas (PML)
+# ══════════════════════════════════════════════════════════════════════════════
+with tab_pml:
+    st.subheader("Monitoring Per Pengawas")
+    st.caption(
+        "Progress pengawas dihitung dari status yang sudah ditangani pengawas, yaitu "
+        "Approve + Reject + Edited dibandingkan Total Muatan."
+    )
+
+    if "nama_pml" not in df.columns:
+        st.warning("Kolom `nama_pml` tidak ditemukan dalam data.")
+    else:
+        # Deteksi status yang menjadi pekerjaan/progress pengawas
+        approve_cols_pml = [c for c in status_cols if "APPROV" in c.upper()]
+        reject_cols_pml  = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
+        edited_cols_pml  = [c for c in status_cols if any(k in c.upper() for k in ["EDIT", "EDITED", "DIEDIT"])]
+
+        agg_cols_pml = status_cols + (["total_data"] if "total_data" in df.columns else [])
+        agg_pml = df.groupby("nama_pml")[agg_cols_pml].sum().reset_index()
+
+        # Jumlah pencacah binaan per pengawas
+        if "nama_pcl" in df.columns:
+            pcl_count = df.groupby("nama_pml")["nama_pcl"].nunique().reset_index(name="Jumlah Pencacah")
+            agg_pml = agg_pml.merge(pcl_count, on="nama_pml", how="left")
+
+        # Kolom ringkas yang diminta: Approve, Reject, Edited
+        agg_pml["Approve"] = agg_pml[approve_cols_pml].sum(axis=1) if approve_cols_pml else 0
+        agg_pml["Reject"]  = agg_pml[reject_cols_pml].sum(axis=1)  if reject_cols_pml  else 0
+        agg_pml["Edited"]  = agg_pml[edited_cols_pml].sum(axis=1)  if edited_cols_pml  else 0
+
+        if "total_data" in agg_pml.columns:
+            agg_pml["Progress Pengawas (%)"] = (
+                (agg_pml["Approve"] + agg_pml["Reject"] + agg_pml["Edited"])
+                / agg_pml["total_data"].replace(0, pd.NA) * 100
+            ).round(1).fillna(0)
+            agg_pml = agg_pml.sort_values("Progress Pengawas (%)", ascending=False)
+        else:
+            agg_pml = agg_pml.sort_values("Approve", ascending=False)
+
+        # KPI ringkas per tab pengawas
+        total_approve_pml = int(agg_pml["Approve"].sum()) if "Approve" in agg_pml.columns else 0
+        total_reject_pml  = int(agg_pml["Reject"].sum())  if "Reject"  in agg_pml.columns else 0
+        total_edited_pml  = int(agg_pml["Edited"].sum())  if "Edited"  in agg_pml.columns else 0
+
+        p1, p2, p3, p4 = st.columns(4)
+        p1.metric("Total Pengawas", f"{agg_pml['nama_pml'].nunique():,}")
+        p2.metric("Approve", f"{total_approve_pml:,}")
+        p3.metric("Reject", f"{total_reject_pml:,}")
+        p4.metric("Edited", f"{total_edited_pml:,}")
+
+        if not edited_cols_pml:
+            st.info("Kolom status `Edited` belum terdeteksi di data. Kolom Edited akan bernilai 0 sampai status tersebut muncul pada hasil scraping.")
+
+        st.divider()
+
+        # Grafik stacked bar Approve, Reject, Edited per pengawas
+        chart_cols_pml = [c for c in ["Approve", "Reject", "Edited"] if c in agg_pml.columns]
+        if chart_cols_pml:
+            chart_pml = agg_pml.copy()
+            chart_pml["Total Ditangani"] = chart_pml[chart_cols_pml].sum(axis=1)
+            chart_pml = chart_pml.sort_values("Total Ditangani", ascending=False)
+
+            top_n_pml = 30
+            chart_pml_top = chart_pml.head(top_n_pml)
+
+            melt_pml = chart_pml_top.melt(
+                id_vars="nama_pml",
+                value_vars=chart_cols_pml,
+                var_name="Status",
+                value_name="Jumlah"
+            )
+
+            fig_pml = px.bar(
+                melt_pml,
+                x="Jumlah",
+                y="nama_pml",
+                color="Status",
+                orientation="h",
+                barmode="stack",
+                text="Jumlah",
+                color_discrete_map={
+                    "Approve": "#14b8a6",
+                    "Reject": "#ef4444",
+                    "Edited": "#f59e0b",
+                },
+                template=PLOT_TEMPLATE,
+                labels={"nama_pml": "", "Jumlah": "Jumlah Muatan"},
+            )
+            fig_pml.update_traces(textposition="inside", textfont_size=10)
+            fig_pml.update_layout(
+                **styled_chart_layout(height=max(380, len(chart_pml_top) * 28)),
+                xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)"),
+                yaxis=dict(showgrid=False, categoryorder="total ascending"),
+                legend=dict(orientation="h", y=1.08),
+            )
+            st.plotly_chart(fig_pml, use_container_width=True)
+
+            if len(chart_pml) > top_n_pml:
+                st.caption(f"Menampilkan {top_n_pml} pengawas dengan total penanganan tertinggi dari {len(chart_pml)} pengawas.")
+
+        st.markdown("#### Tabel Detail per Pengawas")
+
+        show_cols_pml = ["nama_pml"]
+        if "Jumlah Pencacah" in agg_pml.columns:
+            show_cols_pml.append("Jumlah Pencacah")
+        if "total_data" in agg_pml.columns:
+            show_cols_pml.append("total_data")
+        show_cols_pml += ["Approve", "Reject", "Edited"]
+        if "Progress Pengawas (%)" in agg_pml.columns:
+            show_cols_pml.append("Progress Pengawas (%)")
+
+        disp_pml = agg_pml[show_cols_pml].rename(columns={
+            "nama_pml": "Nama Pengawas",
+            "total_data": "Total Muatan",
+        })
+
+        col_cfg_pml = {}
+        if "Progress Pengawas (%)" in disp_pml.columns:
+            col_cfg_pml["Progress Pengawas (%)"] = st.column_config.ProgressColumn(
+                "Progress Pengawas (%)",
+                min_value=0,
+                max_value=100,
+                format="%.1f%%",
+                help="(Approve + Reject + Edited) / Total Muatan"
+            )
+
+        st.dataframe(
+            disp_pml,
+            use_container_width=True,
+            column_config=col_cfg_pml,
+            hide_index=True,
+        )
+
+        timestamp_pml = datetime.now().strftime("%Y%m%d_%H%M%S")
+        st.download_button(
+            label="📊 Download Rekap Pengawas (XLSX)",
+            data=to_excel(disp_pml),
+            file_name=f"rekap_pengawas_{timestamp_pml}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_pml"
+        )
 
 
 
