@@ -985,7 +985,9 @@ progress_with_draft_cols = [
     if "OPEN" not in c.upper()
 ]
 
-total_draft = int(df[draft_cols].sum().sum()) if draft_cols else 0
+total_draft    = int(df[draft_cols].sum().sum())    if draft_cols    else 0
+total_done     = int(df[done_cols].sum().sum())     if done_cols     else 0
+total_rejected = int(df[rejected_cols].sum().sum()) if rejected_cols else 0
 
 total_progress_without_draft = (
     int(df[progress_without_draft_cols].sum().sum())
