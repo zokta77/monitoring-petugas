@@ -965,26 +965,45 @@ total_data = int(df["total_data"].sum()) if "total_data" in df.columns else int(
 
 done_cols     = [c for c in status_cols if any(k in c.upper() for k in DONE_KEYWORDS)]
 not_done_cols = [c for c in status_cols if any(k in c.upper() for k in NOT_DONE_KEYWORDS)]
+
 draft_cols    = [c for c in status_cols if "DRAFT" in c.upper()]
+open_cols     = [c for c in status_cols if "OPEN" in c.upper()]
 submit_cols   = [c for c in status_cols if "SUBMIT" in c.upper()]
 approve_cols  = [c for c in status_cols if "APPROV" in c.upper()]
 rejected_cols = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
+edited_cols   = [c for c in status_cols if any(k in c.upper() for k in ["EDIT", "EDITED", "DIEDIT"])]
 
-# Progress TANPA draft = Submit + Approve + Reject
-progress_without_draft_cols = list(dict.fromkeys(submit_cols + approve_cols + rejected_cols))
+# Progress TANPA draft = semua status kecuali Draft dan Open
+progress_without_draft_cols = [
+    c for c in status_cols
+    if not any(k in c.upper() for k in ["DRAFT", "OPEN"])
+]
 
-# Progress TERMASUK draft = Draft + Submit + Approve + Reject
-progress_with_draft_cols = list(dict.fromkeys(draft_cols + submit_cols + approve_cols + rejected_cols))
+# Progress DENGAN draft = semua status kecuali Open
+progress_with_draft_cols = [
+    c for c in status_cols
+    if "OPEN" not in c.upper()
+]
 
-total_draft    = int(df[draft_cols].sum().sum())    if draft_cols    else 0
-total_done     = int(df[done_cols].sum().sum())     if done_cols     else 0
-total_rejected = int(df[rejected_cols].sum().sum()) if rejected_cols else 0
+total_draft = int(df[draft_cols].sum().sum()) if draft_cols else 0
 
-total_progress_without_draft = int(df[progress_without_draft_cols].sum().sum()) if progress_without_draft_cols else 0
-total_progress_with_draft    = int(df[progress_with_draft_cols].sum().sum())    if progress_with_draft_cols    else 0
+total_progress_without_draft = (
+    int(df[progress_without_draft_cols].sum().sum())
+    if progress_without_draft_cols else 0
+)
 
-pct_progress_without_draft = (total_progress_without_draft / total_data * 100) if total_data else 0
-pct_progress_with_draft    = (total_progress_with_draft / total_data * 100)    if total_data else 0
+total_progress_with_draft = (
+    int(df[progress_with_draft_cols].sum().sum())
+    if progress_with_draft_cols else 0
+)
+
+pct_progress_without_draft = (
+    total_progress_without_draft / total_data * 100
+) if total_data else 0
+
+pct_progress_with_draft = (
+    total_progress_with_draft / total_data * 100
+) if total_data else 0
 
 k1, k2, k3, k4, k5, k6, k7 = st.columns(7)
 k1.metric("Total Pencacah",  f"{n_pcl:,}")
