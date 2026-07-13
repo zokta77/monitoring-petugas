@@ -1416,7 +1416,8 @@ with tab_pcl:
         # =========================
         # Download Rekap Pencacah
         # =========================
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        now_wit = datetime.now(ZoneInfo("Asia/Jayapura"))
+        timestamp = now_wit.strftime("%d-%m-%Y_%H-%M_WIT")
 
         st.download_button(
             label="📊 Download Rekap Pencacah (XLSX)",
@@ -1425,7 +1426,6 @@ with tab_pcl:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_pcl"
         )
-       
 
 
 
