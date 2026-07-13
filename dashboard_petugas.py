@@ -1416,13 +1416,17 @@ with tab_pcl:
         # =========================
         # Download Rekap Pencacah
         # =========================
-        now_wit = datetime.now(ZoneInfo("Asia/Jayapura"))
-        timestamp = now_wit.strftime("%d-%m-%Y_%H-%M_WIT")
+
+        # Ambil waktu update file scraping terakhir, lalu ubah ke WIT
+        timestamp_wit = datetime.fromtimestamp(
+            os.path.getmtime(LATEST_FILE),
+            tz=ZoneInfo("Asia/Jayapura")
+        ).strftime("%Y%m%d_%H%M%S_WIT")
 
         st.download_button(
             label="📊 Download Rekap Pencacah (XLSX)",
             data=to_excel(disp_pcl),
-            file_name=f"rekap_pencacah_{timestamp}.xlsx",
+            file_name=f"rekap_pencacah_{timestamp_wit}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_pcl"
         )
