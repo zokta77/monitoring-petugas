@@ -1585,7 +1585,7 @@ with tab_target:
     else:
         today_wit = datetime.now(ZoneInfo("Asia/Jayapura")).date()
 
-        # ── Jadwal milestone (bisa diubah langsung di tabel ini) ────────────
+        # ── Jadwal milestone ────────────────────────────────────────────────
         st.markdown("#### 🗓️ Jadwal Milestone SE2026")
         st.caption("Sesuaikan tanggal/persentase di sini kalau ada perubahan jadwal resmi.")
 
@@ -1604,10 +1604,19 @@ with tab_target:
             hide_index=True,
             key="milestone_editor",
             column_config={
-                "Tanggal": st.column_config.DateColumn("Tanggal", format="DD MMM YYYY"),
-                "Target (%)": st.column_config.NumberColumn("Target (%)", min_value=0, max_value=100, step=1),
+                "Tanggal": st.column_config.DateColumn(
+                    "Tanggal",
+                    format="DD MMM YYYY"
+                ),
+                "Target (%)": st.column_config.NumberColumn(
+                    "Target (%)",
+                    min_value=0,
+                    max_value=100,
+                    step=1
+                ),
             },
         )
+
         milestone_df = milestone_df.dropna().copy()
         milestone_df["Tanggal"] = pd.to_datetime(milestone_df["Tanggal"]).dt.date
         milestone_df = milestone_df.sort_values("Tanggal").reset_index(drop=True)
@@ -1616,45 +1625,92 @@ with tab_target:
             st.warning("Belum ada milestone yang diatur.")
         else:
             # ── Progress keseluruhan saat ini ───────────────────────────────
-            total_data_all = float(df["total_data"].sum())
-            total_done_all = float(df[done_cols].sum().sum()) if done_cols else 0.0
-            pct_now = (total_done_all / total_data_all * 100) if total_data_all else 0.0
+            # Progress = Submit + Approve + Reject
+            progress_cols_milestone = list(
+                dict.fromkeys(submit_cols + approve_cols + rejected_cols)
+            )
 
-            # ── Klasifikasi tiap milestone: tercapai / belum / akan datang ──
+            total_data_all = float(df["total_data"].sum())
+
+            total_done_all = (
+                float(df[progress_cols_milestone].sum().sum())
+                if progress_cols_milestone else 0.0
+            )
+
+            pct_now = (
+                total_done_all / total_data_all * 100
+            ) if total_data_all else 0.0
+
+            # ── Klasifikasi tiap milestone ─────────────────────────────────
             status_rows = []
             next_milestone = None
+
             for _, m in milestone_df.iterrows():
-                m_date, m_pct = m["Tanggal"], m["Target (%)"]
+                m_date = m["Tanggal"]
+                m_pct = float(m["Target (%)"])
+
                 if m_date < today_wit:
-                    status = "✅ Tercapai" if pct_now >= m_pct else "⚠️ Belum tercapai (lewat tanggal)"
+                    status = (
+                        "✅ Tercapai"
+                        if pct_now >= m_pct
+                        else "⚠️ Belum tercapai (lewat tanggal)"
+                    )
                 elif m_date == today_wit:
-                    status = "✅ Tercapai" if pct_now >= m_pct else "🔴 Target hari ini"
+                    status = (
+                        "✅ Tercapai"
+                        if pct_now >= m_pct
+                        else "🔴 Target hari ini"
+                    )
                 else:
                     status = "⏳ Akan datang"
                     if next_milestone is None and pct_now < m_pct:
                         next_milestone = (m_date, m_pct)
+
                 status_rows.append({
                     "Tanggal": m_date,
                     "Target (%)": m_pct,
                     "Target Muatan": int(total_data_all * m_pct / 100),
+                    "Progress Saat Ini (%)": round(pct_now, 1),
+                    "Selesai Saat Ini": int(total_done_all),
                     "Status": status,
                 })
+
             milestone_status_df = pd.DataFrame(status_rows)
 
-            st.dataframe(milestone_status_df, use_container_width=True, hide_index=True)
+            st.dataframe(
+                milestone_status_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Target (%)": st.column_config.ProgressColumn(
+                        "Target (%)",
+                        min_value=0,
+                        max_value=100,
+                        format="%.1f%%"
+                    ),
+                    "Progress Saat Ini (%)": st.column_config.ProgressColumn(
+                        "Progress Saat Ini (%)",
+                        min_value=0,
+                        max_value=100,
+                        format="%.1f%%"
+                    ),
+                }
+            )
 
             # ── Kurva rencana vs posisi sekarang ─────────────────────────────
             fig_curve = go.Figure()
+
             fig_curve.add_trace(go.Scatter(
                 x=pd.to_datetime(milestone_status_df["Tanggal"]),
                 y=milestone_status_df["Target (%)"],
                 mode="lines+markers+text",
                 name="Target Rencana",
-                text=[f"{p}%" for p in milestone_status_df["Target (%)"]],
+                text=[f"{p:.0f}%" for p in milestone_status_df["Target (%)"]],
                 textposition="top center",
                 line=dict(color="#0ea5e9", width=3, dash="dot"),
                 marker=dict(size=9, color="#0ea5e9"),
             ))
+
             fig_curve.add_trace(go.Scatter(
                 x=[pd.to_datetime(today_wit)],
                 y=[pct_now],
@@ -1664,18 +1720,24 @@ with tab_target:
                 textposition="bottom center",
                 marker=dict(size=15, color="#14b8a6", symbol="diamond"),
             ))
+
             fig_curve.update_layout(
                 **styled_chart_layout(height=340),
                 xaxis=dict(title="Tanggal", showgrid=False),
-                yaxis=dict(title="Progress (%)", range=[0, 108], showgrid=True,
-                           gridcolor="rgba(100,116,139,0.15)"),
+                yaxis=dict(
+                    title="Progress (%)",
+                    range=[0, 108],
+                    showgrid=True,
+                    gridcolor="rgba(100,116,139,0.15)"
+                ),
                 legend=dict(orientation="h", y=1.15),
             )
+
             st.plotly_chart(fig_curve, use_container_width=True)
 
             st.divider()
 
-            # ── Target harian menuju milestone aktif (terdekat & belum tercapai) ──
+            # ── Target harian menuju milestone aktif ─────────────────────────
             if next_milestone is None:
                 st.success("🎉 Progress saat ini sudah memenuhi seluruh milestone yang terjadwal!")
             else:
@@ -1683,8 +1745,8 @@ with tab_target:
                 days_left = max((target_date - today_wit).days, 1)
 
                 st.info(
-                    f"🎯 Milestone aktif: **{target_pct}%** pada **{target_date:%d %b %Y}** "
-                    f"({days_left} hari lagi)"
+                    f"🎯 Milestone aktif: **{target_pct:.0f}%** pada "
+                    f"**{target_date:%d %b %Y}** ({days_left} hari lagi)"
                 )
 
                 target_value_team = total_data_all * target_pct / 100
@@ -1692,26 +1754,61 @@ with tab_target:
                 target_harian_team = int(np.ceil(sisa_team / days_left))
 
                 tk1, tk2, tk3, tk4 = st.columns(4)
-                tk1.metric("Progress Saat Ini", f"{pct_now:.1f}%")
-                tk2.metric("Target Milestone", f"{target_pct:.0f}%")
-                tk3.metric("Hari Tersisa", f"{days_left} hari")
-                tk4.metric("Target Harian", f"{target_harian_team:,}/hari")
+
+                tk1.metric(
+                    "Progress Saat Ini",
+                    f"{pct_now:.1f}%",
+                    help="Progress = Submit + Approve + Reject"
+                )
+
+                tk2.metric(
+                    "Target Milestone",
+                    f"{target_pct:.0f}%"
+                )
+
+                tk3.metric(
+                    "Hari Tersisa",
+                    f"{days_left} hari"
+                )
+
+                tk4.metric(
+                    "Target Harian",
+                    f"{target_harian_team:,}/hari"
+                )
 
                 st.divider()
 
                 # ── Per pencacah, menuju milestone aktif yang sama ──────────
-                agg_t = df.groupby("nama_pcl")[status_cols + ["total_data"]].sum().reset_index()
-                agg_t["Selesai"] = agg_t[done_cols].sum(axis=1) if done_cols else 0
+                agg_t = (
+                    df.groupby("nama_pcl")[status_cols + ["total_data"]]
+                    .sum()
+                    .reset_index()
+                )
+
+                # Selesai = Submit + Approve + Reject
+                agg_t["Selesai"] = (
+                    agg_t[progress_cols_milestone].sum(axis=1)
+                    if progress_cols_milestone else 0
+                )
+
                 agg_t["Progress (%)"] = (
-                    agg_t["Selesai"] / agg_t["total_data"].replace(0, pd.NA) * 100
+                    agg_t["Selesai"]
+                    / agg_t["total_data"].replace(0, pd.NA)
+                    * 100
                 ).round(1).fillna(0)
+
                 agg_t["Target Muatan (Milestone)"] = (
                     agg_t["total_data"] * target_pct / 100
                 ).round().astype(int)
+
                 agg_t["Sisa ke Milestone"] = (
                     agg_t["Target Muatan (Milestone)"] - agg_t["Selesai"]
                 ).clip(lower=0)
-                agg_t["Target Harian"] = np.ceil(agg_t["Sisa ke Milestone"] / days_left).astype(int)
+
+                agg_t["Target Harian"] = np.ceil(
+                    agg_t["Sisa ke Milestone"] / days_left
+                ).astype(int)
+
                 agg_t = agg_t.sort_values("Target Harian", ascending=False)
 
                 # ── Bar chart target harian per pencacah ────────────────────
@@ -1723,7 +1820,8 @@ with tab_target:
                 else:
                     fig_target = px.bar(
                         chart_t.sort_values("Target Harian"),
-                        x="Target Harian", y="nama_pcl",
+                        x="Target Harian",
+                        y="nama_pcl",
                         orientation="h",
                         text="Target Harian",
                         color="Target Harian",
@@ -1731,17 +1829,27 @@ with tab_target:
                         template=PLOT_TEMPLATE,
                         labels={"nama_pcl": ""},
                     )
-                    fig_target.update_traces(textposition="outside", textfont_size=10)
+
+                    fig_target.update_traces(
+                        textposition="outside",
+                        textfont_size=10
+                    )
+
                     fig_target.update_layout(
                         **styled_chart_layout(
                             height=max(400, len(chart_t) * 22),
                             coloraxis_showscale=False,
                         ),
-                        xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)",
-                                   title="Target (per hari)"),
+                        xaxis=dict(
+                            showgrid=True,
+                            gridcolor="rgba(100,116,139,0.15)",
+                            title="Target (per hari)"
+                        ),
                         yaxis=dict(showgrid=False),
                     )
+
                     st.plotly_chart(fig_target, use_container_width=True)
+
                     if (agg_t["Sisa ke Milestone"] > 0).sum() > top_n_target:
                         st.caption(
                             f"Menampilkan {top_n_target} pencacah dengan target harian tertinggi "
@@ -1753,11 +1861,29 @@ with tab_target:
                 # ── Tabel detail ─────────────────────────────────────────────
                 st.markdown("#### Tabel Target Harian per Pencacah")
 
-                cols_show = ["nama_pcl", "total_data", "Selesai", "Progress (%)",
-                             "Target Muatan (Milestone)", "Sisa ke Milestone", "Target Harian"]
+                cols_show = [
+                    "nama_pcl",
+                    "total_data",
+                    "Selesai",
+                    "Progress (%)",
+                    "Target Muatan (Milestone)",
+                    "Sisa ke Milestone",
+                    "Target Harian"
+                ]
+
                 if "nama_pml" in df.columns:
-                    pml_map = df.groupby("nama_pcl")["nama_pml"].first().reset_index()
-                    agg_t = agg_t.merge(pml_map, on="nama_pcl", how="left")
+                    pml_map = (
+                        df.groupby("nama_pcl")["nama_pml"]
+                        .first()
+                        .reset_index()
+                    )
+
+                    agg_t = agg_t.merge(
+                        pml_map,
+                        on="nama_pcl",
+                        how="left"
+                    )
+
                     cols_show.insert(1, "nama_pml")
 
                 disp_t = rename_display(agg_t[cols_show])
@@ -1768,12 +1894,17 @@ with tab_target:
                     hide_index=True,
                     column_config={
                         "Progress (%)": st.column_config.ProgressColumn(
-                            "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
+                            "Progress (%)",
+                            min_value=0,
+                            max_value=100,
+                            format="%.1f%%"
                         ),
                         "Target Harian": st.column_config.NumberColumn(
                             "Target Harian (per hari)",
-                            help=f"Jumlah muatan yang harus diselesaikan per hari agar mencapai "
-                                 f"{target_pct:.0f}% pada {target_date:%d %b %Y}",
+                            help=(
+                                f"Jumlah muatan yang harus diselesaikan per hari agar mencapai "
+                                f"{target_pct:.0f}% pada {target_date:%d %b %Y}"
+                            ),
                         ),
                     },
                 )
@@ -1788,10 +1919,8 @@ with tab_target:
 
                 st.caption(
                     f"💡 **Target Harian** = ({target_pct:.0f}% × Total Muatan − Selesai) ÷ Hari Tersisa "
-                    f"ke milestone aktif, dibulatkan ke atas. Milestone yang sudah terlewati tanggalnya "
-                    f"otomatis dilewati kalau progress sudah memenuhi targetnya."
+                    f"ke milestone aktif. Kolom **Selesai** dihitung dari **Submit + Approve + Reject**."
                 )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3 — Per Desa
