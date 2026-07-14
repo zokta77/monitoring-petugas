@@ -972,7 +972,7 @@ submit_cols   = [c for c in status_cols if "SUBMIT" in c.upper()]
 approve_cols  = [c for c in status_cols if "APPROV" in c.upper()]
 rejected_cols = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
 edited_cols   = [c for c in status_cols if any(k in c.upper() for k in ["EDIT", "EDITED", "DIEDIT"])]
-
+completed_cols = [c for c in status_cols if any(k in c.upper() for k in ["COMPLETED", "SELESAI"])]
 # Progress TANPA draft = semua status kecuali Draft dan Open
 progress_without_draft_cols = [
     c for c in status_cols
@@ -1631,7 +1631,7 @@ with tab_target:
             # ── Progress keseluruhan saat ini ───────────────────────────────
             # Progress = Submit + Approve + Reject
             progress_cols_milestone = list(
-                dict.fromkeys(submit_cols + approve_cols + rejected_cols)
+                dict.fromkeys(submit_cols + approve_cols + rejected_cols + completed_cols)
             )
 
             total_data_all = float(df["total_data"].sum())
