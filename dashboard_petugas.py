@@ -1331,7 +1331,7 @@ with tab_pcl:
         # Progress = Submit + Approve + Reject / Total Data
         progress_cols = [
             c for c in agg_pcl.columns
-            if any(k in c.upper() for k in ["SUBMIT", "APPROV", "REJECT", "DITOLAK"])
+            if any(k in c.upper() for k in ["SUBMIT", "APPROV", "REJECT", "COMPLETED"])
         ]
 
         if "total_data" in agg_pcl.columns and progress_cols:
