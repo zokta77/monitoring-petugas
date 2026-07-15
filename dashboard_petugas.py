@@ -1371,12 +1371,12 @@ with tab_pcl:
                             st.dataframe(bad, use_container_width=True, hide_index=True)
         col_cfg_pcl = {}
 
-        if "Progress (%)" in disp_pcl.columns:
-            col_cfg_pcl["Progress (%)"] = st.column_config.ProgressColumn(
+        if "Progress (Total Muatan) (%)" in disp_pcl.columns:
+            col_cfg_pcl["Progress (Total Muatan)(%)"] = st.column_config.ProgressColumn(
                 "Progress (%)",
                 min_value=0,
                 max_value=100,
-                format="%.1f%%"
+                format="%.2f%%"
             )
 
         st.caption("💡 Klik salah satu baris di tabel untuk melihat rekap progress harian pencacah tersebut.")
