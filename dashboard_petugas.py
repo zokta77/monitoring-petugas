@@ -256,7 +256,13 @@ IDENTITY_COLS = [
     "nmkab", "nmkec", "nmdesa", "nmsls", "nmsubsls",
     "pengawas", "pencacah",
     "nama_pcl", "nama_pml",
+    "jumlah_prelist_awal",
 ]
+
+def _normalize_key(s: str) -> str:
+    """Normalisasi nama kolom (lowercase, spasi -> underscore) supaya pencocokan
+    nama kolom tidak gagal hanya karena beda kapitalisasi/spasi antar sumber data."""
+    return str(s).strip().lower().replace(" ", "_")
 
 # Pemetaan nama kolom teknis → nama tampilan
 COL_LABELS = {
@@ -272,10 +278,15 @@ COL_LABELS = {
     "Progress (%)": "Progress (%)",
     "Jumlah PCL": "Jumlah Pencacah",
     "Selisih":   "Selisih",
+    "jumlah_prelist_awal": "Jumlah Prelist Awal",
 }
 
+_COL_LABELS_NORM = {_normalize_key(k): v for k, v in COL_LABELS.items()}
+
 def nice_col(c: str) -> str:
-    return COL_LABELS.get(c, c)
+    if c in COL_LABELS:
+        return COL_LABELS[c]
+    return _COL_LABELS_NORM.get(_normalize_key(c), c)
 
 
 DONE_KEYWORDS     = ["APPROVED", "SUBMITTED"]
@@ -311,8 +322,10 @@ def load_data(path_or_file, cache_key=None) -> pd.DataFrame:
     df.columns = [str(c).strip() for c in df.columns]
     return df
 
+_IDENTITY_COLS_NORM = {_normalize_key(c) for c in IDENTITY_COLS}
+
 def detect_status_cols(df: pd.DataFrame) -> list:
-    return [c for c in df.columns if c not in IDENTITY_COLS]
+    return [c for c in df.columns if _normalize_key(c) not in _IDENTITY_COLS_NORM]
 
 def to_numeric_safe(df: pd.DataFrame, cols: list) -> pd.DataFrame:
     df = df.copy()
@@ -909,7 +922,11 @@ st.markdown(f"""
 # Deteksi kolom status
 # ─────────────────────────────────────────────────────────────────────────────
 status_cols  = detect_status_cols(df_raw)
-numeric_cols = status_cols + (["total_data"] if "total_data" in df_raw.columns else [])
+numeric_cols = (
+    status_cols
+    + (["total_data"] if "total_data" in df_raw.columns else [])
+    + (["jumlah_prelist_awal"] if "jumlah_prelist_awal" in df_raw.columns else [])
+)
 df_raw       = to_numeric_safe(df_raw, numeric_cols)
 
 if not status_cols:
@@ -982,7 +999,7 @@ progress_without_draft_cols = [
 # Progress DENGAN draft = semua status kecuali Open
 progress_with_draft_cols = [
     c for c in status_cols
-    if "OPEN" not in c.upper()
+    if not any(k in c.upper() for k in ["OPEN"])
 ]
 
 total_draft    = int(df[draft_cols].sum().sum())    if draft_cols    else 0
@@ -1215,16 +1232,18 @@ with tab_overview:
                 k_name = feature['properties'].get('nmkec')
                 if k_name in kec_dict:
                     feature['properties']['Progress Hover'] = f"{kec_dict[k_name]['Progress']:.2f}%"
+                    feature['properties']['Total Muatan Hover'] = int(kec_dict[k_name].get('total_data', 0))
                     for col in status_cols:
                         feature['properties'][col] = int(kec_dict[k_name].get(col, 0))
                 else:
                     feature['properties']['Progress Hover'] = "0.0%"
+                    feature['properties']['Total Muatan Hover'] = 0
                     for col in status_cols:
                         feature['properties'][col] = 0
 
             # 3. Setup kolom apa saja yang mau ditampilkan di tooltip
-            tooltip_fields_kec = ['nmkec', 'Progress Hover'] + status_cols
-            tooltip_aliases_kec = ['Kecamatan', 'Progress (%)'] + status_cols
+            tooltip_fields_kec = ['nmkec', 'Progress Hover', 'Total Muatan Hover'] + status_cols
+            tooltip_aliases_kec = ['Kecamatan', 'Progress (%)', 'Total Muatan'] + status_cols
 
             # 4. Tumpuk layer GeoJSON transparan
             folium.GeoJson(
@@ -1286,15 +1305,17 @@ with tab_overview:
                 d_name = feature['properties'].get('nmdesa')
                 if d_name in desa_dict:
                     feature['properties']['Progress Hover'] = f"{desa_dict[d_name]['Progress']:.2f}%"
+                    feature['properties']['Total Muatan Hover'] = int(desa_dict[d_name].get('total_data', 0))
                     for col in status_cols:
                         feature['properties'][col] = int(desa_dict[d_name].get(col, 0))
                 else:
                     feature['properties']['Progress Hover'] = "0.0%"
+                    feature['properties']['Total Muatan Hover'] = 0
                     for col in status_cols:
                         feature['properties'][col] = 0
 
-            tooltip_fields_desa = ['nmdesa', 'Progress Hover'] + status_cols
-            tooltip_aliases_desa = ['Desa/Kelurahan', 'Progress (%)'] + status_cols
+            tooltip_fields_desa = ['nmdesa', 'Progress Hover', 'Total Muatan Hover'] + status_cols
+            tooltip_aliases_desa = ['Desa/Kelurahan', 'Progress (%)', 'Total Muatan'] + status_cols
 
             folium.GeoJson(
                 geo_desa_rendered,
@@ -1325,19 +1346,29 @@ with tab_pcl:
     if "nama_pcl" not in df.columns:
         st.warning("Kolom `nama_pcl` tidak ditemukan dalam data.")
     else:
-        agg_cols = status_cols + (["total_data"] if "total_data" in df.columns else [])
+        agg_cols = (
+            status_cols
+            + (["total_data"] if "total_data" in df.columns else [])
+            + (["jumlah_prelist_awal"] if "jumlah_prelist_awal" in df.columns else [])
+        )
         agg_pcl  = df.groupby("nama_pcl")[agg_cols].sum().reset_index()
 
-        # Progress = Submit + Approve + Reject / Total Data
+        # Progress = Submit + Approve + Reject / Total Data (dan / Jumlah Prelist Awal)
         progress_cols = [
             c for c in agg_pcl.columns
             if any(k in c.upper() for k in ["SUBMIT", "APPROV", "REJECT", "COMPLETED"])
         ]
 
         if "total_data" in agg_pcl.columns and progress_cols:
-            agg_pcl["Progress (%)"] = (
+            agg_pcl["Progress (Total Muatan) (%)"] = (
                 agg_pcl[progress_cols].sum(axis=1)
                 / agg_pcl["total_data"].replace(0, pd.NA) * 100
+            ).round(1).fillna(0)
+
+        if "jumlah_prelist_awal" in agg_pcl.columns and progress_cols:
+            agg_pcl["Progress (Jumlah Prelist Awal) (%)"] = (
+                agg_pcl[progress_cols].sum(axis=1)
+                / agg_pcl["jumlah_prelist_awal"].replace(0, pd.NA) * 100
             ).round(1).fillna(0)
 
         if "total_data" in agg_pcl.columns:
@@ -1372,11 +1403,21 @@ with tab_pcl:
         col_cfg_pcl = {}
 
         if "Progress (Total Muatan) (%)" in disp_pcl.columns:
-            col_cfg_pcl["Progress (Total Muatan)(%)"] = st.column_config.ProgressColumn(
-                "Progress (%)",
+            col_cfg_pcl["Progress (Total Muatan) (%)"] = st.column_config.ProgressColumn(
+                "Progress (Total Muatan) (%)",
                 min_value=0,
                 max_value=100,
-                format="%.2f%%"
+                format="%.2f%%",
+                help="(Submit + Approve + Reject) / Total Muatan"
+            )
+
+        if "Progress (Jumlah Prelist Awal) (%)" in disp_pcl.columns:
+            col_cfg_pcl["Progress (Jumlah Prelist Awal) (%)"] = st.column_config.ProgressColumn(
+                "Progress (Jumlah Prelist Awal) (%)",
+                min_value=0,
+                max_value=100,
+                format="%.2f%%",
+                help="(Submit + Approve + Reject) / Jumlah Prelist Awal"
             )
 
         st.caption("💡 Klik salah satu baris di tabel untuk melihat rekap progress harian pencacah tersebut.")
@@ -1451,7 +1492,11 @@ with tab_pml:
         reject_cols_pml  = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
         edited_cols_pml  = [c for c in status_cols if any(k in c.upper() for k in ["EDIT", "EDITED", "DIEDIT"])]
 
-        agg_cols_pml = status_cols + (["total_data"] if "total_data" in df.columns else [])
+        agg_cols_pml = (
+            status_cols
+            + (["total_data"] if "total_data" in df.columns else [])
+            + (["jumlah_prelist_awal"] if "jumlah_prelist_awal" in df.columns else [])
+        )
         agg_pml = df.groupby("nama_pml")[agg_cols_pml].sum().reset_index()
 
         # Jumlah pencacah binaan per pengawas
@@ -1465,11 +1510,19 @@ with tab_pml:
         agg_pml["Edited"]  = agg_pml[edited_cols_pml].sum(axis=1)  if edited_cols_pml  else 0
 
         if "total_data" in agg_pml.columns:
-            agg_pml["Progress Pengawas (%)"] = (
+            agg_pml["Progress Pengawas (Total Muatan) (%)"] = (
                 (agg_pml["Approve"] + agg_pml["Reject"] + agg_pml["Edited"])
                 / agg_pml["total_data"].replace(0, pd.NA) * 100
             ).round(1).fillna(0)
-            agg_pml = agg_pml.sort_values("Progress Pengawas (%)", ascending=False)
+
+        if "jumlah_prelist_awal" in agg_pml.columns:
+            agg_pml["Progress Pengawas (Jumlah Prelist Awal) (%)"] = (
+                (agg_pml["Approve"] + agg_pml["Reject"] + agg_pml["Edited"])
+                / agg_pml["jumlah_prelist_awal"].replace(0, pd.NA) * 100
+            ).round(1).fillna(0)
+
+        if "Progress Pengawas (Total Muatan) (%)" in agg_pml.columns:
+            agg_pml = agg_pml.sort_values("Progress Pengawas (Total Muatan) (%)", ascending=False)
         else:
             agg_pml = agg_pml.sort_values("Approve", ascending=False)
 
@@ -1541,23 +1594,36 @@ with tab_pml:
             show_cols_pml.append("Jumlah Pencacah")
         if "total_data" in agg_pml.columns:
             show_cols_pml.append("total_data")
+        if "jumlah_prelist_awal" in agg_pml.columns:
+            show_cols_pml.append("jumlah_prelist_awal")
         show_cols_pml += ["Approve", "Reject", "Edited"]
-        if "Progress Pengawas (%)" in agg_pml.columns:
-            show_cols_pml.append("Progress Pengawas (%)")
+        if "Progress Pengawas (Total Muatan) (%)" in agg_pml.columns:
+            show_cols_pml.append("Progress Pengawas (Total Muatan) (%)")
+        if "Progress Pengawas (Jumlah Prelist Awal) (%)" in agg_pml.columns:
+            show_cols_pml.append("Progress Pengawas (Jumlah Prelist Awal) (%)")
 
         disp_pml = agg_pml[show_cols_pml].rename(columns={
             "nama_pml": "Nama Pengawas",
             "total_data": "Total Muatan",
+            "jumlah_prelist_awal": "Jumlah Prelist Awal",
         })
 
         col_cfg_pml = {}
-        if "Progress Pengawas (%)" in disp_pml.columns:
-            col_cfg_pml["Progress Pengawas (%)"] = st.column_config.ProgressColumn(
-                "Progress Pengawas (%)",
+        if "Progress Pengawas (Total Muatan) (%)" in disp_pml.columns:
+            col_cfg_pml["Progress Pengawas (Total Muatan) (%)"] = st.column_config.ProgressColumn(
+                "Progress Pengawas (Total Muatan) (%)",
                 min_value=0,
                 max_value=100,
                 format="%.1f%%",
                 help="(Approve + Reject + Edited) / Total Muatan"
+            )
+        if "Progress Pengawas (Jumlah Prelist Awal) (%)" in disp_pml.columns:
+            col_cfg_pml["Progress Pengawas (Jumlah Prelist Awal) (%)"] = st.column_config.ProgressColumn(
+                "Progress Pengawas (Jumlah Prelist Awal) (%)",
+                min_value=0,
+                max_value=100,
+                format="%.1f%%",
+                help="(Approve + Reject + Edited) / Jumlah Prelist Awal"
             )
 
         st.dataframe(
