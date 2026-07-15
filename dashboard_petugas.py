@@ -1378,8 +1378,8 @@ with tab_pcl:
         st.markdown("#### Tabel Detail per Pencacah")
 
         if "total_data" in agg_pcl.columns:
-            agg_pcl["_sum"]    = agg_pcl[status_cols].sum(axis=1)
-            agg_pcl["Selisih"] = agg_pcl["total_data"] - agg_pcl["_sum"]
+            # agg_pcl["_sum"]    = agg_pcl[status_cols].sum(axis=1)
+            agg_pcl["Selisih"] = agg_pcl["total_data"] - agg_pcl["jumlah_prelist_awal"]
             agg_pcl = agg_pcl.drop(columns=["_sum"])
 
         # Sisipkan kolom Pengawas jika ada
