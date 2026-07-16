@@ -1398,7 +1398,7 @@ with tab_pcl:
         if "Selisih" in agg_pcl.columns:
                     bad = disp_pcl[disp_pcl.get("Selisih", 0) != 0] if "Selisih" in disp_pcl.columns else pd.DataFrame()
                     if not bad.empty:
-                        with st.expander(f"⚠️ {len(bad)} pencacah punya selisih total_data vs jumlah status"):
+                        with st.expander(f"⚠️ {len(bad)} pencacah punya selisih Total Muatan vs Jumlah Prelist Awal"):
                             st.dataframe(bad, use_container_width=True, hide_index=True)
         col_cfg_pcl = {}
 
