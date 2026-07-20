@@ -2,6 +2,7 @@ import json
 import os
 import random
 import re
+import shutil
 import tempfile
 import time
 from datetime import datetime
@@ -28,6 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 AUTH_DIR = BASE_DIR / ".auth"
 STATE_FILE = AUTH_DIR / "fasih_state.json"
 ENV_FILE = BASE_DIR / ".env"
+PROFILE_COPY_DIR = AUTH_DIR / "chrome_fasih_profile"
 AUTH_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_USER_AGENT = (
@@ -157,6 +159,89 @@ def load_cookies_from_state():
         return False
 
 
+
+def prepare_chrome_profile_copy(
+    source_user_data_dir,
+    profile_name,
+    target_user_data_dir=PROFILE_COPY_DIR,
+    force_copy=False,
+):
+    """
+    Salin profil Chrome yang sudah login ke direktori khusus otomasi.
+
+    Chrome versi baru tidak selalu mengizinkan Playwright mengendalikan profil
+    utama secara langsung. Karena itu, profil asli disalin satu kali, lalu
+    Playwright memakai salinannya. Session/cookie berikutnya akan disimpan pada
+    profil salinan tersebut.
+    """
+    source_root = Path(source_user_data_dir).expanduser()
+    source_profile = source_root / profile_name
+    target_root = Path(target_user_data_dir).expanduser()
+    target_profile = target_root / profile_name
+    marker = target_root / ".profile_ready"
+
+    if marker.exists() and target_profile.exists() and not force_copy:
+        print(f"👤 Menggunakan salinan profil Chrome: {target_profile}")
+        return str(target_root)
+
+    if not source_root.exists():
+        raise RuntimeError(
+            f"Folder User Data Chrome tidak ditemukan: {source_root}"
+        )
+    if not source_profile.exists():
+        raise RuntimeError(
+            f"Folder profil Chrome tidak ditemukan: {source_profile}. "
+            "Buka chrome://version lalu lihat bagian Profile Path; "
+            "gunakan nama folder terakhirnya, misalnya Default atau Profile 1."
+        )
+
+    print("📁 Menyalin profil Chrome yang sudah login ke profil khusus otomasi...")
+    print("   Tutup semua jendela Chrome jika proses salin gagal karena file terkunci.")
+
+    if force_copy and target_root.exists():
+        shutil.rmtree(target_root, ignore_errors=True)
+
+    target_root.mkdir(parents=True, exist_ok=True)
+
+    # Local State diperlukan agar cookie terenkripsi dapat dibaca oleh Chrome
+    # pada akun Windows yang sama.
+    local_state = source_root / "Local State"
+    if local_state.exists():
+        shutil.copy2(local_state, target_root / "Local State")
+
+    ignore = shutil.ignore_patterns(
+        "Cache",
+        "Code Cache",
+        "GPUCache",
+        "GrShaderCache",
+        "DawnCache",
+        "Crashpad",
+        "BrowserMetrics",
+        "OptimizationGuidePredictionModels",
+        "component_crx_cache",
+    )
+
+    try:
+        shutil.copytree(
+            source_profile,
+            target_profile,
+            dirs_exist_ok=True,
+            ignore=ignore,
+        )
+    except PermissionError as exc:
+        raise RuntimeError(
+            "Profil Chrome sedang dipakai atau ada file yang terkunci. "
+            "Tutup seluruh jendela Chrome, tunggu beberapa detik, lalu jalankan ulang."
+        ) from exc
+
+    marker.write_text(
+        f"source={source_root}\nprofile={profile_name}\n",
+        encoding="utf-8",
+    )
+    print(f"✅ Salinan profil siap: {target_profile}")
+    return str(target_root)
+
+
 def login_with_sso(
     username="",
     password="",
@@ -166,6 +251,8 @@ def login_with_sso(
     browser_channel="",
     headless=False,
     slow_mo=100,
+    persistent_user_data_dir="",
+    profile_name="Default",
 ):
     """
     Buka FASIH dengan Playwright, gunakan storage state jika masih valid,
@@ -190,7 +277,9 @@ def login_with_sso(
         "viewport": {"width": 1920, "height": 1080},
     }
 
-    if STATE_FILE.exists():
+    use_persistent_profile = bool(persistent_user_data_dir)
+
+    if not use_persistent_profile and STATE_FILE.exists():
         try:
             json.loads(STATE_FILE.read_text(encoding="utf-8"))
             context_options["storage_state"] = str(STATE_FILE)
@@ -198,15 +287,33 @@ def login_with_sso(
             STATE_FILE.unlink(missing_ok=True)
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(**launch_options)
-        context = browser.new_context(**context_options)
-        page = context.new_page()
+        browser = None
+        if use_persistent_profile:
+            persistent_options = dict(launch_options)
+            persistent_options.update(context_options)
+            persistent_options["args"] = [f"--profile-directory={profile_name}"]
+
+            print(
+                f"👤 Membuka Chrome dengan profil persisten: "
+                f"{Path(persistent_user_data_dir) / profile_name}"
+            )
+            context = playwright.chromium.launch_persistent_context(
+                user_data_dir=str(persistent_user_data_dir),
+                **persistent_options,
+            )
+            browser = context.browser
+            page = context.pages[0] if context.pages else context.new_page()
+        else:
+            browser = playwright.chromium.launch(**launch_options)
+            context = browser.new_context(**context_options)
+            page = context.new_page()
 
         # Diagnostik agar penyebab browser/tab tertutup terlihat di terminal.
-        browser.on(
-            "disconnected",
-            lambda *_: print("⚠️ Browser Playwright terputus atau tertutup."),
-        )
+        if browser is not None:
+            browser.on(
+                "disconnected",
+                lambda *_: print("⚠️ Browser Playwright terputus atau tertutup."),
+            )
         page.on(
             "close",
             lambda *_: print("⚠️ Tab login Playwright tertutup."),
@@ -221,9 +328,12 @@ def login_with_sso(
         )
 
         try:
-            # 1. Coba session yang sudah tersimpan.
-            if STATE_FILE.exists():
-                print("🔎 Memeriksa session Playwright yang tersimpan...")
+            # 1. Coba session yang sudah tersimpan di profil Chrome atau state file.
+            if use_persistent_profile or STATE_FILE.exists():
+                if use_persistent_profile:
+                    print("🔎 Memeriksa session dari profil Chrome yang sudah login...")
+                else:
+                    print("🔎 Memeriksa session Playwright yang tersimpan...")
                 try:
                     page.goto(
                         FASIH_HOME_URL,
@@ -238,17 +348,14 @@ def login_with_sso(
                 except Exception as e:
                     print(f"⚠️ Session tersimpan tidak dapat digunakan: {e}")
 
-                STATE_FILE.unlink(missing_ok=True)
-                context.clear_cookies()
+                if not use_persistent_profile:
+                    STATE_FILE.unlink(missing_ok=True)
+                    context.clear_cookies()
 
-            # 2. Session tidak tersedia/kedaluwarsa, lakukan login SSO.
-            if not username or not password:
-                raise RuntimeError(
-                    "Session sudah tidak valid, tetapi username/password belum tersedia. "
-                    "Isi file .env terlebih dahulu."
-                )
-
-            print("🔐 Login ulang melalui SSO BPS menggunakan Playwright...")
+            # 2. Session aplikasi tidak tersedia/kedaluwarsa. Buka alur SSO.
+            # Profil Chrome mungkin masih memiliki session SSO aktif, sehingga
+            # username/password baru diperlukan jika form login benar-benar muncul.
+            print("🔐 Membuka alur SSO BPS menggunakan profil Chrome...")
             page.goto(
                 FASIH_LOGIN_URL,
                 wait_until="domcontentloaded",
@@ -295,6 +402,12 @@ def login_with_sso(
                         f"Form username/password tidak ditemukan. "
                         f"URL: {page.url} | title: {title} | detail: {e}"
                     ) from e
+
+                if not username or not password:
+                    raise RuntimeError(
+                        "Session SSO pada profil Chrome sudah tidak aktif dan form login muncul, "
+                        "tetapi username/password belum tersedia di .env."
+                    )
 
                 username_input.fill(username)
                 password_input.fill(password)
@@ -380,7 +493,8 @@ def login_with_sso(
             except Exception:
                 pass
             try:
-                browser.close()
+                if browser is not None:
+                    browser.close()
             except Exception:
                 pass
 
@@ -392,8 +506,60 @@ def refresh_cookies():
     password = env.get("password") or env.get("PASSWORD") or ""
     use_otp = env_bool(env.get("use_otp") or env.get("USE_OTP"), default=True)
 
-    # Untuk login awal, headed mode lebih stabil dan mudah didiagnosis.
+    use_chrome_profile = env_bool(
+        env.get("USE_CHROME_PROFILE") or env.get("use_chrome_profile"),
+        default=False,
+    )
+
+    # Profil reguler hanya digunakan sebagai sumber. Secara default, script
+    # membuat salinan khusus agar tidak bentrok dengan Chrome harian.
+    chrome_user_data_dir = (
+        env.get("CHROME_USER_DATA_DIR")
+        or env.get("chrome_user_data_dir")
+        or ""
+    )
+    chrome_profile_name = (
+        env.get("CHROME_PROFILE_NAME")
+        or env.get("chrome_profile_name")
+        or "Default"
+    )
+    profile_mode = (
+        env.get("CHROME_PROFILE_MODE")
+        or env.get("chrome_profile_mode")
+        or "copy"
+    ).strip().lower()
+    force_profile_copy = env_bool(
+        env.get("FORCE_PROFILE_COPY") or env.get("force_profile_copy"),
+        default=False,
+    )
+
+    persistent_user_data_dir = ""
+    if use_chrome_profile:
+        if not chrome_user_data_dir:
+            raise RuntimeError(
+                "USE_CHROME_PROFILE=true, tetapi CHROME_USER_DATA_DIR belum diisi."
+            )
+
+        if profile_mode == "direct":
+            print(
+                "⚠️ Mode direct memakai profil Chrome asli. "
+                "Pastikan semua jendela Chrome sudah ditutup."
+            )
+            persistent_user_data_dir = chrome_user_data_dir
+        else:
+            persistent_user_data_dir = prepare_chrome_profile_copy(
+                source_user_data_dir=chrome_user_data_dir,
+                profile_name=chrome_profile_name,
+                target_user_data_dir=PROFILE_COPY_DIR,
+                force_copy=force_profile_copy,
+            )
+
+    # Profil Chrome persisten sebaiknya dibuka dengan tampilan browser.
     headless = env_bool(env.get("HEADLESS") or env.get("headless"), default=False)
+    if use_chrome_profile and headless:
+        print("⚠️ HEADLESS=true diabaikan karena profil Chrome persisten sedang digunakan.")
+        headless = False
+
     executable_path = (
         env.get("CHROME_EXECUTABLE_PATH")
         or env.get("chrome_executable_path")
@@ -402,7 +568,7 @@ def refresh_cookies():
     browser_channel = (
         env.get("BROWSER_CHANNEL")
         or env.get("browser_channel")
-        or ""
+        or ("chrome" if use_chrome_profile and not executable_path else "")
     )
 
     try:
@@ -419,14 +585,28 @@ def refresh_cookies():
         browser_channel=browser_channel,
         headless=headless,
         slow_mo=slow_mo,
+        persistent_user_data_dir=persistent_user_data_dir,
+        profile_name=chrome_profile_name,
     )
     update_runtime_cookies(fresh)
     print(f"🍪 {len(cookies)} cookie aktif siap dipakai oleh requests.")
 
 
 def ensure_cookies():
-    """Gunakan state tersimpan terlebih dahulu; login jika belum tersedia."""
+    """Gunakan profil Chrome/state tersimpan untuk menyiapkan cookie."""
     if cookies:
+        return
+
+    env = load_env()
+    use_chrome_profile = env_bool(
+        env.get("USE_CHROME_PROFILE") or env.get("use_chrome_profile"),
+        default=False,
+    )
+
+    # Saat profil Chrome diaktifkan, buka profil itu agar session yang dipakai
+    # benar-benar berasal dari browser persisten tersebut.
+    if use_chrome_profile:
+        refresh_cookies()
         return
 
     if load_cookies_from_state():
