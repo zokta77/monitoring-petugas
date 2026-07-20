@@ -1,61 +1,316 @@
-import pandas as pd
-import requests
+import json
 import os
 import random
+import re
 import tempfile
-from datetime import datetime
-import schedule
 import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from datetime import datetime
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+
+import pandas as pd
+import requests
+import schedule
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright
+
 from config_se2026 import NAMA_KABUPATEN, BASE_PATH, LATEST_FILE, archive_filename
 
 # ================= SETTINGS =================
-URL_DATA = 'https://fasih-sm.bps.go.id/app/api/analytic/api/v2/assignment/report-progress-by-responsibility'
+URL_DATA = "https://fasih-sm.bps.go.id/app/api/analytic/api/v2/assignment/report-progress-by-responsibility"
+FASIH_HOME_URL = "https://fasih-sm.bps.go.id/app/"
+FASIH_LOGIN_URL = "https://fasih-sm.bps.go.id/oauth_login.html"
+SSO_BUTTON_SELECTOR = '[href="/oauth2/authorization/ics"]'
 base_path = BASE_PATH
 
-# ===== KONFIGURASI SELENIUM =====
-# Cara cek path: buka chrome://version di profil yang sudah login FASIH
-# lihat baris "Profile Path" → folder induknya = CHROME_PROFILE_DIR
-CHROME_PROFILE_DIR  = r"C:\Users\Dell\AppData\Local\Google\Chrome\User Data"
-CHROME_PROFILE_NAME = "Profil 1"   # ganti sesuai profil (Default / Profile 1 / dst)
-FASIH_HOME_URL      = "https://fasih-sm.bps.go.id/app/"
-# ==========================================================
+BASE_DIR = Path(__file__).resolve().parent
+AUTH_DIR = BASE_DIR / ".auth"
+STATE_FILE = AUTH_DIR / "fasih_state.json"
+ENV_FILE = BASE_DIR / ".env"
+AUTH_DIR.mkdir(parents=True, exist_ok=True)
 
-# ===================== GANTI COOKIE DI SINI =====================
-cookies = {
-    'cf_clearance': 'KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw',
-    'TS0151fc2b': '0167a1c86105394079600857b3f57e0123c6c5ae242664566f37978e5b31d3ae756ea0d38074a900304b0ee8899e247d71ade49bf8',
-    'XSRF-TOKEN': 'f34df139-a133-4b62-b5b3-0111dfb483d1',
-    'TS00000000076': '0868f8be6fab2800741af13b821e3c8e2613be7bb28b9ebd2c95a0b229dd35097d43525e9cd4b1b7e1b1524475326b32088956678809d000f1140a8689a71da601487e6610d044e41bc2d6800ff45b3e417e6705b72c2f324c6fd913c131127a9fea1bad7f90811b58e2dc5154aa03608afbf29bd8c13bda6ef4d3068745dd88f8a36b03963ec42e1752283458a7b406ca042f4819ce27f229014ea56bae823d77bb10024d2051dba3f9ef35dde8bbac3c7edb3fd28aa20b96aebb744f94304c86e22a31e9f74265dd95f756b75153222ec0072f9752c8ac336d22d8b407d87ffc7cebacf023277f22f3a8c811a890c3cb3389b22d4ad35a668043a807eca42066229123daab10df',
-    'TSPD_101_DID': '0868f8be6fab2800741af13b821e3c8e2613be7bb28b9ebd2c95a0b229dd35097d43525e9cd4b1b7e1b1524475326b32088956678806380027421f9668d3a3dadb860a85f2fb533eaa241dbc7429eca1c21170c748c8d99a3f861b115527d0835ab6d2d2fa2916a8cc1bfd1803d04035',
-    'db8ca2b43ed851cc93e71fd5fd72bff7': 'a080d5ee6ca9cbdf66c57eb33ebab57d',
-    'TS011f2d1a': '01266d26d0bbc04ad72e6c3bfacb9fa916adcca541b583f45b4684d5cd2ae03ee971b70e2710fb42daa22cc821d1d56b54328cd2f2',
-    'TSPD_101': '0868f8be6fab28001de915cd6e05bde841c9653faed30df39f11a855b5111148f25aa4fb84cb769177001a311ddb5dbc08a6cd91f90518008b3cd1238affae2b5ca1732140a3428bba23ce13beb1c95e',
-    'SESSION': '81ada14a-3c2c-41c2-b497-10d20d4290cb',
-    'f5avraaaaaaaaaaaaaaaa_session_': 'MNJOEIDMKIADALDBJIHCFLLKHBFHDEKIEEJDHNFPFFCFJEFCDOBPFLOAFFEHKFFKKIGDEHKCNFJNCIMLDHAAMOGDMFCLKLELMBCJKKAFHEIHAJMAGEBMOMMLPMOEAFBN',
-    'TS5220f739077': '0868f8be6fab2800655f4cf16a2faad495723b20d210e123789c8b4d2cf6253a024af89e985d2c292b06a7d842c2fe0d088ebe5702172000b6fc1682044d9be1bcc80f990fa6a8a058628ae8340c4fa64ed643f22bcb147d',
-    'TS5220f739029': '0868f8be6fab280034976ba38ff17aa6c85bdbf0750e408db2b941088d6a4ff890a9a97b62100b090b2b911575662a1a',
-    'TSf1edb2d2027': '0868f8be6fab200009d9f2ebfb29feb94900e887d0fed454951fb9e8f7ce21d44d35668267a2774808cb8c35141130004bcc09a598a0cf10984216bb38acb391cbf1c18546a57ef227574de404638d5bf7fcf40fca15e1a0bb2371e8ef95c908',
-}
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/124.0.0.0 Safari/537.36"
+)
 
+# Cookie tidak lagi ditulis manual. Nilainya diisi dari Playwright/state file.
+cookies = {}
+
+# Header dibuat minimal. Header Cookie akan dibentuk otomatis oleh requests
+# dari parameter cookies=..., sehingga tidak ada cookie kedaluwarsa yang tertinggal.
 headers = {
-    'accept': '*/*',
-    'accept-language': 'en-US,en;q=0.9,id;q=0.8',
-    'content-type': 'application/json',
-    'origin': 'https://fasih-sm.bps.go.id',
-    'priority': 'u=1, i',
-    'referer': 'https://fasih-sm.bps.go.id/app/surveys/a0429e96-51a5-477b-a415-485f9c153004/fd68e454-ba45-4b85-8205-f3bf777ded24',
-    'sec-ch-ua': '"Not;A=Brand";v="8", "Chromium";v="150", "Google Chrome";v="150"',
-    'sec-ch-ua-mobile': '?1',
-    'sec-ch-ua-platform': '"Android"',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-    'user-agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
-    'x-xsrf-token': 'f34df139-a133-4b62-b5b3-0111dfb483d1',
-    'cookie': 'cf_clearance=KttlSqHtGfsM7lh5MeJqKHklKtsF467nca20raHcd0U-1781401979-1.2.1.1-vmXRVLPxjwzTVN1gbBiDgF9GprAD3Yo0lMKa6D7Kzbiqfvu5adUtCMtOOjqcQ9qVJhuoYoJ1L3Z6Kih46GdyKgIcKtQthQydkV.l8XEvdMfhcAXci7tQGKIlR5hJATeWOndNHgYi3k4kWHjVwnkLAigodZGn8_itOe4uZgjuXPCn6sqKut3DOIHkg4TIXeqoCQ0TocBDeyA6S5.CPkNOoxiZzuheDUT_EsytNLfQ3AzqmwHhl5Hyck6zd8s0Q1tmn5GicaFwCHt10r.u0U8bP4dbpdI5wU3AYY2rPOPEvrjgVZVcPh4oyr_VrqQyl0hs4_e_pcDHJcgrD6N_RhrbVw; TS0151fc2b=0167a1c86105394079600857b3f57e0123c6c5ae242664566f37978e5b31d3ae756ea0d38074a900304b0ee8899e247d71ade49bf8; XSRF-TOKEN=f34df139-a133-4b62-b5b3-0111dfb483d1; TS00000000076=0868f8be6fab2800741af13b821e3c8e2613be7bb28b9ebd2c95a0b229dd35097d43525e9cd4b1b7e1b1524475326b32088956678809d000f1140a8689a71da601487e6610d044e41bc2d6800ff45b3e417e6705b72c2f324c6fd913c131127a9fea1bad7f90811b58e2dc5154aa03608afbf29bd8c13bda6ef4d3068745dd88f8a36b03963ec42e1752283458a7b406ca042f4819ce27f229014ea56bae823d77bb10024d2051dba3f9ef35dde8bbac3c7edb3fd28aa20b96aebb744f94304c86e22a31e9f74265dd95f756b75153222ec0072f9752c8ac336d22d8b407d87ffc7cebacf023277f22f3a8c811a890c3cb3389b22d4ad35a668043a807eca42066229123daab10df; TSPD_101_DID=0868f8be6fab2800741af13b821e3c8e2613be7bb28b9ebd2c95a0b229dd35097d43525e9cd4b1b7e1b1524475326b32088956678806380027421f9668d3a3dadb860a85f2fb533eaa241dbc7429eca1c21170c748c8d99a3f861b115527d0835ab6d2d2fa2916a8cc1bfd1803d04035; db8ca2b43ed851cc93e71fd5fd72bff7=a080d5ee6ca9cbdf66c57eb33ebab57d; TS011f2d1a=01266d26d0bbc04ad72e6c3bfacb9fa916adcca541b583f45b4684d5cd2ae03ee971b70e2710fb42daa22cc821d1d56b54328cd2f2; TSPD_101=0868f8be6fab28001de915cd6e05bde841c9653faed30df39f11a855b5111148f25aa4fb84cb769177001a311ddb5dbc08a6cd91f90518008b3cd1238affae2b5ca1732140a3428bba23ce13beb1c95e; SESSION=81ada14a-3c2c-41c2-b497-10d20d4290cb; f5avraaaaaaaaaaaaaaaa_session_=MNJOEIDMKIADALDBJIHCFLLKHBFHDEKIEEJDHNFPFFCFJEFCDOBPFLOAFFEHKFFKKIGDEHKCNFJNCIMLDHAAMOGDMFCLKLELMBCJKKAFHEIHAJMAGEBMOMMLPMOEAFBN; TS5220f739077=0868f8be6fab2800655f4cf16a2faad495723b20d210e123789c8b4d2cf6253a024af89e985d2c292b06a7d842c2fe0d088ebe5702172000b6fc1682044d9be1bcc80f990fa6a8a058628ae8340c4fa64ed643f22bcb147d; TS5220f739029=0868f8be6fab280034976ba38ff17aa6c85bdbf0750e408db2b941088d6a4ff890a9a97b62100b090b2b911575662a1a; TSf1edb2d2027=0868f8be6fab200009d9f2ebfb29feb94900e887d0fed454951fb9e8f7ce21d44d35668267a2774808cb8c35141130004bcc09a598a0cf10984216bb38acb391cbf1c18546a57ef227574de404638d5bf7fcf40fca15e1a0bb2371e8ef95c908',
+    "accept": "*/*",
+    "accept-language": "en-US,en;q=0.9,id;q=0.8",
+    "content-type": "application/json",
+    "origin": "https://fasih-sm.bps.go.id",
+    "referer": "https://fasih-sm.bps.go.id/app/surveys/a0429e96-51a5-477b-a415-485f9c153004/fd68e454-ba45-4b85-8205-f3bf777ded24",
+    "user-agent": DEFAULT_USER_AGENT,
 }
+
+
+def load_env():
+    """Membaca file .env tanpa package python-dotenv."""
+    env = {}
+    if not ENV_FILE.exists():
+        return env
+
+    for raw_line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        match = re.match(r"^\s*([\w.-]+)\s*=\s*(.*?)\s*$", line)
+        if not match:
+            continue
+
+        key = match.group(1)
+        value = match.group(2) or ""
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        env[key] = value
+
+    return env
+
+
+def env_bool(value, default=True):
+    if value is None:
+        return default
+    return str(value).strip().lower() not in {"false", "no", "0", "off", "tidak"}
+
+
+def ask_otp():
+    return input("Masukkan kode OTP: ").strip()
+
+
+def is_app_url(url):
+    parsed = urlparse(url)
+    return (
+        parsed.hostname == "fasih-sm.bps.go.id"
+        and (
+            parsed.path.startswith("/app")
+            or parsed.path.startswith("/survey-collection")
+        )
+    )
+
+
+def safe_wait_network_idle(page, timeout=15000):
+    """Networkidle dapat timeout jika aplikasi terus melakukan polling."""
+    try:
+        page.wait_for_load_state("networkidle", timeout=timeout)
+    except PlaywrightTimeoutError:
+        pass
+
+
+def wait_for_app_or_otp(page, use_otp=True, timeout_seconds=15):
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        if is_app_url(page.url):
+            return "app"
+
+        if use_otp:
+            try:
+                if page.locator('input[name="otp"]').first.is_visible():
+                    return "otp"
+            except Exception:
+                pass
+
+        time.sleep(0.5)
+    return "timeout"
+
+
+def update_runtime_cookies(fresh_cookies):
+    """Sinkronkan cookie Playwright ke requests dan perbarui XSRF header."""
+    global cookies
+
+    cookies = {
+        item["name"]: item["value"]
+        for item in fresh_cookies
+        if item.get("name") and item.get("value") is not None
+    }
+
+    xsrf_token = cookies.get("XSRF-TOKEN")
+    if xsrf_token:
+        headers["x-xsrf-token"] = unquote(xsrf_token)
+    else:
+        headers.pop("x-xsrf-token", None)
+
+
+def load_cookies_from_state():
+    """Muat cookie dari storage state tanpa membuka browser."""
+    if not STATE_FILE.exists():
+        return False
+
+    try:
+        state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        state_cookies = state.get("cookies", [])
+        if not state_cookies:
+            return False
+
+        update_runtime_cookies(state_cookies)
+        return bool(cookies)
+    except (OSError, json.JSONDecodeError, TypeError) as e:
+        print(f"⚠️ State login tidak valid dan akan dihapus: {e}")
+        STATE_FILE.unlink(missing_ok=True)
+        return False
+
+
+def login_with_sso(
+    username="",
+    password="",
+    otp_code=None,
+    use_otp=True,
+    executable_path="",
+    headless=True,
+):
+    """
+    Buka FASIH dengan Playwright, gunakan storage state jika masih valid,
+    dan lakukan login SSO ketika session sudah kedaluwarsa.
+
+    Return: list cookie Playwright yang siap dipakai requests.
+    """
+    launch_options = {"headless": headless}
+    if executable_path and Path(executable_path).is_file():
+        launch_options["executable_path"] = executable_path
+
+    context_options = {
+        "viewport": {"width": 1920, "height": 1080},
+        "user_agent": headers["user-agent"],
+    }
+
+    if STATE_FILE.exists():
+        try:
+            json.loads(STATE_FILE.read_text(encoding="utf-8"))
+            context_options["storage_state"] = str(STATE_FILE)
+        except (OSError, json.JSONDecodeError):
+            STATE_FILE.unlink(missing_ok=True)
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(**launch_options)
+        context = browser.new_context(**context_options)
+        page = context.new_page()
+
+        try:
+            # 1. Coba session yang sudah tersimpan.
+            if STATE_FILE.exists():
+                print("🔎 Memeriksa session Playwright yang tersimpan...")
+                try:
+                    page.goto(FASIH_HOME_URL, wait_until="domcontentloaded", timeout=30000)
+                    safe_wait_network_idle(page)
+                    if is_app_url(page.url):
+                        print("✅ Session tersimpan masih valid.")
+                        context.storage_state(path=str(STATE_FILE))
+                        return context.cookies()
+                except Exception as e:
+                    print(f"⚠️ Session tersimpan tidak dapat digunakan: {e}")
+
+                STATE_FILE.unlink(missing_ok=True)
+                context.clear_cookies()
+
+            # 2. Session tidak tersedia/kedaluwarsa, lakukan login SSO.
+            if not username or not password:
+                raise RuntimeError(
+                    "Session sudah tidak valid, tetapi username/password belum tersedia. "
+                    "Isi file .env terlebih dahulu."
+                )
+
+            print("🔐 Login ulang melalui SSO BPS menggunakan Playwright...")
+            page.goto(FASIH_LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
+            safe_wait_network_idle(page)
+
+            page.locator(SSO_BUTTON_SELECTOR).click(timeout=60000)
+            page.wait_for_load_state("domcontentloaded", timeout=60000)
+
+            page.locator('input[name="username"]').fill(username, timeout=60000)
+            page.locator('input[name="password"]').fill(password, timeout=60000)
+            page.locator('input[type="submit"]').click(timeout=60000)
+            safe_wait_network_idle(page)
+
+            state = wait_for_app_or_otp(page, use_otp=use_otp, timeout_seconds=15)
+
+            if use_otp:
+                otp_input = page.locator('input[name="otp"]').first
+                otp_visible = False
+                try:
+                    otp_visible = otp_input.is_visible()
+                except Exception:
+                    pass
+
+                if state == "otp" or otp_visible:
+                    print("🔢 OTP diperlukan. Periksa aplikasi Authenticator.")
+                    otp_value = otp_code or ask_otp()
+                    if not otp_value:
+                        raise RuntimeError("Kode OTP tidak boleh kosong.")
+
+                    otp_input.fill(otp_value)
+                    page.locator('input[type="submit"]').click(timeout=60000)
+                    safe_wait_network_idle(page)
+
+            # 3. Tunggu sampai kembali ke aplikasi FASIH.
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline and not is_app_url(page.url):
+                time.sleep(0.5)
+
+            if "survey-collection" in page.url:
+                page.goto(FASIH_HOME_URL, wait_until="domcontentloaded", timeout=30000)
+                safe_wait_network_idle(page)
+
+            if not is_app_url(page.url):
+                raise RuntimeError(f"Login gagal. URL terakhir: {page.url}")
+
+            context.storage_state(path=str(STATE_FILE))
+            fresh_cookies = context.cookies()
+
+            if not any(c.get("name") in {"SESSION", "XSRF-TOKEN"} for c in fresh_cookies):
+                raise RuntimeError(
+                    "Login tampak berhasil, tetapi cookie SESSION/XSRF-TOKEN tidak ditemukan."
+                )
+
+            print(f"✅ Login berhasil. State disimpan ke {STATE_FILE}")
+            return fresh_cookies
+
+        finally:
+            browser.close()
+
+
+def refresh_cookies():
+    """Login/refresh session dengan Playwright, lalu kirim cookie ke requests."""
+    env = load_env()
+
+    username = env.get("username") or env.get("USERNAME") or ""
+    password = env.get("password") or env.get("PASSWORD") or ""
+    use_otp = env_bool(env.get("use_otp") or env.get("USE_OTP"), default=True)
+    headless = env_bool(env.get("HEADLESS") or env.get("headless"), default=True)
+    executable_path = (
+        env.get("CHROME_EXECUTABLE_PATH")
+        or env.get("chrome_executable_path")
+        or ""
+    )
+
+    fresh = login_with_sso(
+        username=username,
+        password=password,
+        otp_code=None,
+        use_otp=use_otp,
+        executable_path=executable_path,
+        headless=headless,
+    )
+    update_runtime_cookies(fresh)
+    print(f"🍪 {len(cookies)} cookie aktif siap dipakai oleh requests.")
+
+
+def ensure_cookies():
+    """Gunakan state tersimpan terlebih dahulu; login jika belum tersedia."""
+    if cookies:
+        return
+
+    if load_cookies_from_state():
+        print(f"🍪 Memuat {len(cookies)} cookie dari {STATE_FILE}")
+        return
+
+    refresh_cookies()
+
 
 json_data = {
     'surveyPeriodId': 'fd68e454-ba45-4b85-8205-f3bf777ded24',
@@ -202,47 +457,6 @@ def auto_push_github():
         print(f"❌ Error push GitHub: {e}")
  
  
-def refresh_cookies():
-    """
-    Buka Chrome pakai profil yang sudah login SSO BPS, ambil cookies segar,
-    lalu update variabel global cookies & headers secara otomatis.
-    Dipanggil otomatis ketika session terdeteksi expired.
- 
-    Syarat:
-    - VPN BPS sudah konek
-    - Profil Chrome di CHROME_PROFILE_DIR/CHROME_PROFILE_NAME sudah pernah
-      login manual ke FASIH minimal sekali
-    - Tidak ada window Chrome lain yang sedang memakai profil yang sama
-    """
-    global cookies
- 
-    print("🔄 Session expired — membuka browser untuk ambil cookies segar...")
-    options = Options()
-    options.add_argument(f"--user-data-dir={CHROME_PROFILE_DIR}")
-    options.add_argument(f"--profile-directory={CHROME_PROFILE_NAME}")
-    # Aktifkan baris di bawah setelah yakin jalan (browser gak muncul di layar):
-    # options.add_argument("--headless=new")
- 
-    driver = webdriver.Chrome(options=options)
-    try:
-        driver.get(FASIH_HOME_URL)
-        time.sleep(6)   # tunggu redirect SSO + halaman selesai load
- 
-        fresh = {c["name"]: c["value"] for c in driver.get_cookies()}
- 
-        if not fresh.get("SESSION") and not fresh.get("XSRF-TOKEN"):
-            raise RuntimeError(
-                "Cookies SESSION/XSRF-TOKEN tidak ditemukan. "
-                "Buka Chrome dengan profil ini dan login manual ke FASIH dulu."
-            )
- 
-        cookies.update(fresh)
-        headers["x-xsrf-token"] = fresh.get("XSRF-TOKEN", headers["x-xsrf-token"])
-        print(f"✅ Cookies segar berhasil diambil ({len(fresh)} cookie). Lanjut scraping...")
-    finally:
-        driver.quit()
- 
- 
 def is_session_expired(response):
     """
     Deteksi apakah session sudah expired berdasarkan respons API.
@@ -290,14 +504,20 @@ def request_with_backoff(session, method, url, max_retries=3, **kwargs):
         if response.status_code == 200:
             return response
 
-        if response.status_code in (403, 429):
-            print(f"⚠️  Status {response.status_code} (percobaan {attempt}/{max_retries}) - "
-                  f"kemungkinan rate-limited/diblokir sementara.")
+        # 401/403 dikembalikan langsung agar fetch_data() dapat melakukan
+        # refresh session Playwright, bukan mengulang request dengan cookie lama.
+        if response.status_code in (401, 403):
+            return response
+
+        if response.status_code == 429:
+            print(
+                f"⚠️  Status 429 (percobaan {attempt}/{max_retries}) - "
+                "request dibatasi sementara."
+            )
             if attempt == max_retries:
                 raise RuntimeError(
-                    f"Berhenti: status {response.status_code} berulang {max_retries}x. "
-                    "Sistem sepertinya menahan request ini - cek manual lewat browser, "
-                    "atau koordinasi ke admin FASIH, sebelum mencoba lagi."
+                    f"Berhenti: status 429 berulang {max_retries}x. "
+                    "Tunggu sebelum mencoba lagi atau koordinasi ke admin FASIH."
                 )
             time.sleep(delay)
             delay *= 2
@@ -317,6 +537,14 @@ def fetch_data():
     all_rows = []
     page = 0
     size = 10
+
+    # Ambil cookie dari state Playwright. Jika belum ada, login SSO otomatis.
+    try:
+        ensure_cookies()
+    except Exception as e:
+        print(f"🛑 Tidak dapat menyiapkan session FASIH: {e}")
+        return
+
     session = requests.Session()
     max_refresh = 2          # maksimal berapa kali boleh refresh cookies dalam 1 run
     refresh_count = 0
@@ -335,11 +563,15 @@ def fetch_data():
             break
 
         # ── Deteksi session expired → auto-refresh cookies lalu ulangi page ini ──
-        if response.status_code in (200,) and is_session_expired(response) or \
-           response.status_code in (302, 401):
+        if (
+            (response.status_code == 200 and is_session_expired(response))
+            or response.status_code in (302, 401, 403)
+        ):
             if refresh_count >= max_refresh:
-                print(f"🛑 Session expired lagi setelah {max_refresh}x refresh. "
-                      "Kemungkinan profil Chrome perlu login manual ulang.")
+                print(
+                    f"🛑 Session expired lagi setelah {max_refresh}x refresh. "
+                    "Periksa username/password, OTP, VPN, atau akses akun FASIH."
+                )
                 break
             try:
                 refresh_cookies()

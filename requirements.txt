@@ -7,3 +7,6 @@ requests
 streamlit-autorefresh
 folium
 streamlit-folium
+pandas
+schedule
+playwright
