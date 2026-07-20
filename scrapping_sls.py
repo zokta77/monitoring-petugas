@@ -21,6 +21,7 @@ URL_DATA = "https://fasih-sm.bps.go.id/app/api/analytic/api/v2/assignment/report
 FASIH_HOME_URL = "https://fasih-sm.bps.go.id/app/"
 FASIH_LOGIN_URL = "https://fasih-sm.bps.go.id/oauth_login.html"
 SSO_BUTTON_SELECTOR = '[href="/oauth2/authorization/ics"]'
+SSO_AUTH_URL = "https://fasih-sm.bps.go.id/oauth2/authorization/ics"
 base_path = BASE_PATH
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -162,7 +163,9 @@ def login_with_sso(
     otp_code=None,
     use_otp=True,
     executable_path="",
-    headless=True,
+    browser_channel="",
+    headless=False,
+    slow_mo=100,
 ):
     """
     Buka FASIH dengan Playwright, gunakan storage state jika masih valid,
@@ -170,13 +173,21 @@ def login_with_sso(
 
     Return: list cookie Playwright yang siap dipakai requests.
     """
-    launch_options = {"headless": headless}
+    launch_options = {
+        "headless": headless,
+        "slow_mo": max(0, int(slow_mo)),
+    }
+
+    # Gunakan salah satu: executable_path ATAU browser channel.
+    # Jika keduanya kosong, Playwright menggunakan Chromium bawaannya.
     if executable_path and Path(executable_path).is_file():
         launch_options["executable_path"] = executable_path
+    elif browser_channel:
+        launch_options["channel"] = browser_channel
 
+    # Jangan paksa User-Agent. Biarkan sesuai browser yang benar-benar dijalankan.
     context_options = {
         "viewport": {"width": 1920, "height": 1080},
-        "user_agent": headers["user-agent"],
     }
 
     if STATE_FILE.exists():
@@ -191,13 +202,35 @@ def login_with_sso(
         context = browser.new_context(**context_options)
         page = context.new_page()
 
+        # Diagnostik agar penyebab browser/tab tertutup terlihat di terminal.
+        browser.on(
+            "disconnected",
+            lambda *_: print("⚠️ Browser Playwright terputus atau tertutup."),
+        )
+        page.on(
+            "close",
+            lambda *_: print("⚠️ Tab login Playwright tertutup."),
+        )
+        page.on(
+            "crash",
+            lambda *_: print("💥 Tab login Playwright mengalami crash."),
+        )
+        page.on(
+            "pageerror",
+            lambda error: print(f"⚠️ JavaScript error pada halaman login: {error}"),
+        )
+
         try:
             # 1. Coba session yang sudah tersimpan.
             if STATE_FILE.exists():
                 print("🔎 Memeriksa session Playwright yang tersimpan...")
                 try:
-                    page.goto(FASIH_HOME_URL, wait_until="domcontentloaded", timeout=30000)
-                    safe_wait_network_idle(page)
+                    page.goto(
+                        FASIH_HOME_URL,
+                        wait_until="domcontentloaded",
+                        timeout=30000,
+                    )
+                    page.wait_for_timeout(1000)
                     if is_app_url(page.url):
                         print("✅ Session tersimpan masih valid.")
                         context.storage_state(path=str(STATE_FILE))
@@ -216,20 +249,65 @@ def login_with_sso(
                 )
 
             print("🔐 Login ulang melalui SSO BPS menggunakan Playwright...")
-            page.goto(FASIH_LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
-            safe_wait_network_idle(page)
+            page.goto(
+                FASIH_LOGIN_URL,
+                wait_until="domcontentloaded",
+                timeout=60000,
+            )
+            page.wait_for_timeout(1000)
 
-            page.locator(SSO_BUTTON_SELECTOR).click(timeout=60000)
-            page.wait_for_load_state("domcontentloaded", timeout=60000)
+            if page.is_closed():
+                raise RuntimeError(
+                    "Tab tertutup setelah membuka halaman oauth_login.html. "
+                    "Kemungkinan browser crash atau dibatasi kebijakan Chrome."
+                )
 
-            page.locator('input[name="username"]').fill(username, timeout=60000)
-            page.locator('input[name="password"]').fill(password, timeout=60000)
-            page.locator('input[type="submit"]').click(timeout=60000)
-            safe_wait_network_idle(page)
+            # Lebih stabil daripada locator.click(): buka endpoint SSO langsung.
+            print("➡️ Membuka endpoint otorisasi SSO...")
+            page.goto(
+                SSO_AUTH_URL,
+                wait_until="domcontentloaded",
+                timeout=60000,
+            )
+            page.wait_for_timeout(1000)
 
-            state = wait_for_app_or_otp(page, use_otp=use_otp, timeout_seconds=15)
+            if page.is_closed():
+                raise RuntimeError(
+                    "Tab tertutup ketika berpindah ke endpoint SSO. "
+                    "Coba kosongkan CHROME_EXECUTABLE_PATH dan gunakan Chromium Playwright."
+                )
 
-            if use_otp:
+            # Bisa saja session SSO masih aktif dan langsung kembali ke aplikasi.
+            if not is_app_url(page.url):
+                username_input = page.locator('input[name="username"]').first
+                password_input = page.locator('input[name="password"]').first
+
+                try:
+                    username_input.wait_for(state="visible", timeout=60000)
+                    password_input.wait_for(state="visible", timeout=60000)
+                except Exception as e:
+                    title = ""
+                    try:
+                        title = page.title()
+                    except Exception:
+                        pass
+                    raise RuntimeError(
+                        f"Form username/password tidak ditemukan. "
+                        f"URL: {page.url} | title: {title} | detail: {e}"
+                    ) from e
+
+                username_input.fill(username)
+                password_input.fill(password)
+                page.locator('input[type="submit"]').click(timeout=60000)
+                page.wait_for_timeout(1000)
+
+            state = wait_for_app_or_otp(
+                page,
+                use_otp=use_otp,
+                timeout_seconds=20,
+            )
+
+            if use_otp and not page.is_closed():
                 otp_input = page.locator('input[name="otp"]').first
                 otp_visible = False
                 try:
@@ -245,16 +323,27 @@ def login_with_sso(
 
                     otp_input.fill(otp_value)
                     page.locator('input[type="submit"]').click(timeout=60000)
-                    safe_wait_network_idle(page)
+                    page.wait_for_timeout(1000)
 
             # 3. Tunggu sampai kembali ke aplikasi FASIH.
             deadline = time.monotonic() + 60
-            while time.monotonic() < deadline and not is_app_url(page.url):
+            while (
+                time.monotonic() < deadline
+                and not page.is_closed()
+                and not is_app_url(page.url)
+            ):
                 time.sleep(0.5)
 
+            if page.is_closed():
+                raise RuntimeError("Tab tertutup sebelum login selesai.")
+
             if "survey-collection" in page.url:
-                page.goto(FASIH_HOME_URL, wait_until="domcontentloaded", timeout=30000)
-                safe_wait_network_idle(page)
+                page.goto(
+                    FASIH_HOME_URL,
+                    wait_until="domcontentloaded",
+                    timeout=30000,
+                )
+                page.wait_for_timeout(1000)
 
             if not is_app_url(page.url):
                 raise RuntimeError(f"Login gagal. URL terakhir: {page.url}")
@@ -262,7 +351,10 @@ def login_with_sso(
             context.storage_state(path=str(STATE_FILE))
             fresh_cookies = context.cookies()
 
-            if not any(c.get("name") in {"SESSION", "XSRF-TOKEN"} for c in fresh_cookies):
+            if not any(
+                c.get("name") in {"SESSION", "XSRF-TOKEN"}
+                for c in fresh_cookies
+            ):
                 raise RuntimeError(
                     "Login tampak berhasil, tetapi cookie SESSION/XSRF-TOKEN tidak ditemukan."
                 )
@@ -270,9 +362,27 @@ def login_with_sso(
             print(f"✅ Login berhasil. State disimpan ke {STATE_FILE}")
             return fresh_cookies
 
-        finally:
-            browser.close()
+        except Exception:
+            # Simpan bukti kondisi terakhir agar mudah diperiksa.
+            try:
+                if not page.is_closed():
+                    screenshot_path = BASE_DIR / "fasih_login_error.png"
+                    page.screenshot(path=str(screenshot_path), full_page=True)
+                    print(f"📸 Screenshot error disimpan ke: {screenshot_path}")
+                    print(f"🔗 URL terakhir: {page.url}")
+            except Exception as screenshot_error:
+                print(f"⚠️ Screenshot error tidak dapat dibuat: {screenshot_error}")
+            raise
 
+        finally:
+            try:
+                context.close()
+            except Exception:
+                pass
+            try:
+                browser.close()
+            except Exception:
+                pass
 
 def refresh_cookies():
     """Login/refresh session dengan Playwright, lalu kirim cookie ke requests."""
@@ -281,12 +391,24 @@ def refresh_cookies():
     username = env.get("username") or env.get("USERNAME") or ""
     password = env.get("password") or env.get("PASSWORD") or ""
     use_otp = env_bool(env.get("use_otp") or env.get("USE_OTP"), default=True)
-    headless = env_bool(env.get("HEADLESS") or env.get("headless"), default=True)
+
+    # Untuk login awal, headed mode lebih stabil dan mudah didiagnosis.
+    headless = env_bool(env.get("HEADLESS") or env.get("headless"), default=False)
     executable_path = (
         env.get("CHROME_EXECUTABLE_PATH")
         or env.get("chrome_executable_path")
         or ""
     )
+    browser_channel = (
+        env.get("BROWSER_CHANNEL")
+        or env.get("browser_channel")
+        or ""
+    )
+
+    try:
+        slow_mo = int(env.get("PLAYWRIGHT_SLOW_MO", "100"))
+    except ValueError:
+        slow_mo = 100
 
     fresh = login_with_sso(
         username=username,
@@ -294,7 +416,9 @@ def refresh_cookies():
         otp_code=None,
         use_otp=use_otp,
         executable_path=executable_path,
+        browser_channel=browser_channel,
         headless=headless,
+        slow_mo=slow_mo,
     )
     update_runtime_cookies(fresh)
     print(f"🍪 {len(cookies)} cookie aktif siap dipakai oleh requests.")
@@ -543,7 +667,7 @@ def fetch_data():
         ensure_cookies()
     except Exception as e:
         print(f"🛑 Tidak dapat menyiapkan session FASIH: {e}")
-        return
+        return False
 
     session = requests.Session()
     max_refresh = 2          # maksimal berapa kali boleh refresh cookies dalam 1 run
@@ -625,14 +749,20 @@ def fetch_data():
 
     if all_rows:
         save_and_merge(all_rows)
+        print("🎉 Semua data berhasil disimpan!")
+        return True
 
-    print("🎉 Semua data berhasil disimpan!")
+    print("⚠️ Tidak ada data yang disimpan.")
+    return False
 
 
 def job():
     print(f"\n[+] Memulai proses scraping pada {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    fetch_data()
-    auto_push_github()
+    success = fetch_data()
+    if success:
+        auto_push_github()
+    else:
+        print("⏭️ Push GitHub dilewati karena scraping belum berhasil.")
 
 if __name__ == "__main__":
     # Menjadwalkan job setiap 1 jam
