@@ -537,7 +537,7 @@ def _aggregate_snapshot(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame
         return df[group_cols].drop_duplicates().reset_index(drop=True)
 
     rec = (
-        df.groupby(group_cols, as_index=False)[numeric_cols]
+        df.groupby(group_cols, as_index=False, dropna=False)[numeric_cols]
           .sum(min_count=1)
           .fillna(0)
     )
@@ -545,12 +545,74 @@ def _aggregate_snapshot(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame
 
 
 def _add_daily_delta(daily: pd.DataFrame) -> pd.DataFrame:
-    """Selisih harian = kumulatif hari ini - kumulatif tanggal sebelumnya."""
+    """Kenaikan positif antar-snapshot untuk satu rangkaian data harian."""
     delta = daily.copy()
     status_cols = _history_status_cols(daily)
 
     for c in status_cols:
-        delta[c] = daily[c].diff().fillna(daily[c]).clip(lower=0)
+        previous = daily[c].shift(1)
+        change = daily[c] - previous
+
+        # Baris pertama memakai nilai snapshot pertama. Untuk hari berikutnya,
+        # hanya kenaikan positif yang dianggap sebagai status baru.
+        delta[c] = change.where(previous.notna(), daily[c]).clip(lower=0)
+
+    return delta
+
+
+def _history_entity_cols(df: pd.DataFrame) -> list[str]:
+    """Pilih kunci entitas paling stabil untuk membandingkan antar-snapshot.
+
+    Perhitungan status baru dilakukan pada level entitas terlebih dahulu agar
+    kenaikan milik satu petugas/SLS tidak tertutup oleh penurunan milik entitas
+    lain ketika data langsung dijumlahkan pada level kota.
+    """
+    candidates = [
+        ["userId", "regionCode"],
+        ["username", "regionCode"],
+        ["regionCode"],
+        ["userId"],
+        ["username"],
+        ["_nama_pcl_key"],
+        ["nama_pcl"],
+    ]
+
+    for cols in candidates:
+        if all(c in df.columns for c in cols):
+            # Gunakan kandidat apabila minimal ada satu nilai kunci yang terbaca.
+            has_value = any(df[c].notna().any() for c in cols)
+            if has_value:
+                return cols
+
+    return []
+
+
+def _positive_delta_by_entity(
+    entity_daily: pd.DataFrame,
+    entity_cols: list[str],
+) -> pd.DataFrame:
+    """Hitung kenaikan positif per status pada setiap entitas.
+
+    Ini berbeda dari menghitung ``total kota hari ini - total kota kemarin``.
+    Dengan cara ini, kenaikan status pada suatu petugas tetap tercatat meskipun
+    pada petugas lain status yang sama sedang berkurang karena berpindah tahap.
+    """
+    if entity_daily.empty:
+        return entity_daily.copy()
+
+    status_cols = _history_status_cols(entity_daily)
+    sort_cols = entity_cols + ["tanggal"] if entity_cols else ["tanggal"]
+    work = entity_daily.sort_values(sort_cols).reset_index(drop=True)
+    delta = work[["tanggal"] + entity_cols].copy()
+
+    for c in status_cols:
+        if entity_cols:
+            previous = work.groupby(entity_cols, dropna=False)[c].shift(1)
+        else:
+            previous = work[c].shift(1)
+
+        change = work[c] - previous
+        delta[c] = change.where(previous.notna(), work[c]).clip(lower=0)
 
     return delta
 
@@ -654,7 +716,24 @@ def build_daily_recap(pcl_name: str):
     if sub.empty:
         return None, None, diag
 
+    # Posisi kumulatif harian tetap dijumlahkan pada level pencacah.
     daily = _aggregate_snapshot(sub, ["tanggal"])
+
+    # Status (Baru) dihitung lebih dahulu pada level entitas terkecil yang
+    # tersedia (misalnya userId + regionCode), kemudian dijumlahkan per tanggal.
+    # Ini mencegah kenaikan pada satu SLS tertutup oleh penurunan pada SLS lain.
+    entity_cols = _history_entity_cols(sub)
+    if entity_cols:
+        entity_daily = _aggregate_snapshot(sub, ["tanggal"] + entity_cols)
+        entity_delta = _positive_delta_by_entity(entity_daily, entity_cols)
+        delta_status_cols = _history_status_cols(entity_delta)
+        delta = (
+            entity_delta.groupby("tanggal", as_index=False, dropna=False)[delta_status_cols]
+                        .sum(min_count=1)
+                        .fillna(0)
+        )
+    else:
+        delta = _add_daily_delta(daily)
 
     # Simpan jam snapshot terakhir yang digunakan per tanggal
     snap_time = (
@@ -663,10 +742,9 @@ def build_daily_recap(pcl_name: str):
     )
     daily = daily.merge(snap_time, on="tanggal", how="left")
     daily = daily.sort_values("tanggal").reset_index(drop=True)
+    delta = delta.sort_values("tanggal").reset_index(drop=True)
 
     diag["n_unique_dates"] = len(daily)
-    delta = _add_daily_delta(daily)
-
     return daily, delta, diag
 
 
@@ -711,8 +789,9 @@ def render_pencacah_daily_panel(pcl_name: str):
 
     st.caption(
         "📌 Jika dalam 1 tanggal scraping dilakukan berkali-kali, dashboard memakai "
-        "snapshot terakhir pada tanggal tersebut. Kolom `(Baru)` adalah selisih bersih "
-        "dibanding snapshot terakhir tanggal sebelumnya."
+        "snapshot terakhir pada tanggal tersebut. Kolom `(Baru)` dihitung dari "
+        "kenaikan positif per petugas/SLS dibanding snapshot hari sebelumnya, "
+        "sehingga tidak hilang karena tertutup penurunan status pada entitas lain."
     )
 
     tampil = _format_daily_table(daily, delta)
@@ -780,14 +859,31 @@ def build_overall_daily_recap():
     if latest.empty:
         return None, None
 
-    per_pcl = _aggregate_snapshot(latest, ["tanggal", "nama_pcl"])
-    daily = _aggregate_snapshot(per_pcl, ["tanggal"])
+    # Posisi kumulatif keseluruhan pada snapshot terakhir setiap hari.
+    daily = _aggregate_snapshot(latest, ["tanggal"])
+
+    # Hitung status baru per entitas terlebih dahulu. Pada kode lama, data
+    # dijumlahkan untuk seluruh kota baru kemudian di-diff dan di-clip ke nol.
+    # Akibatnya, kenaikan status pada sebagian petugas bisa tertutup penurunan
+    # status pada petugas lain dan akhirnya tampil 0.
+    entity_cols = _history_entity_cols(latest)
+    if entity_cols:
+        entity_daily = _aggregate_snapshot(latest, ["tanggal"] + entity_cols)
+        entity_delta = _positive_delta_by_entity(entity_daily, entity_cols)
+        delta_status_cols = _history_status_cols(entity_delta)
+        delta = (
+            entity_delta.groupby("tanggal", as_index=False, dropna=False)[delta_status_cols]
+                        .sum(min_count=1)
+                        .fillna(0)
+        )
+    else:
+        delta = _add_daily_delta(daily)
 
     snap_time = latest.groupby("tanggal", as_index=False)["snapshot_at"].max()
     daily = daily.merge(snap_time, on="tanggal", how="left")
     daily = daily.sort_values("tanggal").reset_index(drop=True)
+    delta = delta.sort_values("tanggal").reset_index(drop=True)
 
-    delta = _add_daily_delta(daily)
     return daily, delta
 
 
@@ -801,8 +897,9 @@ def render_overall_daily_panel():
 
     st.markdown("#### 📈 Tren Progress Harian Keseluruhan Petugas")
     st.caption(
-        "Dashboard memakai snapshot terakhir pada setiap tanggal. Kolom `(Baru)` adalah "
-        "selisih bersih dibanding snapshot terakhir tanggal sebelumnya."
+        "Dashboard memakai snapshot terakhir pada setiap tanggal. Kolom `(Baru)` dihitung "
+        "dari kenaikan positif per petugas/SLS dibanding snapshot sebelumnya, sehingga "
+        "kenaikan tidak tertutup oleh penurunan status petugas lain."
     )
 
     tampil = _format_daily_table(daily, delta)
