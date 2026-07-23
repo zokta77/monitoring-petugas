@@ -898,17 +898,17 @@ def render_overall_daily_panel():
     if "total_data" in daily.columns:
         total = daily["total_data"].replace(0, pd.NA)
 
-        if progress_cols:
-            progress_total = _sum_cols(daily, progress_cols)
-            tampil["Progress Pencacahan (%)"] = (
-                progress_total / total * 100
-            ).round(2).fillna(0)
+        # if progress_cols:
+        #     progress_total = _sum_cols(daily, progress_cols)
+        #     tampil["Progress Pencacahan (%)"] = (
+        #         progress_total / total * 100
+        #     ).round(2).fillna(0)
 
-        if groups["approve"]:
-            approve_total = _sum_cols(daily, groups["approve"])
-            tampil["Progress Approve (%)"] = (
-                approve_total / total * 100
-            ).round(2).fillna(0)
+        # if groups["approve"]:
+        #     approve_total = _sum_cols(daily, groups["approve"])
+        #     tampil["Progress Approve (%)"] = (
+        #         approve_total / total * 100
+        #     ).round(2).fillna(0)
 
     line_cols = [
         c for c in ["Δ Draft (Bersih)", "Δ Submit (Bersih)", "Δ Approve (Bersih)", "Δ Reject (Bersih)", "Δ Progress (Bersih)"]
