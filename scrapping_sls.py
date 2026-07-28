@@ -429,7 +429,7 @@ def _user_identity(user):
     return None
 
 
-def _fetch_data_once(run_number=1, page_size=5):
+def _fetch_data_once(run_number=1, page_size=10):
     """
     Lakukan satu putaran scraping penuh.
 
@@ -686,7 +686,7 @@ def _fetch_data_once(run_number=1, page_size=5):
     return True, "ok"
 
 
-def fetch_data(max_full_retries=3, page_size=5):
+def fetch_data(max_full_retries=3, page_size=10):
     """
     Jalankan scraping penuh. Jika pagination bergeser karena data FASIH berubah
     saat proses berlangsung, ulangi seluruh scraping dari page 0.
