@@ -24,21 +24,22 @@ FASIH_HOME_URL      = "https://fasih-sm.bps.go.id/app/"
 
 # ===================== GANTI COOKIE DI SINI =====================
 cookies = {
+    'f5avraaaaaaaaaaaaaaaa_session_': 'MLAAENJNCOMBDDAFHBPJPIILLBJKGJKLAFBENHKMHJCFAEKAPCHJLADIICODAGJPFCMDOFIHJEBKFPDFINFADBNPGPOOCHFEEBOANGKMIIKMFNCIAIPIFNCLGOBHAJGK',
     'cf_clearance': 'eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg',
     '_ga': 'GA1.3.967752592.1784785844',
     '_ga_XXTTVXWHDB': 'GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0',
     'XSRF-TOKEN': '8a78cc84-f362-4d31-8e0f-bf746c0c91ff',
     'JSESSIONID': '8EB4DA5B9229BBD6D51F746F4FED08E9',
-    'TS00000000076': '0868f8be6fab2800571886d4dce58fdf4e37018390749079aa3d9f50691ad8f92d3dabbe1c38d3794cf8f843f3127cb0089a80729f09d0003a88d8b8f966702a0478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f2de66d0ea69d7cbd839224450257cd5f285e09f9ff80f287b7744f0420b9c08acfffaf51930b2b435fca5944b88c26cea224520b52c0b21e39e0cd84a6bc17e8cdbde77b834ce29bf89c248aeb7ecea93259f0152290687536700c9666b21d74279d2e0302f3e5416cd2a1fc14a01a5d305a3c329f629e7a9',
-    'TSPD_101_DID': '0868f8be6fab2800571886d4dce58fdf4e37018390749079aa3d9f50691ad8f92d3dabbe1c38d3794cf8f843f3127cb0089a80729f0638002d01e9361b73401ad0d473100f09ee85982e9ac34ad38b96ec7eaefb00d75e785847ea9c6678b823837889df27ce9a20821c47a976661488',
     'db8ca2b43ed851cc93e71fd5fd72bff7': '4f2806231eb66c8992f000f38d707caa',
-    'TS011f2d1a': '01266d26d005d86ef20baa2b97e2a0be75e0ef7d0ba1cc33f44646807b98f398923262096ab03e98e8db95ea02f4e6d2f2b5bd18eb',
-    'TSPD_101': '0868f8be6fab28003031588a1e54577ba2c30f4aa20bbd3d3872fc0f6b51eb1fa8d4a313594d66e10abbe78d38c438f308213f0f930518005d28e8a8ab6551bc5ca1732140a3428bba23ce13beb1c95e',
     'SESSION': '232c5e61-5626-4fe2-bed9-265afd5ea42b',
     'f5avraaaaaaaaaaaaaaaa_session_': 'IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB',
-    'TS5220f739077': '0868f8be6fab28003707ca4d6c3c88c39b30f80f79b0f8c83c9ae38ff0a63d4440a3968e27abb72443c7e51165702b5f0862eb58db1720001910ea28b883fbd2707213e7d34bb501dd61ccf977510e230469e07a088607ec',
-    'TS5220f739029': '0868f8be6fab2800d3541b8198794ef0fe1bd25e5f3e71acadddecf2bfc76998d1c36957120ec3d70581bd95e3e54594',
-    'TSf1edb2d2027': '0868f8be6fab2000a538a077f8b628126e509540981d555ea88fae2fc8b7ea5482b69944216d1b24083f63fe0e1130008a5526211e372701fd2108a0e9a443d1c65bc6ddba4c02e995559773dbf70369a08ada745508e07ec54798f58ad6b87b',
+    'TS00000000076': '0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c19509d00092c6522ef13da3820478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f23d2bbff2afae187692820b7f5412d218d16ae65865a7df1c82c3e83525f3737603a89526f8dfddc322c85cd9c5589bb81c1d9eafcd9314b0eb022713fbe13c33ab40c9083886dbb0740f158667ea5c35ee423e01c501cce5345e87b92eb23ee14e91c933f44ae5cf35ff7ad53d79335b4423277252db49bd',
+    'TSPD_101_DID': '0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c1950638007923376d27dbb1fe1a4f7c33150ce0f555650886b07c103abf941d34633e353a8bac0adfd552d6a02f638294fd7e2c5634d3f30c9ed89103',
+    'TS011f2d1a': '01266d26d073c642cbf2723858e08a8725200b10bf2268b45fa0bd03aa2689b7506b53faf7b83d696ac38d49bd07208439a998178f',
+    'TSPD_101': '0868f8be6fab2800b7a47bfc99174c00ba95447b1978b2158a40591e6df99f9259fe0bc0575fde9f6407e8e1ff0780fe08b7cfb354051800857f014ec659a8e35ca1732140a3428bba23ce13beb1c95e',
+    'TS5220f739077': '0868f8be6fab2800646b09133a735ecd36fa89e6ef216c73e608b775701d272cfedbffc391ea63ec888a88e6d36bb8050810768cad172000b163b972e3b9c35c707213e7d34bb501410dc5deea07e781b44487ea9a36bcba',
+    'TS5220f739029': '0868f8be6fab2800f621220741412d35b5f8c79c4d2451f731867c6b6052f920a0e34eb2124a1693de48db0ba601fed6',
+    'TSf1edb2d2027': '0868f8be6fab20001c579b1ac5f0d82e979310e3a470e684723614e9a6dd58e68cf45cbc54a4602a08c8b72fc4113000cfb12bc5af892e2c891ea4cfcb110bc84c579dd45f5484fbdb01d1b2d645e9489b4132395cfeee3f70fce5bf129bea76',
 }
 
 headers = {
@@ -56,7 +57,7 @@ headers = {
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
     'x-xsrf-token': '8a78cc84-f362-4d31-8e0f-bf746c0c91ff',
-    # 'cookie': 'cf_clearance=eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg; _ga=GA1.3.967752592.1784785844; _ga_XXTTVXWHDB=GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0; XSRF-TOKEN=8a78cc84-f362-4d31-8e0f-bf746c0c91ff; JSESSIONID=8EB4DA5B9229BBD6D51F746F4FED08E9; TS00000000076=0868f8be6fab2800571886d4dce58fdf4e37018390749079aa3d9f50691ad8f92d3dabbe1c38d3794cf8f843f3127cb0089a80729f09d0003a88d8b8f966702a0478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f2de66d0ea69d7cbd839224450257cd5f285e09f9ff80f287b7744f0420b9c08acfffaf51930b2b435fca5944b88c26cea224520b52c0b21e39e0cd84a6bc17e8cdbde77b834ce29bf89c248aeb7ecea93259f0152290687536700c9666b21d74279d2e0302f3e5416cd2a1fc14a01a5d305a3c329f629e7a9; TSPD_101_DID=0868f8be6fab2800571886d4dce58fdf4e37018390749079aa3d9f50691ad8f92d3dabbe1c38d3794cf8f843f3127cb0089a80729f0638002d01e9361b73401ad0d473100f09ee85982e9ac34ad38b96ec7eaefb00d75e785847ea9c6678b823837889df27ce9a20821c47a976661488; db8ca2b43ed851cc93e71fd5fd72bff7=4f2806231eb66c8992f000f38d707caa; TS011f2d1a=01266d26d005d86ef20baa2b97e2a0be75e0ef7d0ba1cc33f44646807b98f398923262096ab03e98e8db95ea02f4e6d2f2b5bd18eb; TSPD_101=0868f8be6fab28003031588a1e54577ba2c30f4aa20bbd3d3872fc0f6b51eb1fa8d4a313594d66e10abbe78d38c438f308213f0f930518005d28e8a8ab6551bc5ca1732140a3428bba23ce13beb1c95e; SESSION=232c5e61-5626-4fe2-bed9-265afd5ea42b; f5avraaaaaaaaaaaaaaaa_session_=IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB; TS5220f739077=0868f8be6fab28003707ca4d6c3c88c39b30f80f79b0f8c83c9ae38ff0a63d4440a3968e27abb72443c7e51165702b5f0862eb58db1720001910ea28b883fbd2707213e7d34bb501dd61ccf977510e230469e07a088607ec; TS5220f739029=0868f8be6fab2800d3541b8198794ef0fe1bd25e5f3e71acadddecf2bfc76998d1c36957120ec3d70581bd95e3e54594; TSf1edb2d2027=0868f8be6fab2000a538a077f8b628126e509540981d555ea88fae2fc8b7ea5482b69944216d1b24083f63fe0e1130008a5526211e372701fd2108a0e9a443d1c65bc6ddba4c02e995559773dbf70369a08ada745508e07ec54798f58ad6b87b',
+    'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=MLAAENJNCOMBDDAFHBPJPIILLBJKGJKLAFBENHKMHJCFAEKAPCHJLADIICODAGJPFCMDOFIHJEBKFPDFINFADBNPGPOOCHFEEBOANGKMIIKMFNCIAIPIFNCLGOBHAJGK; cf_clearance=eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg; _ga=GA1.3.967752592.1784785844; _ga_XXTTVXWHDB=GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0; XSRF-TOKEN=8a78cc84-f362-4d31-8e0f-bf746c0c91ff; JSESSIONID=8EB4DA5B9229BBD6D51F746F4FED08E9; db8ca2b43ed851cc93e71fd5fd72bff7=4f2806231eb66c8992f000f38d707caa; SESSION=232c5e61-5626-4fe2-bed9-265afd5ea42b; f5avraaaaaaaaaaaaaaaa_session_=IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB; TS00000000076=0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c19509d00092c6522ef13da3820478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f23d2bbff2afae187692820b7f5412d218d16ae65865a7df1c82c3e83525f3737603a89526f8dfddc322c85cd9c5589bb81c1d9eafcd9314b0eb022713fbe13c33ab40c9083886dbb0740f158667ea5c35ee423e01c501cce5345e87b92eb23ee14e91c933f44ae5cf35ff7ad53d79335b4423277252db49bd; TSPD_101_DID=0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c1950638007923376d27dbb1fe1a4f7c33150ce0f555650886b07c103abf941d34633e353a8bac0adfd552d6a02f638294fd7e2c5634d3f30c9ed89103; TS011f2d1a=01266d26d073c642cbf2723858e08a8725200b10bf2268b45fa0bd03aa2689b7506b53faf7b83d696ac38d49bd07208439a998178f; TSPD_101=0868f8be6fab2800b7a47bfc99174c00ba95447b1978b2158a40591e6df99f9259fe0bc0575fde9f6407e8e1ff0780fe08b7cfb354051800857f014ec659a8e35ca1732140a3428bba23ce13beb1c95e; TS5220f739077=0868f8be6fab2800646b09133a735ecd36fa89e6ef216c73e608b775701d272cfedbffc391ea63ec888a88e6d36bb8050810768cad172000b163b972e3b9c35c707213e7d34bb501410dc5deea07e781b44487ea9a36bcba; TS5220f739029=0868f8be6fab2800f621220741412d35b5f8c79c4d2451f731867c6b6052f920a0e34eb2124a1693de48db0ba601fed6; TSf1edb2d2027=0868f8be6fab20001c579b1ac5f0d82e979310e3a470e684723614e9a6dd58e68cf45cbc54a4602a08c8b72fc4113000cfb12bc5af892e2c891ea4cfcb110bc84c579dd45f5484fbdb01d1b2d645e9489b4132395cfeee3f70fce5bf129bea76',
 }
 json_data = {
     'surveyPeriodId': 'fd68e454-ba45-4b85-8205-f3bf777ded24',
@@ -80,9 +81,6 @@ json_data = {
     'regionSummaryLevel': 6,
 }
 # ================================================================
-
-
-
 if not os.path.exists(base_path):
     os.makedirs(base_path)
 
@@ -414,30 +412,58 @@ def request_with_backoff(session, method, url, max_retries=3, **kwargs):
     return response
 
 
-def fetch_data():
+def _user_identity(user):
+    """Identitas stabil untuk satu item `content` dari API."""
+    user_id = user.get("userId")
+    if user_id not in (None, ""):
+        return ("userId", str(user_id).strip())
+
+    email = user.get("email")
+    if email not in (None, ""):
+        return ("email", str(email).strip().lower())
+
+    username = user.get("username")
+    if username not in (None, ""):
+        return ("username", str(username).strip().lower())
+
+    return None
+
+
+def _fetch_data_once(run_number=1, page_size=50):
     """
-    Ambil seluruh halaman API dan simpan hanya jika scraping benar-benar lengkap.
+    Lakukan satu putaran scraping penuh.
+
+    Overlap antarpages tidak langsung dianggap fatal karena API memakai offset
+    pagination atas data yang terus berubah. Data yang berulang disimpan satu kali,
+    lalu kelengkapan diperiksa dari jumlah item `content` unik terhadap
+    `totalElements`.
 
     Return:
-        True  -> seluruh halaman selesai dan snapshot berhasil disimpan.
-        False -> ada kegagalan/ketidaklengkapan; history dan LATEST tidak diubah.
+        (True, "ok")                    -> snapshot berhasil disimpan
+        (False, "pagination_unstable") -> ada item terulang dan ada item lain hilang
+        (False, "fatal")               -> error request/struktur/session
     """
-    all_rows = []
     page = 0
-    size = 10
     session = requests.Session()
     max_refresh = 2
     refresh_count = 0
 
     completed = False
     expected_total_elements = None
-    fetched_content_count = 0
+    raw_content_count = 0
+
+    # Simpan content unik dan baris region unik. Kemunculan terakhir dipakai karena
+    # nilainya merupakan posisi API yang paling baru selama proses scraping.
+    seen_user_keys = set()
+    rows_by_region_key = {}
+
+    repeated_user_count = 0
+    repeated_region_count = 0
     seen_page_fingerprints = set()
-    seen_region_keys = set()
 
     while True:
         json_data["page"] = page
-        json_data["size"] = size
+        json_data["size"] = page_size
 
         try:
             response = request_with_backoff(
@@ -450,9 +476,8 @@ def fetch_data():
             )
         except (RuntimeError, requests.exceptions.RequestException) as e:
             print(f"🛑 Scraping gagal di page {page}: {e}")
-            return False
+            return False, "fatal"
 
-        # Gunakan tanda kurung agar prioritas operator tidak menimbulkan salah baca.
         session_expired = (
             (response.status_code == 200 and is_session_expired(response))
             or response.status_code in (302, 401, 403)
@@ -464,7 +489,7 @@ def fetch_data():
                     f"🛑 Session tetap expired setelah {max_refresh}x refresh. "
                     "Tidak ada data yang disimpan."
                 )
-                return False
+                return False, "fatal"
 
             try:
                 refresh_cookies()
@@ -475,30 +500,30 @@ def fetch_data():
                 continue
             except Exception as e:
                 print(f"🛑 Gagal refresh cookies: {e}")
-                return False
+                return False, "fatal"
 
         if response.status_code != 200:
             print(f"❌ Error di page {page} | Status: {response.status_code}")
             print(response.text[:500])
             print("🛑 Snapshot dibatalkan; history dan LATEST tidak diubah.")
-            return False
+            return False, "fatal"
 
         try:
             json_res = response.json()
         except Exception:
             print(f"❌ Response bukan JSON di page {page}.")
             print("🛑 Snapshot dibatalkan; history dan LATEST tidak diubah.")
-            return False
+            return False, "fatal"
 
         data_block = json_res.get("data")
         if not isinstance(data_block, dict):
             print(f"❌ Struktur `data` tidak valid di page {page}.")
-            return False
+            return False, "fatal"
 
         data = data_block.get("content", [])
         if not isinstance(data, list):
             print(f"❌ Struktur `content` tidak valid di page {page}.")
-            return False
+            return False, "fatal"
 
         is_last = bool(data_block.get("last", False))
 
@@ -513,33 +538,50 @@ def fetch_data():
                         "❌ Nilai totalElements berubah selama scraping "
                         f"({expected_total_elements:,} menjadi {total_elements:,})."
                     )
-                    return False
+                    return False, "pagination_unstable"
             except (TypeError, ValueError):
                 pass
 
         print(
-            f"📄 Page {page} | data: {len(data)} | "
-            f"last: {is_last} | terkumpul: {fetched_content_count + len(data):,}"
+            f"📄 Run {run_number} | Page {page} | data: {len(data)} | "
+            f"last: {is_last} | raw terkumpul: {raw_content_count + len(data):,}"
         )
 
         if not data and not is_last:
             print(
-                f"❌ Page {page} kosong tetapi belum ditandai sebagai halaman terakhir. "
+                f"❌ Page {page} kosong tetapi belum menjadi halaman terakhir. "
                 "Snapshot dibatalkan."
             )
-            return False
+            return False, "fatal"
 
-        # Deteksi API yang tanpa sengaja mengembalikan halaman yang sama berulang kali.
-        page_keys = []
-        page_rows = []
+        page_user_keys = []
 
         for user in data:
+            user_key = _user_identity(user)
+            if user_key is None:
+                print(
+                    f"❌ Item content pada page {page} tidak memiliki userId, email, "
+                    "maupun username. Snapshot dibatalkan."
+                )
+                return False, "fatal"
+
+            page_user_keys.append(user_key)
+
+            if user_key in seen_user_keys:
+                repeated_user_count += 1
+            seen_user_keys.add(user_key)
+
             user_id = user.get("userId")
             email = user.get("email")
+            region_summary = user.get("regionSummary", []) or []
 
-            for region in user.get("regionSummary", []):
+            if not isinstance(region_summary, list):
+                print(f"❌ regionSummary tidak valid pada page {page}.")
+                return False, "fatal"
+
+            for region in region_summary:
                 region_code = region.get("regionCode")
-                page_keys.append((str(user_id), str(region_code)))
+                region_key = (user_key, str(region_code).strip())
 
                 row = {
                     "userId": user_id,
@@ -550,47 +592,31 @@ def fetch_data():
                     "total_data": region.get("total"),
                 }
 
-                for status in region.get("statusBreakdown", []):
+                for status in region.get("statusBreakdown", []) or []:
                     status_name = status.get("status")
                     if status_name:
                         row[status_name] = status.get("count")
 
-                page_rows.append(row)
+                if region_key in rows_by_region_key:
+                    repeated_region_count += 1
 
-        # Satu key petugas-wilayah tidak boleh muncul dua kali, baik dalam
-        # halaman yang sama maupun pada halaman berbeda.
-        page_key_set = set(page_keys)
-        if len(page_key_set) != len(page_keys):
-            print(
-                f"❌ Ada key userId + regionCode yang berulang di page {page}. "
-                "Snapshot dibatalkan agar data tidak terduplikasi."
-            )
-            return False
+                # Kemunculan terakhir dipakai. Ini mencegah duplikat fisik tanpa
+                # menyembunyikan data hilang karena validasi jumlah user unik ada di akhir.
+                rows_by_region_key[region_key] = row
 
-        overlap_keys = page_key_set.intersection(seen_region_keys)
-        if overlap_keys:
-            sample_overlap = list(overlap_keys)[:5]
-            print(
-                f"❌ Ditemukan {len(overlap_keys):,} key petugas-wilayah yang sudah "
-                f"pernah diterima pada page sebelumnya. Contoh: {sample_overlap}. "
-                "Snapshot dibatalkan."
-            )
-            return False
-
-        fingerprint = tuple(sorted(page_keys))
+        # Jika server terus mengembalikan keseluruhan page yang sama, hentikan agar
+        # tidak terjadi loop panjang. Overlap sebagian masih diperbolehkan.
+        fingerprint = tuple(sorted(page_user_keys))
         if fingerprint and fingerprint in seen_page_fingerprints:
             print(
-                f"❌ Isi page {page} sama dengan halaman yang sudah pernah diterima. "
-                "Kemungkinan pagination API mengulang data. Snapshot dibatalkan."
+                f"❌ Seluruh isi page {page} identik dengan page sebelumnya. "
+                "Pagination API kemungkinan tidak bergerak."
             )
-            return False
-
+            return False, "pagination_unstable"
         if fingerprint:
             seen_page_fingerprints.add(fingerprint)
-        seen_region_keys.update(page_key_set)
 
-        all_rows.extend(page_rows)
-        fetched_content_count += len(data)
+        raw_content_count += len(data)
 
         if is_last:
             completed = True
@@ -602,33 +628,94 @@ def fetch_data():
 
     if not completed:
         print("🛑 Scraping belum lengkap. Tidak ada file yang disimpan.")
-        return False
+        return False, "fatal"
 
-    # totalElements menghitung jumlah item content, bukan jumlah regionSummary.
+    unique_user_count = len(seen_user_keys)
+
+    if repeated_user_count:
+        print(
+            f"ℹ️  Ditemukan {repeated_user_count:,} kemunculan user berulang "
+            "antarpages. Data tidak langsung dibatalkan; kelengkapan diperiksa "
+            "menggunakan jumlah user unik."
+        )
+
+    if repeated_region_count:
+        print(
+            f"🧹 Ditemukan {repeated_region_count:,} kemunculan petugas-wilayah "
+            "berulang. Hanya kemunculan terakhir yang dipakai."
+        )
+
+    # Validasi utama. Jika satu user bergeser dan muncul dua kali, biasanya ada user
+    # lain yang tidak ikut terambil. Dalam kondisi itu unique_user_count akan kurang
+    # dari totalElements, sehingga seluruh run harus diulang dari page 0.
     if (
         expected_total_elements is not None
-        and fetched_content_count != expected_total_elements
+        and unique_user_count != expected_total_elements
     ):
         print(
-            "❌ Jumlah item yang diterima tidak sesuai totalElements: "
-            f"{fetched_content_count:,} dari {expected_total_elements:,}. "
-            "Snapshot dibatalkan."
+            "❌ Pagination tidak stabil: jumlah user unik yang diterima "
+            f"{unique_user_count:,}, sedangkan totalElements "
+            f"{expected_total_elements:,}. Raw content: {raw_content_count:,}."
         )
-        return False
+        print(
+            "🔁 Snapshot tidak disimpan karena kemungkinan ada user yang terlewat."
+        )
+        return False, "pagination_unstable"
 
+    if (
+        expected_total_elements is not None
+        and raw_content_count != expected_total_elements
+    ):
+        print(
+            "⚠️  Jumlah raw content berbeda dari totalElements, tetapi seluruh user "
+            f"unik tetap lengkap ({unique_user_count:,}). Proses dapat dilanjutkan."
+        )
+
+    all_rows = list(rows_by_region_key.values())
     if not all_rows:
         print("⚠️ Tidak ada baris regionSummary yang diterima. Snapshot tidak disimpan.")
-        return False
+        return False, "fatal"
 
     try:
         save_snapshot(all_rows)
     except Exception as e:
         print(f"🛑 Gagal menyimpan snapshot anti-duplikat: {e}")
-        return False
+        return False, "fatal"
 
     print("🎉 Semua data berhasil diambil dan disimpan tanpa duplikasi.")
-    return True
+    return True, "ok"
 
+
+def fetch_data(max_full_retries=3, page_size=50):
+    """
+    Jalankan scraping penuh. Jika pagination bergeser karena data FASIH berubah
+    saat proses berlangsung, ulangi seluruh scraping dari page 0.
+    """
+    for run_number in range(1, max_full_retries + 1):
+        if run_number > 1:
+            wait_seconds = 5 * (run_number - 1)
+            print(
+                f"\n🔄 Mengulang seluruh scraping dari page 0 dalam "
+                f"{wait_seconds} detik (percobaan {run_number}/{max_full_retries})..."
+            )
+            time.sleep(wait_seconds)
+
+        success, reason = _fetch_data_once(
+            run_number=run_number,
+            page_size=page_size,
+        )
+
+        if success:
+            return True
+
+        if reason != "pagination_unstable":
+            return False
+
+    print(
+        f"🛑 Pagination masih tidak stabil setelah {max_full_retries} percobaan penuh. "
+        "History dan LATEST tidak diubah. Coba lagi saat aktivitas FASIH lebih rendah."
+    )
+    return False
 
 def job():
     print(
