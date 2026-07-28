@@ -429,7 +429,7 @@ def _user_identity(user):
     return None
 
 
-def _fetch_data_once(run_number=1, page_size=50):
+def _fetch_data_once(run_number=1, page_size=10):
     """
     Lakukan satu putaran scraping penuh.
 
@@ -698,7 +698,7 @@ def _fetch_data_once(run_number=1, page_size=50):
     return True, "ok"
 
 
-def fetch_data(page_size=50):
+def fetch_data(page_size=10):
     """
     Jalankan satu kali scraping penuh.
 
