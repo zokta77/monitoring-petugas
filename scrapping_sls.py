@@ -24,7 +24,7 @@ FASIH_HOME_URL      = "https://fasih-sm.bps.go.id/app/"
 
 # ===================== GANTI COOKIE DI SINI =====================
 cookies = {
-    'f5avraaaaaaaaaaaaaaaa_session_': 'MLAAENJNCOMBDDAFHBPJPIILLBJKGJKLAFBENHKMHJCFAEKAPCHJLADIICODAGJPFCMDOFIHJEBKFPDFINFADBNPGPOOCHFEEBOANGKMIIKMFNCIAIPIFNCLGOBHAJGK',
+    'f5avraaaaaaaaaaaaaaaa_session_': 'PDECHJPOJNLFOGDJOEGPLLAHIOJCNLHAALNJIJMLNNBIHLCIEOAABMFFNKAHDBJIJHKDDAHNNKOJKOOHHPCADCJBEPNMMNNHAHNJFKECBDBMGNECIDPGPPMLPHMKGLEH',
     'cf_clearance': 'eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg',
     '_ga': 'GA1.3.967752592.1784785844',
     '_ga_XXTTVXWHDB': 'GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0',
@@ -33,13 +33,13 @@ cookies = {
     'db8ca2b43ed851cc93e71fd5fd72bff7': '4f2806231eb66c8992f000f38d707caa',
     'SESSION': '232c5e61-5626-4fe2-bed9-265afd5ea42b',
     'f5avraaaaaaaaaaaaaaaa_session_': 'IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB',
-    'TS00000000076': '0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c19509d00092c6522ef13da3820478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f23d2bbff2afae187692820b7f5412d218d16ae65865a7df1c82c3e83525f3737603a89526f8dfddc322c85cd9c5589bb81c1d9eafcd9314b0eb022713fbe13c33ab40c9083886dbb0740f158667ea5c35ee423e01c501cce5345e87b92eb23ee14e91c933f44ae5cf35ff7ad53d79335b4423277252db49bd',
-    'TSPD_101_DID': '0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c1950638007923376d27dbb1fe1a4f7c33150ce0f555650886b07c103abf941d34633e353a8bac0adfd552d6a02f638294fd7e2c5634d3f30c9ed89103',
-    'TS011f2d1a': '01266d26d073c642cbf2723858e08a8725200b10bf2268b45fa0bd03aa2689b7506b53faf7b83d696ac38d49bd07208439a998178f',
-    'TSPD_101': '0868f8be6fab2800b7a47bfc99174c00ba95447b1978b2158a40591e6df99f9259fe0bc0575fde9f6407e8e1ff0780fe08b7cfb354051800857f014ec659a8e35ca1732140a3428bba23ce13beb1c95e',
-    'TS5220f739077': '0868f8be6fab2800abf9edd55328d92486d0f274077a8d66c54b1e7d82f1b3777a41ecd4e73a2eaf6e714097bc80696e08e1c9b6de1720005fda72b46922cd4a707213e7d34bb50101af17688ab080ef5a8066601361aae2',
-    'TS5220f739029': '0868f8be6fab28007ec1fb8df0a30ae298bd889accda53a95b698477d523307da0a4a0f36abc2bb2511b7052d0ad2c80',
-    'TSf1edb2d2027': '0868f8be6fab2000a61278ada9f0777f37a3b9649d1b5955e17bb0d30e2ab84d7ee348b9032eb7db08c8a1b57a11300017fa7b08a4f4f3effdaf4d70011a83039bb218763b914fc3732f86adddc174246908a41c8c5c67ef5385e3465f0b9d41',
+    'TS00000000076': '0868f8be6fab2800d294a1dc420bf47c3fa30f1f0e0b9ae3d7377c2cb922697359bacb9fdbd8f7b6ccf33bf08fbb0b3d08ed1ecffd09d00008a506914f4e33d747db606cf4819c4971ea89920be357826dcbfdf29a1f12fcb8fb9a55fbba754d1eb233aa73482e2e0699baeab0d49f8c36ea152204f96b22d0c6dc03fbcd5b980e32e82cba75868218074070e9bd66638ca292378af59ef6eb13dd12e3396cfd119ab30098968b7fd9a043a7fd785600701e258f916794214d31ec74320cfcdda7f379e8a3cfef593be719d86745ace81e26186e6c9670dffb324458478def2b91b4d196d70bfbf39dd4e5285ebbec08f3cdd86533d2a7dffaf39eaf15895481f0d669021ceecbff',
+    'TSPD_101_DID': '0868f8be6fab2800d294a1dc420bf47c3fa30f1f0e0b9ae3d7377c2cb922697359bacb9fdbd8f7b6ccf33bf08fbb0b3d08ed1ecffd0638007504197354270ab19153e3bce5c96ec878dad657fe4737910c87e6ed7094bc214c01a378ac3000051a9925ed5f2987bc0088f0c2cfea3948',
+    'TS011f2d1a': '01266d26d0336503832ccefdde5082db365c6a8a5062019bd9d42a2ef0dde3c8fc343ec9f6d74db7e7e06dfba3b860f92327e483de',
+    'TSPD_101': '0868f8be6fab2800e2c71b5ea51f53cdf65f27b7ffeb60bb6c614ef180669a302ceb74cbb4e87ce20744a4b1651a99f908f86201fe051800ac11732acf8a111d5ca1732140a3428bba23ce13beb1c95e',
+    'TS5220f739077': '0868f8be6fab2800bc5861b3e22bfbd5f4d1f1c8fd91f8100cd19355443376f48339d40acfdea6f30e2a2207ddcb27ac08fc7926e51720007d3569130c8956ac707213e7d34bb501c22b900dbff3824632834e414ce726dd',
+    'TS5220f739029': '0868f8be6fab2800f944639b2b091e65ddcf1dde6023a665114fa8d779bd831ea2a5fa2261f82365b9b93b12ee24e340',
+    'TSf1edb2d2027': '0868f8be6fab2000b519a5176a0a66989dfd36f5fefd6318c86cb366796575d966a699ecaa499bd20850459a8e11300086b69efad3459c088da183221f3b96fea74e2ae7164e1b216255bc1d12dc4a575019e20cd13980baff5a75eb66bddff4',
 }
 
 headers = {
@@ -57,8 +57,9 @@ headers = {
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
     'x-xsrf-token': '8a78cc84-f362-4d31-8e0f-bf746c0c91ff',
-    'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=MLAAENJNCOMBDDAFHBPJPIILLBJKGJKLAFBENHKMHJCFAEKAPCHJLADIICODAGJPFCMDOFIHJEBKFPDFINFADBNPGPOOCHFEEBOANGKMIIKMFNCIAIPIFNCLGOBHAJGK; cf_clearance=eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg; _ga=GA1.3.967752592.1784785844; _ga_XXTTVXWHDB=GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0; XSRF-TOKEN=8a78cc84-f362-4d31-8e0f-bf746c0c91ff; JSESSIONID=8EB4DA5B9229BBD6D51F746F4FED08E9; db8ca2b43ed851cc93e71fd5fd72bff7=4f2806231eb66c8992f000f38d707caa; SESSION=232c5e61-5626-4fe2-bed9-265afd5ea42b; f5avraaaaaaaaaaaaaaaa_session_=IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB; TS00000000076=0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c19509d00092c6522ef13da3820478ac87f52a0fe22f368c1eef7bee9d62bb7a113466be7a24ba41f042eb9b0805395de4d93e2c865fd178d582e6c376beb38bc73734b4d6549b2003c1308d7ec012a6e4e7a872c44dba74c778af14f23d2bbff2afae187692820b7f5412d218d16ae65865a7df1c82c3e83525f3737603a89526f8dfddc322c85cd9c5589bb81c1d9eafcd9314b0eb022713fbe13c33ab40c9083886dbb0740f158667ea5c35ee423e01c501cce5345e87b92eb23ee14e91c933f44ae5cf35ff7ad53d79335b4423277252db49bd; TSPD_101_DID=0868f8be6fab2800e87fd475e2800ffd4244ef2f11db617447d4ceb5b8cd6aeff0b47ec0adce2c3d2fa0dcbf4902fbad0853b9c1950638007923376d27dbb1fe1a4f7c33150ce0f555650886b07c103abf941d34633e353a8bac0adfd552d6a02f638294fd7e2c5634d3f30c9ed89103; TS011f2d1a=01266d26d073c642cbf2723858e08a8725200b10bf2268b45fa0bd03aa2689b7506b53faf7b83d696ac38d49bd07208439a998178f; TSPD_101=0868f8be6fab2800b7a47bfc99174c00ba95447b1978b2158a40591e6df99f9259fe0bc0575fde9f6407e8e1ff0780fe08b7cfb354051800857f014ec659a8e35ca1732140a3428bba23ce13beb1c95e; TS5220f739077=0868f8be6fab2800abf9edd55328d92486d0f274077a8d66c54b1e7d82f1b3777a41ecd4e73a2eaf6e714097bc80696e08e1c9b6de1720005fda72b46922cd4a707213e7d34bb50101af17688ab080ef5a8066601361aae2; TS5220f739029=0868f8be6fab28007ec1fb8df0a30ae298bd889accda53a95b698477d523307da0a4a0f36abc2bb2511b7052d0ad2c80; TSf1edb2d2027=0868f8be6fab2000a61278ada9f0777f37a3b9649d1b5955e17bb0d30e2ab84d7ee348b9032eb7db08c8a1b57a11300017fa7b08a4f4f3effdaf4d70011a83039bb218763b914fc3732f86adddc174246908a41c8c5c67ef5385e3465f0b9d41',
+    # 'cookie': 'f5avraaaaaaaaaaaaaaaa_session_=PDECHJPOJNLFOGDJOEGPLLAHIOJCNLHAALNJIJMLNNBIHLCIEOAABMFFNKAHDBJIJHKDDAHNNKOJKOOHHPCADCJBEPNMMNNHAHNJFKECBDBMGNECIDPGPPMLPHMKGLEH; cf_clearance=eb1_j1xLGml_ZqiSx9iKgQ3Uizq2h9ZFygtS4xoqvE4-1784785841-1.2.1.1-nbr7VgdGPJowYAIq.vvVHZ61je0OxJGwfE5TraTCWTs8wlH0fWSKMzHd5040SsCYqIH53XfED3vS8S603T4rogP7zG7Xn1_JlYHoAYTNQZ8mFC2e_Ah2gOtgSt6RginShnWtSwN9AksEIV32HMAmTmOhJSSFR5IlFOmRA8UqopLHI7_QPhNleBydbh9RImuiE3vrvWlzChxim7zScvGPBxKhDX6dImOCmh8cfpCEi6GOftwAeeWTH0lrM0a0D72cfZ389WGRvaqpmDcmXM4tQU85AVzCF6OLRKBSfBQoAvsbw_f1qZQWS6qVKaSHWW60gFFGRh__TSWipPiWMauI7fEYTnayjirMHVpJ7FDBwdg; _ga=GA1.3.967752592.1784785844; _ga_XXTTVXWHDB=GS2.3.s1784785844$o1$g1$t1784786486$j60$l0$h0; XSRF-TOKEN=8a78cc84-f362-4d31-8e0f-bf746c0c91ff; JSESSIONID=8EB4DA5B9229BBD6D51F746F4FED08E9; db8ca2b43ed851cc93e71fd5fd72bff7=4f2806231eb66c8992f000f38d707caa; SESSION=232c5e61-5626-4fe2-bed9-265afd5ea42b; f5avraaaaaaaaaaaaaaaa_session_=IBBNEHBKNANCDDHPOFHBHNNKLMENKPMKEBIIBEHBOOKBKBDBFMDJLOHHCKCONIGCLNODBDGFNCIFOEANOODAMFKFDPHPIPIPEDIHOCMHLDCOAGKGHCPDIJNLAKNHOHHB; TS00000000076=0868f8be6fab2800d294a1dc420bf47c3fa30f1f0e0b9ae3d7377c2cb922697359bacb9fdbd8f7b6ccf33bf08fbb0b3d08ed1ecffd09d00008a506914f4e33d747db606cf4819c4971ea89920be357826dcbfdf29a1f12fcb8fb9a55fbba754d1eb233aa73482e2e0699baeab0d49f8c36ea152204f96b22d0c6dc03fbcd5b980e32e82cba75868218074070e9bd66638ca292378af59ef6eb13dd12e3396cfd119ab30098968b7fd9a043a7fd785600701e258f916794214d31ec74320cfcdda7f379e8a3cfef593be719d86745ace81e26186e6c9670dffb324458478def2b91b4d196d70bfbf39dd4e5285ebbec08f3cdd86533d2a7dffaf39eaf15895481f0d669021ceecbff; TSPD_101_DID=0868f8be6fab2800d294a1dc420bf47c3fa30f1f0e0b9ae3d7377c2cb922697359bacb9fdbd8f7b6ccf33bf08fbb0b3d08ed1ecffd0638007504197354270ab19153e3bce5c96ec878dad657fe4737910c87e6ed7094bc214c01a378ac3000051a9925ed5f2987bc0088f0c2cfea3948; TS011f2d1a=01266d26d0336503832ccefdde5082db365c6a8a5062019bd9d42a2ef0dde3c8fc343ec9f6d74db7e7e06dfba3b860f92327e483de; TSPD_101=0868f8be6fab2800e2c71b5ea51f53cdf65f27b7ffeb60bb6c614ef180669a302ceb74cbb4e87ce20744a4b1651a99f908f86201fe051800ac11732acf8a111d5ca1732140a3428bba23ce13beb1c95e; TS5220f739077=0868f8be6fab2800bc5861b3e22bfbd5f4d1f1c8fd91f8100cd19355443376f48339d40acfdea6f30e2a2207ddcb27ac08fc7926e51720007d3569130c8956ac707213e7d34bb501c22b900dbff3824632834e414ce726dd; TS5220f739029=0868f8be6fab2800f944639b2b091e65ddcf1dde6023a665114fa8d779bd831ea2a5fa2261f82365b9b93b12ee24e340; TSf1edb2d2027=0868f8be6fab2000b519a5176a0a66989dfd36f5fefd6318c86cb366796575d966a699ecaa499bd20850459a8e11300086b69efad3459c088da183221f3b96fea74e2ae7164e1b216255bc1d12dc4a575019e20cd13980baff5a75eb66bddff4',
 }
+
 json_data = {
     'surveyPeriodId': 'fd68e454-ba45-4b85-8205-f3bf777ded24',
     'surveyRoleId': '6d7d919a-45e5-4779-bb87-2905b49fd31a',
@@ -83,165 +84,74 @@ json_data = {
 # ================================================================
 if not os.path.exists(base_path):
     os.makedirs(base_path)
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+backup_file = archive_filename(timestamp)  # arsip histori, 1 file per kali scraping
 
 
-def _normalize_text(series: pd.Series) -> pd.Series:
-    """Normalisasi teks untuk key merge/deduplikasi tanpa mengubah nilai kosong menjadi 'nan'."""
-    return series.fillna("").astype(str).str.strip().str.lower()
-
-
-def _deduplicate_api_rows(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Pastikan satu snapshot hanya memiliki satu baris untuk setiap petugas-wilayah.
-
-    Key utama menggunakan userId + regionCode. Jika userId tidak tersedia,
-    fallback menggunakan email + regionCode.
-    """
-    if df.empty:
-        return df
-
-    if {"userId", "regionCode"}.issubset(df.columns):
-        key_cols = ["userId", "regionCode"]
-    elif {"email", "regionCode"}.issubset(df.columns):
-        key_cols = ["email", "regionCode"]
-    else:
-        raise ValueError(
-            "Tidak dapat melakukan deduplikasi karena kolom key "
-            "`userId/regionCode` atau `email/regionCode` tidak lengkap."
-        )
-
-    before = len(df)
-    duplicate_mask = df.duplicated(subset=key_cols, keep=False)
-
-    if duplicate_mask.any():
-        duplicate_count = int(duplicate_mask.sum())
-        print(
-            f"⚠️  Ditemukan {duplicate_count:,} baris yang memiliki key duplikat "
-            f"{key_cols}. Hanya data terakhir untuk setiap key yang dipakai."
-        )
-
-    df = df.drop_duplicates(subset=key_cols, keep="last").reset_index(drop=True)
-    removed = before - len(df)
-
-    if removed:
-        print(f"🧹 {removed:,} baris duplikat API dihapus sebelum penyimpanan.")
-
-    return df
-
-
-def save_snapshot(new_data):
-    """
-    Simpan satu hasil scraping lengkap sebagai satu snapshot.
-
-    Aturan anti-duplikat:
-    1. Data API dideduplikasi berdasarkan userId + regionCode.
-    2. Master dideduplikasi berdasarkan pencacah + regionCode sebelum merge.
-    3. File history selalu berisi satu snapshot saja, tidak pernah append.
-    4. LATEST selalu ditimpa secara atomik oleh snapshot lengkap terbaru.
-    """
+def save_and_merge(new_data):
+    """Simpan ke file arsip (histori, append) DAN ke file LATEST (overwrite, untuk dashboard)"""
     if not new_data:
-        raise ValueError("Data scraping kosong; snapshot tidak disimpan.")
-
-    run_at = datetime.now()
-    scraped_at = run_at.strftime("%Y-%m-%d %H:%M:%S")
-    backup_file = archive_filename(run_at.strftime("%Y%m%d_%H%M%S"))
+        return
 
     df_new = pd.DataFrame(new_data)
-
-    # Normalisasi key terlebih dahulu, lalu buang hasil API yang terulang.
-    if "email" in df_new.columns:
-        df_new["email"] = _normalize_text(df_new["email"])
-    if "regionCode" in df_new.columns:
-        df_new["regionCode"] = df_new["regionCode"].fillna("").astype(str).str.strip()
-
-    df_new = _deduplicate_api_rows(df_new)
-    api_row_count = len(df_new)
-
+    df_new["scraped_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     master = pd.read_excel("data/master_data.xlsx")
-    required_master_cols = [
-        "regionCode",
-        "nmkab",
-        "nmkec",
-        "nmdesa",
-        "nmsls",
-        "nmsubsls",
-        "pengawas",
-        "pencacah",
-        "nama_pcl",
-        "nama_pml",
-        "jumlah_prelist_awal",
-    ]
 
-    missing_master_cols = [c for c in required_master_cols if c not in master.columns]
-    if missing_master_cols:
-        raise ValueError(
-            "Kolom master_data.xlsx tidak lengkap: "
-            + ", ".join(missing_master_cols)
-        )
-
-    master = master[required_master_cols].copy()
-    master["pencacah"] = _normalize_text(master["pencacah"])
-    master["regionCode"] = master["regionCode"].fillna("").astype(str).str.strip()
-
-    master_key = ["pencacah", "regionCode"]
-    master_dup_mask = master.duplicated(subset=master_key, keep=False)
-
-    if master_dup_mask.any():
-        duplicate_rows = int(master_dup_mask.sum())
-        print(
-            f"⚠️  master_data.xlsx memiliki {duplicate_rows:,} baris dengan key "
-            f"{master_key} yang berulang. Hanya baris terakhir untuk setiap key yang dipakai."
-        )
-        master = (
-            master.drop_duplicates(subset=master_key, keep="last")
-            .reset_index(drop=True)
-        )
-
-    # many_to_one memastikan satu baris API tidak berkembang menjadi beberapa baris
-    # akibat key master yang berulang.
-    df_new = df_new.merge(
-        master,
-        left_on=["email", "regionCode"],
-        right_on=["pencacah", "regionCode"],
-        how="left",
-        validate="many_to_one",
+    master["pencacah"] = (
+        master["pencacah"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
     )
 
-    # Merge tidak boleh menambah jumlah baris snapshot.
-    if len(df_new) != api_row_count:
-        raise RuntimeError(
-            "Jumlah baris berubah setelah merge master "
-            f"({api_row_count:,} menjadi {len(df_new):,}). "
-            "Snapshot dibatalkan untuk mencegah duplikasi."
-        )
+    df_new["email"] = (
+        df_new["email"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
 
-    # Pemeriksaan terakhir setelah merge.
-    final_key = ["userId", "regionCode"] if "userId" in df_new.columns else ["email", "regionCode"]
-    if df_new.duplicated(subset=final_key).any():
-        raise RuntimeError(
-            f"Masih ditemukan key duplikat setelah merge: {final_key}. "
-            "Snapshot dibatalkan."
-        )
+    master["regionCode"] = master["regionCode"].astype(str)
+    df_new["regionCode"] = df_new["regionCode"].astype(str)
 
-    df_new["scraped_at"] = scraped_at
+    df_new = df_new.merge(
+        master[
+            [
+                "regionCode",
+                "nmkab",
+                "nmkec",
+                "nmdesa",
+                "nmsls",
+                "nmsubsls",
+                "pengawas",
+                "pencacah",
+                "nama_pcl",
+                "nama_pml",
+                "jumlah_prelist_awal"
+            ]
+        ],
+        left_on=["email", "regionCode"],
+        right_on=["pencacah", "regionCode"],
+        how="left"
+    )
 
-    # History adalah satu file per scraping berhasil. Jangan pernah concat/append
-    # dengan isi history lama.
-    _atomic_write_excel(df_new, backup_file)
+    # 1) Arsip histori - tetap ditambah (append), supaya bisa lihat tren dari waktu ke waktu
+    if os.path.exists(backup_file):
+        df_old = pd.read_excel(backup_file)
+        df_archive = pd.concat([df_old, df_new], ignore_index=True)
+    else:
+        df_archive = df_new
+    df_archive.to_excel(backup_file, index=False)
+
+    # 2) File LATEST - SELALU ditimpa dengan snapshot terbaru saja (dibaca dashboard)
     _atomic_write_excel(df_new, LATEST_FILE)
-
-    print(f"🗂️  History tersimpan: {backup_file}")
-    print(f"💾 Snapshot terbaru tersimpan: {LATEST_FILE}")
-    print(f"✅ Jumlah baris unik yang disimpan: {len(df_new):,}")
-
-    return backup_file
+    print(f"💾 Snapshot terbaru disimpan ke: {LATEST_FILE}")
 
 
 def _atomic_write_excel(df, path):
     """Tulis Excel dengan aman: tulis ke file sementara dulu, baru rename.
     Mencegah dashboard membaca file yang setengah jadi/korup saat scraping sedang menulis."""
     folder = os.path.dirname(path) or "."
-    os.makedirs(folder, exist_ok=True)
     fd, tmp_path = tempfile.mkstemp(suffix=".xlsx", dir=folder)
     os.close(fd)
     try:
@@ -329,8 +239,6 @@ def refresh_cookies():
  
         cookies.update(fresh)
         headers["x-xsrf-token"] = fresh.get("XSRF-TOKEN", headers["x-xsrf-token"])
-        # Hindari header Cookie lama menimpa cookies baru yang dikirim requests.
-        headers["cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
         print(f"✅ Cookies segar berhasil diambil ({len(fresh)} cookie). Lanjut scraping...")
     finally:
         driver.quit()
@@ -383,20 +291,14 @@ def request_with_backoff(session, method, url, max_retries=3, **kwargs):
         if response.status_code == 200:
             return response
 
-        # 401/403 dikembalikan ke fetch_data agar session dapat di-refresh,
-        # bukan diulang terus memakai cookies lama.
-        if response.status_code in (401, 403):
-            return response
-
-        if response.status_code == 429:
-            print(
-                f"⚠️  Status 429 (percobaan {attempt}/{max_retries}) - "
-                "request dibatasi sementara."
-            )
+        if response.status_code in (403, 429):
+            print(f"⚠️  Status {response.status_code} (percobaan {attempt}/{max_retries}) - "
+                  f"kemungkinan rate-limited/diblokir sementara.")
             if attempt == max_retries:
                 raise RuntimeError(
-                    f"Berhenti: status 429 berulang {max_retries}x. "
-                    "Tunggu sebelum mencoba lagi atau koordinasi ke admin FASIH."
+                    f"Berhenti: status {response.status_code} berulang {max_retries}x. "
+                    "Sistem sepertinya menahan request ini - cek manual lewat browser, "
+                    "atau koordinasi ke admin FASIH, sebelum mencoba lagi."
                 )
             time.sleep(delay)
             delay *= 2
@@ -412,319 +314,94 @@ def request_with_backoff(session, method, url, max_retries=3, **kwargs):
     return response
 
 
-def _user_identity(user):
-    """Identitas stabil untuk satu item `content` dari API."""
-    user_id = user.get("userId")
-    if user_id not in (None, ""):
-        return ("userId", str(user_id).strip())
-
-    email = user.get("email")
-    if email not in (None, ""):
-        return ("email", str(email).strip().lower())
-
-    username = user.get("username")
-    if username not in (None, ""):
-        return ("username", str(username).strip().lower())
-
-    return None
-
-
-def _fetch_data_once(run_number=1, page_size=10):
-    """
-    Lakukan satu putaran scraping penuh.
-
-    Duplikat antarpages tidak menyebabkan scraping diulang. Setiap baris disimpan
-    di dictionary berdasarkan key petugas-wilayah, sehingga apabila key yang sama
-    muncul lagi, data terakhir otomatis menggantikan data sebelumnya.
-
-    Snapshot hanya disimpan setelah API mencapai halaman terakhir. Error request,
-    session, atau struktur respons tetap membatalkan penyimpanan agar history dan
-    LATEST tidak berisi data parsial.
-    """
+def fetch_data():
+    all_rows = []
     page = 0
+    size = 10
     session = requests.Session()
-    max_refresh = 2
+    max_refresh = 2          # maksimal berapa kali boleh refresh cookies dalam 1 run
     refresh_count = 0
 
-    completed = False
-    expected_total_elements = None
-    expected_total_pages = None
-    raw_content_count = 0
-
-    seen_user_keys = set()
-    rows_by_region_key = {}
-    repeated_user_count = 0
-    repeated_region_count = 0
-    seen_page_fingerprints = set()
-
     while True:
-        json_data["page"] = page
-        json_data["size"] = page_size
+        json_data['page'] = page
+        json_data['size'] = size
 
         try:
             response = request_with_backoff(
-                session,
-                "POST",
-                URL_DATA,
-                cookies=cookies,
-                headers=headers,
-                json=json_data,
+                session, "POST", URL_DATA,
+                cookies=cookies, headers=headers, json=json_data,
             )
         except (RuntimeError, requests.exceptions.RequestException) as e:
-            print(f"🛑 Scraping gagal di page {page}: {e}")
-            return False, "fatal"
+            print(f"🛑 Berhenti scraping: {e}")
+            break
 
-        session_expired = (
-            (response.status_code == 200 and is_session_expired(response))
-            or response.status_code in (302, 401, 403)
-        )
-
-        if session_expired:
+        # ── Deteksi session expired → auto-refresh cookies lalu ulangi page ini ──
+        if response.status_code in (200,) and is_session_expired(response) or \
+           response.status_code in (302, 401):
             if refresh_count >= max_refresh:
-                print(
-                    f"🛑 Session tetap expired setelah {max_refresh}x refresh. "
-                    "Tidak ada data yang disimpan."
-                )
-                return False, "fatal"
-
+                print(f"🛑 Session expired lagi setelah {max_refresh}x refresh. "
+                      "Kemungkinan profil Chrome perlu login manual ulang.")
+                break
             try:
                 refresh_cookies()
                 refresh_count += 1
+                # Reset session agar cookies baru ikut terpakai
                 session = requests.Session()
-                print(f"↩️  Mengulang request page {page} dengan cookies baru...")
+                print(f"↩️  Mengulang page {page} dengan cookies baru...")
                 time.sleep(2)
-                continue
+                continue   # ulangi iterasi loop dengan page yang sama
             except Exception as e:
                 print(f"🛑 Gagal refresh cookies: {e}")
-                return False, "fatal"
+                break
 
         if response.status_code != 200:
             print(f"❌ Error di page {page} | Status: {response.status_code}")
             print(response.text[:500])
-            print("🛑 Snapshot dibatalkan; history dan LATEST tidak diubah.")
-            return False, "fatal"
+            break
 
         try:
-            json_res = response.json()
+            json_res    = response.json()
         except Exception:
-            print(f"❌ Response bukan JSON di page {page}.")
-            print("🛑 Snapshot dibatalkan; history dan LATEST tidak diubah.")
-            return False, "fatal"
+            print(f"❌ Response bukan JSON di page {page}. Kemungkinan session expired.")
+            break
 
-        data_block = json_res.get("data")
-        if not isinstance(data_block, dict):
-            print(f"❌ Struktur `data` tidak valid di page {page}.")
-            return False, "fatal"
+        data_block  = json_res.get("data", {})
+        data        = data_block.get("content", [])
+        is_last     = data_block.get("last", True)
 
-        data = data_block.get("content", [])
-        if not isinstance(data, list):
-            print(f"❌ Struktur `content` tidak valid di page {page}.")
-            return False, "fatal"
-
-        is_last = bool(data_block.get("last", False))
-
-        total_elements = data_block.get("totalElements")
-        if total_elements is not None:
-            try:
-                total_elements = int(total_elements)
-                if expected_total_elements is None:
-                    expected_total_elements = total_elements
-                elif expected_total_elements != total_elements:
-                    print(
-                        "⚠️  totalElements berubah selama scraping "
-                        f"({expected_total_elements:,} menjadi {total_elements:,}). "
-                        "Proses tetap dilanjutkan."
-                    )
-                    expected_total_elements = total_elements
-            except (TypeError, ValueError):
-                pass
-
-        total_pages = data_block.get("totalPages")
-        if total_pages is not None:
-            try:
-                total_pages = int(total_pages)
-                if expected_total_pages is None:
-                    expected_total_pages = total_pages
-                elif expected_total_pages != total_pages:
-                    print(
-                        "⚠️  totalPages berubah selama scraping "
-                        f"({expected_total_pages:,} menjadi {total_pages:,}). "
-                        "Proses tetap dilanjutkan."
-                    )
-                    expected_total_pages = total_pages
-            except (TypeError, ValueError):
-                pass
-
-        print(
-            f"📄 Run {run_number} | Page {page} | data: {len(data)} | "
-            f"last: {is_last} | raw terkumpul: {raw_content_count + len(data):,}"
-        )
-
-        if not data and not is_last:
-            print(
-                f"❌ Page {page} kosong tetapi belum menjadi halaman terakhir. "
-                "Snapshot dibatalkan."
-            )
-            return False, "fatal"
-
-        page_user_keys = []
+        print(f"📄 Page {page} | data: {len(data)} | last: {is_last}")
 
         for user in data:
-            user_key = _user_identity(user)
-            if user_key is None:
-                print(
-                    f"❌ Item content pada page {page} tidak memiliki userId, email, "
-                    "maupun username. Snapshot dibatalkan."
-                )
-                return False, "fatal"
-
-            page_user_keys.append(user_key)
-
-            if user_key in seen_user_keys:
-                repeated_user_count += 1
-            seen_user_keys.add(user_key)
-
-            user_id = user.get("userId")
-            email = user.get("email")
-            region_summary = user.get("regionSummary", []) or []
-
-            if not isinstance(region_summary, list):
-                print(f"❌ regionSummary tidak valid pada page {page}.")
-                return False, "fatal"
-
-            for region in region_summary:
-                region_code = region.get("regionCode")
-                region_key = (user_key, str(region_code).strip())
-
+            for region in user.get("regionSummary", []):
                 row = {
-                    "userId": user_id,
-                    "username": user.get("username"),
-                    "email": email,
-                    "role": user.get("roleName"),
-                    "regionCode": region_code,
+                    "userId":     user.get("userId"),
+                    "username":   user.get("username"),
+                    "email":      user.get("email"),
+                    "role":       user.get("roleName"),
+                    "regionCode": region.get("regionCode"),
                     "total_data": region.get("total"),
                 }
-
-                for status in region.get("statusBreakdown", []) or []:
-                    status_name = status.get("status")
-                    if status_name:
-                        row[status_name] = status.get("count")
-
-                if region_key in rows_by_region_key:
-                    repeated_region_count += 1
-
-                # Key yang sama cukup ditimpa. Dengan demikian hasil akhir hanya
-                # memiliki satu baris untuk setiap petugas-wilayah.
-                rows_by_region_key[region_key] = row
-
-        fingerprint = tuple(sorted(page_user_keys))
-        if fingerprint and fingerprint in seen_page_fingerprints:
-            print(
-                f"⚠️  Isi page {page} pernah muncul pada page sebelumnya. "
-                "Baris yang sama akan dihapus pada hasil akhir."
-            )
-        if fingerprint:
-            seen_page_fingerprints.add(fingerprint)
-
-        raw_content_count += len(data)
+                for status in region.get("statusBreakdown", []):
+                    row[status.get("status")] = status.get("count")
+                all_rows.append(row)
 
         if is_last:
-            completed = True
-            print("✅ Sudah sampai halaman terakhir.")
+            print("✅ Sudah sampai halaman terakhir")
             break
 
         page += 1
-
-        # Hanya pengaman loop macet, bukan mekanisme pengulangan scraping.
-        if expected_total_pages is not None and page > expected_total_pages + 5:
-            print(
-                f"🛑 Nomor page melewati batas wajar "
-                f"({page} > totalPages {expected_total_pages} + 5). "
-                "Snapshot tidak disimpan karena halaman terakhir belum tercapai."
-            )
-            return False, "fatal"
-
         time.sleep(random.uniform(1, 2))
 
-    if not completed:
-        print("🛑 Scraping belum lengkap. Tidak ada file yang disimpan.")
-        return False, "fatal"
+    if all_rows:
+        save_and_merge(all_rows)
 
-    unique_user_count = len(seen_user_keys)
-
-    if repeated_user_count:
-        print(
-            f"🧹 Ditemukan {repeated_user_count:,} kemunculan user berulang "
-            "antarpages. Kemunculan duplikat dihapus."
-        )
-
-    if repeated_region_count:
-        print(
-            f"🧹 Ditemukan {repeated_region_count:,} kemunculan petugas-wilayah "
-            "berulang. Hanya kemunculan terakhir yang disimpan."
-        )
-
-    # Tidak mengulang scraping akibat selisih jumlah. Informasi ini hanya peringatan.
-    if expected_total_elements is not None:
-        if unique_user_count != expected_total_elements:
-            print(
-                "⚠️  Jumlah user unik setelah deduplikasi "
-                f"{unique_user_count:,}, sedangkan totalElements terakhir "
-                f"{expected_total_elements:,}. Raw content: {raw_content_count:,}. "
-                "Snapshot tetap disimpan tanpa mengulang scraping."
-            )
-        elif raw_content_count != expected_total_elements:
-            print(
-                "ℹ️  Raw content berbeda dari totalElements karena terdapat "
-                "kemunculan berulang. Setelah deduplikasi jumlah user unik adalah "
-                f"{unique_user_count:,}."
-            )
-
-    all_rows = list(rows_by_region_key.values())
-    if not all_rows:
-        print("⚠️ Tidak ada baris regionSummary yang diterima. Snapshot tidak disimpan.")
-        return False, "fatal"
-
-    try:
-        save_snapshot(all_rows)
-    except Exception as e:
-        print(f"🛑 Gagal menyimpan snapshot anti-duplikat: {e}")
-        return False, "fatal"
-
-    print(
-        "🎉 Scraping selesai. Baris duplikat sudah dihapus dan snapshot "
-        "berhasil disimpan."
-    )
-    return True, "ok"
-
-
-def fetch_data(page_size=10):
-    """
-    Jalankan satu kali scraping penuh.
-
-    Duplikat antarpages cukup dihapus berdasarkan key petugas-wilayah. Tidak ada
-    pengulangan seluruh scraping dari page 0 hanya karena ditemukan duplikat.
-    """
-    success, _reason = _fetch_data_once(
-        run_number=1,
-        page_size=page_size,
-    )
-    return success
+    print("🎉 Semua data berhasil disimpan!")
 
 
 def job():
-    print(
-        f"\n[+] Memulai proses scraping pada "
-        f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    )
-
-    success = fetch_data()
-
-    if success:
-        auto_push_github()
-    else:
-        print("⏭️ Push GitHub dilewati karena scraping tidak berhasil lengkap.")
-
+    print(f"\n[+] Memulai proses scraping pada {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    fetch_data()
+    auto_push_github()
 
 if __name__ == "__main__":
     # Menjadwalkan job setiap 1 jam
