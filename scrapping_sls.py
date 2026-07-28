@@ -429,19 +429,17 @@ def _user_identity(user):
     return None
 
 
-def _fetch_data_once(run_number=1, page_size=10):
+def _fetch_data_once(run_number=1, page_size=50):
     """
     Lakukan satu putaran scraping penuh.
 
-    Overlap antarpages tidak langsung dianggap fatal karena API memakai offset
-    pagination atas data yang terus berubah. Data yang berulang disimpan satu kali,
-    lalu kelengkapan diperiksa dari jumlah item `content` unik terhadap
-    `totalElements`.
+    Duplikat antarpages tidak menyebabkan scraping diulang. Setiap baris disimpan
+    di dictionary berdasarkan key petugas-wilayah, sehingga apabila key yang sama
+    muncul lagi, data terakhir otomatis menggantikan data sebelumnya.
 
-    Return:
-        (True, "ok")                    -> snapshot berhasil disimpan
-        (False, "pagination_unstable") -> ada item terulang dan ada item lain hilang
-        (False, "fatal")               -> error request/struktur/session
+    Snapshot hanya disimpan setelah API mencapai halaman terakhir. Error request,
+    session, atau struktur respons tetap membatalkan penyimpanan agar history dan
+    LATEST tidak berisi data parsial.
     """
     page = 0
     session = requests.Session()
@@ -450,13 +448,11 @@ def _fetch_data_once(run_number=1, page_size=10):
 
     completed = False
     expected_total_elements = None
+    expected_total_pages = None
     raw_content_count = 0
 
-    # Simpan content unik dan baris region unik. Kemunculan terakhir dipakai karena
-    # nilainya merupakan posisi API yang paling baru selama proses scraping.
     seen_user_keys = set()
     rows_by_region_key = {}
-
     repeated_user_count = 0
     repeated_region_count = 0
     seen_page_fingerprints = set()
@@ -495,7 +491,7 @@ def _fetch_data_once(run_number=1, page_size=10):
                 refresh_cookies()
                 refresh_count += 1
                 session = requests.Session()
-                print(f"↩️  Mengulang page {page} dengan cookies baru...")
+                print(f"↩️  Mengulang request page {page} dengan cookies baru...")
                 time.sleep(2)
                 continue
             except Exception as e:
@@ -535,10 +531,27 @@ def _fetch_data_once(run_number=1, page_size=10):
                     expected_total_elements = total_elements
                 elif expected_total_elements != total_elements:
                     print(
-                        "❌ Nilai totalElements berubah selama scraping "
-                        f"({expected_total_elements:,} menjadi {total_elements:,})."
+                        "⚠️  totalElements berubah selama scraping "
+                        f"({expected_total_elements:,} menjadi {total_elements:,}). "
+                        "Proses tetap dilanjutkan."
                     )
-                    return False, "pagination_unstable"
+                    expected_total_elements = total_elements
+            except (TypeError, ValueError):
+                pass
+
+        total_pages = data_block.get("totalPages")
+        if total_pages is not None:
+            try:
+                total_pages = int(total_pages)
+                if expected_total_pages is None:
+                    expected_total_pages = total_pages
+                elif expected_total_pages != total_pages:
+                    print(
+                        "⚠️  totalPages berubah selama scraping "
+                        f"({expected_total_pages:,} menjadi {total_pages:,}). "
+                        "Proses tetap dilanjutkan."
+                    )
+                    expected_total_pages = total_pages
             except (TypeError, ValueError):
                 pass
 
@@ -600,19 +613,16 @@ def _fetch_data_once(run_number=1, page_size=10):
                 if region_key in rows_by_region_key:
                     repeated_region_count += 1
 
-                # Kemunculan terakhir dipakai. Ini mencegah duplikat fisik tanpa
-                # menyembunyikan data hilang karena validasi jumlah user unik ada di akhir.
+                # Key yang sama cukup ditimpa. Dengan demikian hasil akhir hanya
+                # memiliki satu baris untuk setiap petugas-wilayah.
                 rows_by_region_key[region_key] = row
 
-        # Jika server terus mengembalikan keseluruhan page yang sama, hentikan agar
-        # tidak terjadi loop panjang. Overlap sebagian masih diperbolehkan.
         fingerprint = tuple(sorted(page_user_keys))
         if fingerprint and fingerprint in seen_page_fingerprints:
             print(
-                f"❌ Seluruh isi page {page} identik dengan page sebelumnya. "
-                "Pagination API kemungkinan tidak bergerak."
+                f"⚠️  Isi page {page} pernah muncul pada page sebelumnya. "
+                "Baris yang sama akan dihapus pada hasil akhir."
             )
-            return False, "pagination_unstable"
         if fingerprint:
             seen_page_fingerprints.add(fingerprint)
 
@@ -624,6 +634,16 @@ def _fetch_data_once(run_number=1, page_size=10):
             break
 
         page += 1
+
+        # Hanya pengaman loop macet, bukan mekanisme pengulangan scraping.
+        if expected_total_pages is not None and page > expected_total_pages + 5:
+            print(
+                f"🛑 Nomor page melewati batas wajar "
+                f"({page} > totalPages {expected_total_pages} + 5). "
+                "Snapshot tidak disimpan karena halaman terakhir belum tercapai."
+            )
+            return False, "fatal"
+
         time.sleep(random.uniform(1, 2))
 
     if not completed:
@@ -634,42 +654,31 @@ def _fetch_data_once(run_number=1, page_size=10):
 
     if repeated_user_count:
         print(
-            f"ℹ️  Ditemukan {repeated_user_count:,} kemunculan user berulang "
-            "antarpages. Data tidak langsung dibatalkan; kelengkapan diperiksa "
-            "menggunakan jumlah user unik."
+            f"🧹 Ditemukan {repeated_user_count:,} kemunculan user berulang "
+            "antarpages. Kemunculan duplikat dihapus."
         )
 
     if repeated_region_count:
         print(
             f"🧹 Ditemukan {repeated_region_count:,} kemunculan petugas-wilayah "
-            "berulang. Hanya kemunculan terakhir yang dipakai."
+            "berulang. Hanya kemunculan terakhir yang disimpan."
         )
 
-    # Validasi utama. Jika satu user bergeser dan muncul dua kali, biasanya ada user
-    # lain yang tidak ikut terambil. Dalam kondisi itu unique_user_count akan kurang
-    # dari totalElements, sehingga seluruh run harus diulang dari page 0.
-    if (
-        expected_total_elements is not None
-        and unique_user_count != expected_total_elements
-    ):
-        print(
-            "❌ Pagination tidak stabil: jumlah user unik yang diterima "
-            f"{unique_user_count:,}, sedangkan totalElements "
-            f"{expected_total_elements:,}. Raw content: {raw_content_count:,}."
-        )
-        print(
-            "🔁 Snapshot tidak disimpan karena kemungkinan ada user yang terlewat."
-        )
-        return False, "pagination_unstable"
-
-    if (
-        expected_total_elements is not None
-        and raw_content_count != expected_total_elements
-    ):
-        print(
-            "⚠️  Jumlah raw content berbeda dari totalElements, tetapi seluruh user "
-            f"unik tetap lengkap ({unique_user_count:,}). Proses dapat dilanjutkan."
-        )
+    # Tidak mengulang scraping akibat selisih jumlah. Informasi ini hanya peringatan.
+    if expected_total_elements is not None:
+        if unique_user_count != expected_total_elements:
+            print(
+                "⚠️  Jumlah user unik setelah deduplikasi "
+                f"{unique_user_count:,}, sedangkan totalElements terakhir "
+                f"{expected_total_elements:,}. Raw content: {raw_content_count:,}. "
+                "Snapshot tetap disimpan tanpa mengulang scraping."
+            )
+        elif raw_content_count != expected_total_elements:
+            print(
+                "ℹ️  Raw content berbeda dari totalElements karena terdapat "
+                "kemunculan berulang. Setelah deduplikasi jumlah user unik adalah "
+                f"{unique_user_count:,}."
+            )
 
     all_rows = list(rows_by_region_key.values())
     if not all_rows:
@@ -682,40 +691,26 @@ def _fetch_data_once(run_number=1, page_size=10):
         print(f"🛑 Gagal menyimpan snapshot anti-duplikat: {e}")
         return False, "fatal"
 
-    print("🎉 Semua data berhasil diambil dan disimpan tanpa duplikasi.")
+    print(
+        "🎉 Scraping selesai. Baris duplikat sudah dihapus dan snapshot "
+        "berhasil disimpan."
+    )
     return True, "ok"
 
 
-def fetch_data(max_full_retries=3, page_size=10):
+def fetch_data(page_size=50):
     """
-    Jalankan scraping penuh. Jika pagination bergeser karena data FASIH berubah
-    saat proses berlangsung, ulangi seluruh scraping dari page 0.
+    Jalankan satu kali scraping penuh.
+
+    Duplikat antarpages cukup dihapus berdasarkan key petugas-wilayah. Tidak ada
+    pengulangan seluruh scraping dari page 0 hanya karena ditemukan duplikat.
     """
-    for run_number in range(1, max_full_retries + 1):
-        if run_number > 1:
-            wait_seconds = 5 * (run_number - 1)
-            print(
-                f"\n🔄 Mengulang seluruh scraping dari page 0 dalam "
-                f"{wait_seconds} detik (percobaan {run_number}/{max_full_retries})..."
-            )
-            time.sleep(wait_seconds)
-
-        success, reason = _fetch_data_once(
-            run_number=run_number,
-            page_size=page_size,
-        )
-
-        if success:
-            return True
-
-        if reason != "pagination_unstable":
-            return False
-
-    print(
-        f"🛑 Pagination masih tidak stabil setelah {max_full_retries} percobaan penuh. "
-        "History dan LATEST tidak diubah. Coba lagi saat aktivitas FASIH lebih rendah."
+    success, _reason = _fetch_data_once(
+        run_number=1,
+        page_size=page_size,
     )
-    return False
+    return success
+
 
 def job():
     print(
