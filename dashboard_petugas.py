@@ -493,37 +493,55 @@ def load_history(cache_key=None) -> pd.DataFrame:
 
 
 def _latest_snapshot_each_day(hist: pd.DataFrame) -> pd.DataFrame:
-    """
-    Ambil HANYA snapshot/file terakhir pada setiap tanggal.
+    """Pilih tepat satu snapshot penutup untuk setiap tanggal.
 
-    Contoh:
-    - 7 Juli scraping 08.00, 13.00, 16.00 -> yang dipakai 16.00
-    - 8 Juli scraping 10.00, 14.00 -> yang dipakai 14.00
-    Delta 8 Juli = snapshot 8 Juli terakhir - snapshot 7 Juli terakhir.
+    Apabila dalam satu hari ada beberapa scraping, misalnya pukul 05.00 dan
+    20.00, hanya snapshot pukul 20.00 yang digunakan dalam tabel dan
+    perhitungan selisih. File pukul 05.00 tetap berada di folder history,
+    tetapi tidak ikut dihitung setelah tersedia snapshot yang lebih baru.
+
+    Selisih tanggal berjalan selalu dibandingkan dengan snapshot penutup pada
+    tanggal sebelumnya yang tersedia, bukan dengan snapshot lain pada hari
+    yang sama.
     """
     if hist.empty:
-        return hist
+        return hist.copy()
 
+    work = hist.copy()
+    work["scraped_at"] = pd.to_datetime(work["scraped_at"], errors="coerce")
+    work = work.dropna(subset=["scraped_at", "tanggal", "_source_file"])
+    if work.empty:
+        return work
+
+    # Satu file history mewakili satu snapshot. Gunakan waktu terbaru di dalam
+    # file tersebut. Jika waktunya sama, file mtime dan nama file menjadi
+    # pemecah seri agar pemilihan selalu deterministik.
     meta = (
-        hist.groupby(["tanggal", "_source_file"], as_index=False)
+        work.groupby(["tanggal", "_source_file"], as_index=False, dropna=False)
             .agg(
                 snapshot_at=("scraped_at", "max"),
-                file_mtime=("_file_mtime", "max")
+                file_mtime=("_file_mtime", "max"),
             )
     )
 
-    latest_files = (
-        meta.sort_values(["tanggal", "snapshot_at", "file_mtime"])
-            .groupby("tanggal", as_index=False)
-            .tail(1)[["tanggal", "_source_file", "snapshot_at"]]
+    meta = meta.sort_values(
+        ["tanggal", "snapshot_at", "file_mtime", "_source_file"],
+        kind="mergesort",
     )
 
-    out = hist.merge(
-        latest_files,
-        on=["tanggal", "_source_file"],
-        how="inner"
+    daily_closing = (
+        meta.drop_duplicates(subset=["tanggal"], keep="last")
+            [["tanggal", "_source_file", "snapshot_at"]]
     )
-    return out
+
+    out = work.merge(
+        daily_closing,
+        on=["tanggal", "_source_file"],
+        how="inner",
+        validate="many_to_one",
+    )
+
+    return out.sort_values(["tanggal", "snapshot_at"]).reset_index(drop=True)
 
 
 def _aggregate_snapshot(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
@@ -545,17 +563,20 @@ def _aggregate_snapshot(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame
 
 
 def _add_daily_delta(daily: pd.DataFrame) -> pd.DataFrame:
-    """Kenaikan positif antar-snapshot untuk satu rangkaian data harian."""
-    delta = daily.copy()
-    status_cols = _history_status_cols(daily)
+    """Hitung perubahan bersih terhadap snapshot penutup hari sebelumnya.
+
+    Data diurutkan berdasarkan tanggal sebelum ``diff`` sehingga snapshot
+    terbaru pada hari yang sama tidak pernah menjadi pembanding. Nilai negatif
+    dipertahankan karena dapat menunjukkan perpindahan keluar dari suatu status,
+    misalnya Submit berubah menjadi Approve. Tanggal pertama bernilai 0 karena
+    belum mempunyai hari pembanding.
+    """
+    ordered = daily.sort_values("tanggal").reset_index(drop=True).copy()
+    delta = ordered.copy()
+    status_cols = _history_status_cols(ordered)
 
     for c in status_cols:
-        previous = daily[c].shift(1)
-        change = daily[c] - previous
-
-        # Baris pertama memakai nilai snapshot pertama. Untuk hari berikutnya,
-        # hanya kenaikan positif yang dianggap sebagai status baru.
-        delta[c] = change.where(previous.notna(), daily[c]).clip(lower=0)
+        delta[c] = ordered[c].diff().fillna(0)
 
     return delta
 
@@ -644,28 +665,45 @@ def _format_daily_table(daily: pd.DataFrame, delta: pd.DataFrame) -> pd.DataFram
             daily["snapshot_at"], errors="coerce"
         ).dt.strftime("%H:%M")
 
+    # Memperjelas bahwa selisih bukan dibandingkan dengan snapshot pagi pada
+    # tanggal yang sama, melainkan dengan snapshot penutup tanggal sebelumnya.
+    previous_date = pd.Series(daily["tanggal"], index=daily.index).shift(1)
+    tampil["Dibandingkan Dengan"] = previous_date.map(
+        lambda value: value.strftime("%Y-%m-%d") if pd.notna(value) else "–"
+    )
+
     if "total_data" in daily.columns:
         tampil["Total Muatan"] = daily["total_data"].round(0).astype(int)
 
-    # Kumulatif posisi terakhir pada hari itu
+    # Posisi/status pada snapshot terakhir hari tersebut (stock).
     if groups["draft"]:
-        tampil["Draft (Kumulatif)"] = _sum_cols(daily, groups["draft"]).round(0).astype(int)
+        tampil["Draft (Posisi)"] = _sum_cols(daily, groups["draft"]).round(0).astype(int)
     if groups["submit"]:
-        tampil["Submit (Kumulatif)"] = _sum_cols(daily, groups["submit"]).round(0).astype(int)
+        tampil["Submit (Posisi)"] = _sum_cols(daily, groups["submit"]).round(0).astype(int)
     if groups["approve"]:
-        tampil["Approve (Kumulatif)"] = _sum_cols(daily, groups["approve"]).round(0).astype(int)
+        tampil["Approve (Posisi)"] = _sum_cols(daily, groups["approve"]).round(0).astype(int)
     if groups["reject"]:
-        tampil["Reject (Kumulatif)"] = _sum_cols(daily, groups["reject"]).round(0).astype(int)
+        tampil["Reject (Posisi)"] = _sum_cols(daily, groups["reject"]).round(0).astype(int)
 
-    # Selisih dibanding tanggal sebelumnya
+    # Perubahan bersih dibanding snapshot terakhir tanggal sebelumnya.
+    # Nilai negatif menunjukkan data berpindah keluar dari status tersebut.
     if groups["draft"]:
-        tampil["Draft (Baru)"] = _sum_cols(delta, groups["draft"]).round(0).astype(int)
+        tampil["Δ Draft (Bersih)"] = _sum_cols(delta, groups["draft"]).round(0).astype(int)
     if groups["submit"]:
-        tampil["Submit (Baru)"] = _sum_cols(delta, groups["submit"]).round(0).astype(int)
+        tampil["Δ Submit (Bersih)"] = _sum_cols(delta, groups["submit"]).round(0).astype(int)
     if groups["approve"]:
-        tampil["Approve (Baru)"] = _sum_cols(delta, groups["approve"]).round(0).astype(int)
+        tampil["Δ Approve (Bersih)"] = _sum_cols(delta, groups["approve"]).round(0).astype(int)
     if groups["reject"]:
-        tampil["Reject (Baru)"] = _sum_cols(delta, groups["reject"]).round(0).astype(int)
+        tampil["Δ Reject (Bersih)"] = _sum_cols(delta, groups["reject"]).round(0).astype(int)
+
+    # Progress pengguna = Submit + Approve + Reject. Perpindahan Submit -> Approve
+    # tidak menambah progress lagi karena keduanya tetap berada dalam kelompok progress.
+    progress_cols = list(dict.fromkeys(
+        groups["submit"] + groups["approve"] + groups["reject"]
+    ))
+    if progress_cols:
+        tampil["Progress (Posisi)"] = _sum_cols(daily, progress_cols).round(0).astype(int)
+        tampil["Δ Progress (Bersih)"] = _sum_cols(delta, progress_cols).round(0).astype(int)
 
     return tampil
 
@@ -716,24 +754,15 @@ def build_daily_recap(pcl_name: str):
     if sub.empty:
         return None, None, diag
 
-    # Posisi kumulatif harian tetap dijumlahkan pada level pencacah.
+    # Posisi kumulatif harian dijumlahkan pada level pencacah. Karena ``sub``
+    # sudah berisi satu snapshot penutup per tanggal, update malam otomatis
+    # menggantikan update pagi untuk tanggal yang sama.
     daily = _aggregate_snapshot(sub, ["tanggal"])
+    daily = daily.sort_values("tanggal").reset_index(drop=True)
 
-    # Status (Baru) dihitung lebih dahulu pada level entitas terkecil yang
-    # tersedia (misalnya userId + regionCode), kemudian dijumlahkan per tanggal.
-    # Ini mencegah kenaikan pada satu SLS tertutup oleh penurunan pada SLS lain.
-    entity_cols = _history_entity_cols(sub)
-    if entity_cols:
-        entity_daily = _aggregate_snapshot(sub, ["tanggal"] + entity_cols)
-        entity_delta = _positive_delta_by_entity(entity_daily, entity_cols)
-        delta_status_cols = _history_status_cols(entity_delta)
-        delta = (
-            entity_delta.groupby("tanggal", as_index=False, dropna=False)[delta_status_cols]
-                        .sum(min_count=1)
-                        .fillna(0)
-        )
-    else:
-        delta = _add_daily_delta(daily)
+    # Perubahan bersih selalu dibandingkan dengan snapshot penutup hari
+    # sebelumnya yang tersedia.
+    delta = _add_daily_delta(daily)
 
     # Simpan jam snapshot terakhir yang digunakan per tanggal
     snap_time = (
@@ -789,9 +818,9 @@ def render_pencacah_daily_panel(pcl_name: str):
 
     st.caption(
         "📌 Jika dalam 1 tanggal scraping dilakukan berkali-kali, dashboard memakai "
-        "snapshot terakhir pada tanggal tersebut. Kolom `(Baru)` dihitung dari "
-        "kenaikan positif per petugas/SLS dibanding snapshot hari sebelumnya, "
-        "sehingga tidak hilang karena tertutup penurunan status pada entitas lain."
+        "snapshot terakhir pada tanggal tersebut. Kolom `Δ ... (Bersih)` adalah "
+        "posisi hari ini dikurangi posisi hari sebelumnya. Nilai negatif berarti "
+        "data berpindah keluar dari status tersebut, bukan berarti tidak ada pekerjaan."
     )
 
     tampil = _format_daily_table(daily, delta)
@@ -802,7 +831,7 @@ def render_pencacah_daily_panel(pcl_name: str):
         return
 
     line_cols = [
-        c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"]
+        c for c in ["Δ Draft (Bersih)", "Δ Submit (Bersih)", "Δ Approve (Bersih)", "Δ Reject (Bersih)", "Δ Progress (Bersih)"]
         if c in tampil.columns
     ]
 
@@ -811,10 +840,11 @@ def render_pencacah_daily_panel(pcl_name: str):
         return
 
     line_colors = {
-        "Draft (Baru)": "#f59e0b",
-        "Submit (Baru)": "#0ea5e9",
-        "Approve (Baru)": "#14b8a6",
-        "Reject (Baru)": "#ef4444",
+        "Δ Draft (Bersih)": "#f59e0b",
+        "Δ Submit (Bersih)": "#0ea5e9",
+        "Δ Approve (Bersih)": "#14b8a6",
+        "Δ Reject (Bersih)": "#ef4444",
+        "Δ Progress (Bersih)": "#8b5cf6",
     }
 
     fig_line = go.Figure()
@@ -832,7 +862,7 @@ def render_pencacah_daily_panel(pcl_name: str):
         **styled_chart_layout(height=340),
         xaxis=dict(title="Tanggal", showgrid=False, type="date"),
         yaxis=dict(
-            title="Jumlah Baru per Hari",
+            title="Perubahan Bersih per Hari",
             showgrid=True,
             gridcolor="rgba(100,116,139,0.15)"
         ),
@@ -859,25 +889,14 @@ def build_overall_daily_recap():
     if latest.empty:
         return None, None
 
-    # Posisi kumulatif keseluruhan pada snapshot terakhir setiap hari.
+    # Posisi kumulatif keseluruhan pada snapshot penutup setiap hari. Jika ada
+    # scraping pukul 05.00 dan 20.00, hanya pukul 20.00 yang masuk ke ``daily``.
     daily = _aggregate_snapshot(latest, ["tanggal"])
+    daily = daily.sort_values("tanggal").reset_index(drop=True)
 
-    # Hitung status baru per entitas terlebih dahulu. Pada kode lama, data
-    # dijumlahkan untuk seluruh kota baru kemudian di-diff dan di-clip ke nol.
-    # Akibatnya, kenaikan status pada sebagian petugas bisa tertutup penurunan
-    # status pada petugas lain dan akhirnya tampil 0.
-    entity_cols = _history_entity_cols(latest)
-    if entity_cols:
-        entity_daily = _aggregate_snapshot(latest, ["tanggal"] + entity_cols)
-        entity_delta = _positive_delta_by_entity(entity_daily, entity_cols)
-        delta_status_cols = _history_status_cols(entity_delta)
-        delta = (
-            entity_delta.groupby("tanggal", as_index=False, dropna=False)[delta_status_cols]
-                        .sum(min_count=1)
-                        .fillna(0)
-        )
-    else:
-        delta = _add_daily_delta(daily)
+    # Perubahan bersih dibandingkan dengan snapshot penutup hari sebelumnya,
+    # bukan dengan snapshot lain pada tanggal yang sama.
+    delta = _add_daily_delta(daily)
 
     snap_time = latest.groupby("tanggal", as_index=False)["snapshot_at"].max()
     daily = daily.merge(snap_time, on="tanggal", how="left")
@@ -897,32 +916,46 @@ def render_overall_daily_panel():
 
     st.markdown("#### 📈 Tren Progress Harian Keseluruhan Petugas")
     st.caption(
-        "Dashboard memakai snapshot terakhir pada setiap tanggal. Kolom `(Baru)` dihitung "
-        "dari kenaikan positif per petugas/SLS dibanding snapshot sebelumnya, sehingga "
-        "kenaikan tidak tertutup oleh penurunan status petugas lain."
+        "Dashboard hanya memakai snapshot paling akhir pada setiap tanggal. Jika ada update pagi dan malam, update malam menggantikan update pagi untuk perhitungan harian. Kolom `Δ ... (Bersih)` "
+        "menunjukkan perubahan posisi status dibanding hari sebelumnya. Nilai negatif "
+        "menunjukkan perpindahan keluar dari status, misalnya Submit menjadi Approve."
     )
 
     tampil = _format_daily_table(daily, delta)
 
-    # Hitung progress kumulatif jika ada total_data dan kolom approve/done
     groups = _status_groups(daily)
-    if "total_data" in daily.columns and groups["approve"]:
-        done = _sum_cols(daily, groups["approve"])
+    progress_cols = list(dict.fromkeys(
+        groups["submit"] + groups["approve"] + groups["reject"]
+    ))
+
+    if "total_data" in daily.columns:
         total = daily["total_data"].replace(0, pd.NA)
-        tampil["Progress Approve (%)"] = (done / total * 100).round(2).fillna(0)
+
+        if progress_cols:
+            progress_total = _sum_cols(daily, progress_cols)
+            tampil["Progress Pencacahan (%)"] = (
+                progress_total / total * 100
+            ).round(2).fillna(0)
+
+        if groups["approve"]:
+            approve_total = _sum_cols(daily, groups["approve"])
+            tampil["Progress Approve (%)"] = (
+                approve_total / total * 100
+            ).round(2).fillna(0)
 
     line_cols = [
-        c for c in ["Draft (Baru)", "Submit (Baru)", "Approve (Baru)", "Reject (Baru)"]
+        c for c in ["Δ Draft (Bersih)", "Δ Submit (Bersih)", "Δ Approve (Bersih)", "Δ Reject (Bersih)", "Δ Progress (Bersih)"]
         if c in tampil.columns
     ]
 
     if len(daily) >= 2 and line_cols:
         fig_line = go.Figure()
         line_colors = {
-            "Draft (Baru)": "#f59e0b",
-            "Submit (Baru)": "#0ea5e9",
-            "Approve (Baru)": "#14b8a6",
-            "Reject (Baru)": "#ef4444",
+            "Δ Draft (Bersih)": "#f59e0b",
+            "Δ Submit (Bersih)": "#0ea5e9",
+            "Δ Approve (Bersih)": "#14b8a6",
+            "Δ Reject (Bersih)": "#ef4444",
+            "Δ Progress (Bersih)": "#8b5cf6",
         }
 
         for c in line_cols:
@@ -936,12 +969,12 @@ def render_overall_daily_panel():
                 yaxis="y1",
             ))
 
-        if "Progress Approve (%)" in tampil.columns:
+        if "Progress Pencacahan (%)" in tampil.columns:
             fig_line.add_trace(go.Scatter(
                 x=tampil["Tanggal"],
-                y=tampil["Progress Approve (%)"],
+                y=tampil["Progress Pencacahan (%)"],
                 mode="lines+markers",
-                name="Progress Approve (%)",
+                name="Progress Pencacahan (%)",
                 line=dict(width=3, color="#8b5cf6", dash="dot"),
                 marker=dict(size=8, symbol="diamond"),
                 yaxis="y2",
@@ -951,13 +984,13 @@ def render_overall_daily_panel():
             **styled_chart_layout(height=380),
             xaxis=dict(title="Tanggal", showgrid=False, type="date"),
             yaxis=dict(
-                title="Jumlah Baru per Hari",
+                title="Perubahan Bersih per Hari",
                 showgrid=True,
                 gridcolor="rgba(100,116,139,0.15)",
                 side="left"
             ),
             yaxis2=dict(
-                title="Progress Approve (%)",
+                title="Progress Pencacahan (%)",
                 overlaying="y",
                 side="right",
                 range=[0, 105],
@@ -1170,7 +1203,14 @@ with tab_overview:
     status_totals_without_draft = df[status_cols_without_draft].sum().sort_values(ascending=False) if status_cols_without_draft else pd.Series(dtype=float)
     status_totals_without_draft = status_totals_without_draft[status_totals_without_draft > 0]
 
-    def render_status_distribution(status_totals_view, pct_value, title_gauge, total_progress_value, caption_text, chart_key):
+    def render_status_distribution(
+        status_totals_view,
+        pct_value,
+        title_gauge,
+        total_progress_value,
+        caption_text,
+        chart_key,
+    ):
         st.caption(caption_text)
 
         if status_totals_view.empty:
@@ -1283,7 +1323,7 @@ with tab_overview:
             "Progress Termasuk Draft",
             total_progress_with_draft,
             "Rumus: (Draft + Submit + Approve + Reject) / Total Muatan. Draft ikut dihitung sebagai progress.",
-            chart_key="termasuk_draft",
+            chart_key="dengan_draft",
         )
 
     st.divider()
