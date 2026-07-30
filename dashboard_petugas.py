@@ -667,10 +667,10 @@ def _format_daily_table(daily: pd.DataFrame, delta: pd.DataFrame) -> pd.DataFram
 
     # Memperjelas bahwa selisih bukan dibandingkan dengan snapshot pagi pada
     # tanggal yang sama, melainkan dengan snapshot penutup tanggal sebelumnya.
-    previous_date = pd.Series(daily["tanggal"], index=daily.index).shift(1)
-    tampil["Dibandingkan Dengan"] = previous_date.map(
-        lambda value: value.strftime("%Y-%m-%d") if pd.notna(value) else "–"
-    )
+    # previous_date = pd.Series(daily["tanggal"], index=daily.index).shift(1)
+    # tampil["Dibandingkan Dengan"] = previous_date.map(
+    #     lambda value: value.strftime("%Y-%m-%d") if pd.notna(value) else "–"
+    # )
 
     if "total_data" in daily.columns:
         tampil["Total Muatan"] = daily["total_data"].round(0).astype(int)
