@@ -1380,7 +1380,7 @@ with k2:
 with k3:
     render_bps_kpi("Total Desa/Kelurahan", f"{n_desa:,}", "wilayah", "🏘", "#F5A623")
 with k4:
-    render_bps_kpi("Total Muatan", f"{total_data:,}", "usaha", "▦", "#005BAA")
+    render_bps_kpi("Total Muatan", f"{total_data:,}", "muatan", "▦", "#005BAA")
 
 st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
 k5, k6, k7 = st.columns(3)
