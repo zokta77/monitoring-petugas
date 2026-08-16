@@ -21,7 +21,7 @@ st.set_page_config(
     page_title="SIPANTAU SE2026",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ── Custom CSS — Modern BPS / SIPANTAU ────────────────────────────────────────
@@ -63,10 +63,129 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
     border-bottom: 1px solid rgba(220,230,242,.7);
 }
 
-/* Tidak menggunakan sidebar bawaan; navigasi utama tetap tab agar semua fitur lama aman. */
-[data-testid="collapsedControl"], section[data-testid="stSidebar"] {
-    display: none !important;
+/* Sidebar utama — navigasi modern bergaya BPS */
+section[data-testid="stSidebar"] {
+    display: block !important;
+    background: #FFFFFF !important;
+    border-right: 1px solid var(--line) !important;
+    min-width: 286px !important;
+    max-width: 286px !important;
+    box-shadow: 8px 0 28px rgba(15,33,71,.035);
 }
+section[data-testid="stSidebar"] > div {
+    background: #FFFFFF !important;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding-top: .7rem !important;
+}
+[data-testid="collapsedControl"] {
+    display: flex !important;
+}
+
+.sidebar-brand {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding: 12px 10px 15px;
+    margin: 0 2px 8px;
+    border-bottom: 1px solid #E6EEF7;
+}
+.sidebar-bps-mark {
+    width:46px;
+    height:46px;
+    min-width:46px;
+    border-radius:14px;
+    position:relative;
+    background:linear-gradient(145deg,#EFF7FF,#FFFFFF);
+    border:1px solid #D6E7F8;
+    box-shadow:0 5px 14px rgba(0,91,170,.08);
+}
+.sidebar-bps-mark span { position:absolute; border-radius:4px; transform:skew(-9deg); }
+.sidebar-bps-mark .s1 { width:11px;height:28px;left:8px;top:8px;background:var(--bps-blue); }
+.sidebar-bps-mark .s2 { width:11px;height:24px;left:19px;top:11px;background:var(--bps-orange); }
+.sidebar-bps-mark .s3 { width:11px;height:20px;left:30px;top:14px;background:var(--bps-green); }
+.sidebar-brand-title {
+    color:var(--bps-blue);
+    font-size:1.16rem;
+    font-weight:800;
+    letter-spacing:-.025em;
+    line-height:1.05;
+}
+.sidebar-brand-subtitle {
+    color:#008FC8;
+    font-size:.92rem;
+    font-weight:800;
+    margin-top:3px;
+}
+.sidebar-brand-note {
+    color:var(--muted);
+    font-size:.66rem;
+    margin-top:4px;
+    line-height:1.25;
+}
+.sidebar-menu-label {
+    color:#8A99AC;
+    font-size:.68rem;
+    font-weight:800;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    padding: 8px 10px 5px;
+}
+
+/* Radio dijadikan menu navigasi. */
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    gap: 3px !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    min-height: 44px;
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+    margin: 1px 4px !important;
+    border: 1px solid transparent !important;
+    transition: background .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease;
+    cursor: pointer;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+    background:#F2F7FD !important;
+    border-color:#DCE9F6 !important;
+    transform:translateX(2px);
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
+    background:linear-gradient(135deg,#005BAA 0%,#0877D1 100%) !important;
+    border-color:#005BAA !important;
+    box-shadow:0 7px 16px rgba(0,91,170,.18);
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) p,
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) span {
+    color:#FFFFFF !important;
+    font-weight:700 !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+    color:#213B5A !important;
+    font-size:.86rem !important;
+    font-weight:600 !important;
+}
+/* Sembunyikan lingkaran radio agar tampil seperti tombol menu. */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
+    display:none !important;
+}
+.sidebar-info-card {
+    margin: 16px 6px 4px;
+    padding: 13px 13px 12px;
+    border:1px solid #DCE8F5;
+    border-radius:13px;
+    background:linear-gradient(145deg,#F7FBFF,#FFFFFF);
+    color:#526A82;
+    font-size:.72rem;
+    line-height:1.5;
+}
+.sidebar-info-title {
+    color:#17385C;
+    font-size:.76rem;
+    font-weight:800;
+    margin-bottom:5px;
+}
+.sidebar-info-card strong { color:#1E4F7D; }
 
 .main .block-container {
     padding-top: 1.15rem;
@@ -1031,6 +1150,68 @@ last_updated = datetime.fromtimestamp(
 ).strftime("%d %b %Y · %H:%M WIT")
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Sidebar navigasi utama
+# ─────────────────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-brand">
+        <div class="sidebar-bps-mark" aria-hidden="true">
+            <span class="s1"></span><span class="s2"></span><span class="s3"></span>
+        </div>
+        <div>
+            <div class="sidebar-brand-title">SIPANTAU</div>
+            <div class="sidebar-brand-subtitle">SE2026</div>
+            <div class="sidebar-brand-note">Monitoring Progres<br>Sensus Ekonomi 2026</div>
+        </div>
+    </div>
+    <div class="sidebar-menu-label">Menu Utama</div>
+    """, unsafe_allow_html=True)
+
+    menu_label = st.radio(
+        "Navigasi",
+        [
+            "📊  Dashboard",
+            "👤  Per Pencacah",
+            "🧑‍💼  Per Pengawas",
+            "🎯  Target Harian",
+            "🏘️  Per Desa",
+            "🗃️  Data Mentah",
+        ],
+        index=0,
+        label_visibility="collapsed",
+        key="sidebar_main_navigation",
+    )
+
+    menu_map = {
+        "📊  Dashboard": "overview",
+        "👤  Per Pencacah": "pcl",
+        "🧑‍💼  Per Pengawas": "pml",
+        "🎯  Target Harian": "target",
+        "🏘️  Per Desa": "desa",
+        "🗃️  Data Mentah": "raw",
+    }
+    menu = menu_map[menu_label]
+
+    st.markdown(f"""
+    <div class="sidebar-info-card">
+        <div class="sidebar-info-title">ℹ️ Informasi</div>
+        Data monitoring diperbarui dari <strong>FASIH-SM</strong>.<br><br>
+        <strong>BPS Kota Ambon</strong><br>
+        Terakhir diperbarui:<br>{last_updated}
+    </div>
+    """, unsafe_allow_html=True)
+
+page_titles = {
+    "overview": "Dashboard Utama",
+    "pcl": "Monitoring Per Pencacah",
+    "pml": "Monitoring Per Pengawas",
+    "target": "Target Harian & Proyeksi",
+    "desa": "Monitoring Per Desa/Kelurahan",
+    "raw": "Data Mentah",
+}
+page_title = page_titles.get(menu, "Dashboard Utama")
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Header — gaya modern BPS
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown(f"""
@@ -1040,7 +1221,7 @@ st.markdown(f"""
             <span class="b1"></span><span class="b2"></span><span class="b3"></span>
         </div>
         <div>
-            <h1 class="bps-title"><span>SIPANTAU</span> SE2026 · Dashboard Utama</h1>
+            <h1 class="bps-title"><span>SIPANTAU</span> SE2026 · {page_title}</h1>
             <p class="bps-subtitle">Monitoring progres Sensus Ekonomi 2026 · BPS Kota Ambon · sumber data FASIH-SM</p>
         </div>
     </div>
@@ -1167,35 +1348,26 @@ with k2:
 with k3:
     render_bps_kpi("Total Desa/Kelurahan", f"{n_desa:,}", "wilayah", "🏘", "#F5A623")
 with k4:
-    render_bps_kpi("Total Muatan", f"{total_data:,}", "#005BAA")
+    render_bps_kpi("Total Muatan", f"{total_data:,}", "usaha", "▦", "#005BAA")
 
 st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
 k5, k6, k7 = st.columns(3)
 with k5:
-    render_bps_kpi("Draft", f"{total_draft:,}", "#F5A623")
+    render_bps_kpi("Draft", f"{total_draft:,}", "", "", "#F5A623")
 with k6:
-    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "#67B346")
+    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "", "", "#67B346")
 with k7:
-    render_bps_kpi("Ditolak", f"{total_rejected:,}", "#E8583E")
+    render_bps_kpi("Ditolak", f"{total_rejected:,}", "", "", "#E8583E")
 
 st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TABS
+# HALAMAN — dipilih dari sidebar
 # ─────────────────────────────────────────────────────────────────────────────
-tab_overview, tab_pcl, tab_pml, tab_target, tab_desa, tab_raw = st.tabs([
-    "📈 Distribusi Status",
-    "👤 Per Pencacah",
-    "🧑‍💼 Per Pengawas",
-    "🎯 Target Harian",
-    "🏘️ Per Desa",
-    "🗃️ Data Mentah",
-])
-
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — Distribusi Status
+# HALAMAN 1 — Dashboard / Distribusi Status
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_overview:
+if menu == "overview":
     st.subheader("Distribusi Status Keseluruhan")
 
     status_totals_all = df[status_cols].sum().sort_values(ascending=False)
@@ -1490,9 +1662,9 @@ with tab_overview:
         st.error(f"Gagal memuat peta: {e}")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — Per Pencacah (PCL)
+# HALAMAN 2 — Per Pencacah (PCL)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_pcl:
+elif menu == "pcl":
     st.subheader("Monitoring Per Pencacah")
     # ---> TAMBAHKAN PEMANGGILAN FUNGSI DI SINI <---
     render_overall_daily_panel()
@@ -1630,9 +1802,9 @@ with tab_pcl:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — Per Pengawas (PML)
+# HALAMAN 3 — Per Pengawas (PML)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_pml:
+elif menu == "pml":
     st.subheader("Monitoring Per Pengawas")
     st.caption(
         "Progress pengawas dihitung dari status yang sudah ditangani pengawas, yaitu "
@@ -1800,9 +1972,9 @@ with tab_pml:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB — Target Harian & Forecasting
+# HALAMAN 4 — Target Harian & Forecasting
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_target:
+elif menu == "target":
     st.subheader("Target Harian & Proyeksi Penyelesaian")
 
     if "nama_pcl" not in df.columns or "total_data" not in df.columns:
@@ -2148,9 +2320,9 @@ with tab_target:
                 )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — Per Desa / Kelurahan
+# HALAMAN 5 — Per Desa / Kelurahan
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_desa:
+elif menu == "desa":
     st.subheader("Rekap Per Desa / Kelurahan")
     st.caption(
         "Progress desa menggunakan rumus yang sama dengan tabel pencacah: "
@@ -2331,9 +2503,9 @@ with tab_desa:
         )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 — Data Mentah
+# HALAMAN 6 — Data Mentah
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_raw:
+elif menu == "raw":
     st.subheader("Data Mentah")
 
     all_cols  = df.columns.tolist()
@@ -2363,6 +2535,6 @@ with tab_raw:
 # ============================
 st.markdown("""
 <div class="footer">
-    SIPANTAU SE2026 · Monitoring Progress Sensus Ekonomi 2026 · © ZULFAA DWI OKTAVIAN BPS Kota Ambon
+    SIPANTAU SE2026 · Monitoring Progress Sensus Ekonomi 2026 · © ZULFAA DWI OKTAVIAN BPS Kota Ambon (2026)
 </div>
 """, unsafe_allow_html=True)
