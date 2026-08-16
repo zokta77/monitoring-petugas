@@ -18,7 +18,7 @@ from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN, HISTORY_PATH
 # Konfigurasi halaman
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="SIPANTAU SE2026",
+    page_title="SE2026 — Monitoring Pencacahan",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -1370,7 +1370,7 @@ pct_progress_with_draft = (
     total_progress_with_draft / total_data * 100
 ) if total_data else 0
 
-st.markdown('<div class="bps-section-head"><div class="bps-section-title">Ringkasan Monitoring</div><div class="bps-section-note"></div></div>', unsafe_allow_html=True)
+st.markdown('<div class="bps-section-head"><div class="bps-section-title">Ringkasan Monitoring</div><div class="bps-section-note">Nilai mengikuti filter aktif</div></div>', unsafe_allow_html=True)
 
 k1, k2, k3, k4 = st.columns(4)
 with k1:
@@ -1385,11 +1385,11 @@ with k4:
 st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
 k5, k6, k7 = st.columns(3)
 with k5:
-    render_bps_kpi("Draft", f"{total_draft:,}", "", "✎", "#F5A623")
+    render_bps_kpi("Draft", f"{total_draft:,}", "masih dalam pengerjaan", "✎", "#F5A623")
 with k6:
-    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "", "✓", "#67B346")
+    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "approved + submitted", "✓", "#67B346")
 with k7:
-    render_bps_kpi("Ditolak", f"{total_rejected:,}", "", "!", "#E8583E")
+    render_bps_kpi("Ditolak", f"{total_rejected:,}", "rejected by pengawas", "!", "#E8583E")
 
 st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
 
@@ -1425,7 +1425,11 @@ if menu == "overview":
             st.info("Belum ada status bernilai lebih dari 0 untuk versi ini.")
             return
 
-        c_bar, c_pie, c_gauge = st.columns([3, 2, 2])
+        # Layout responsif:
+        # - Bar chart di kiri
+        # - Jumlah Progress + gauge tetap di kanan
+        # - Donut chart dipindahkan ke baris bawah agar legend/label tidak bertumpuk
+        c_bar, c_gauge = st.columns([5, 3], gap="medium")
 
         with c_bar:
             fig_bar = px.bar(
@@ -1438,10 +1442,20 @@ if menu == "overview":
                 color_discrete_sequence=TEAL_PALETTE,
                 template=PLOT_TEMPLATE,
             )
-            fig_bar.update_traces(textposition="outside", textfont_size=11)
+            fig_bar.update_traces(
+                textposition="outside",
+                textfont_size=11,
+                cliponaxis=False,
+            )
+            bar_layout = styled_chart_layout(showlegend=False, height=410)
+            bar_layout["margin"] = dict(l=10, r=35, t=20, b=35)
             fig_bar.update_layout(
-                **styled_chart_layout(showlegend=False, height=360),
-                xaxis=dict(showgrid=True, gridcolor="rgba(100,116,139,0.15)"),
+                **bar_layout,
+                xaxis=dict(
+                    showgrid=True,
+                    gridcolor="rgba(100,116,139,0.15)",
+                    title="Jumlah",
+                ),
                 yaxis=dict(showgrid=False),
             )
             st.plotly_chart(
@@ -1450,64 +1464,104 @@ if menu == "overview":
                 key=f"status_bar_{chart_key}",
             )
 
-        with c_pie:
-            fig_pie = px.pie(
-                values=status_totals_view.values,
-                names=status_totals_view.index,
-                hole=0.55,
-                color_discrete_sequence=TEAL_PALETTE,
-                template=PLOT_TEMPLATE,
-            )
-            fig_pie.update_traces(
-                textinfo="percent",
-                textfont_size=11,
-                hovertemplate="<b>%{label}</b><br>%{value:,} usaha<br>%{percent}<extra></extra>",
-            )
-            fig_pie.update_layout(**styled_chart_layout(
-                height=360, showlegend=True,
-                legend=dict(orientation="v", x=1.05),
-            ))
-            st.plotly_chart(
-                fig_pie,
-                use_container_width=True,
-                key=f"status_pie_{chart_key}",
-            )
-
         with c_gauge:
+            # Nilai Jumlah Progress dipertahankan seperti sebelumnya.
             st.metric(
                 "Jumlah Progress",
                 f"{total_progress_value:,}",
-                # help="Pembilang yang dipakai untuk menghitung persentase progress pada gauge."
             )
 
             fig_gauge = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=pct_value,
-                number={"suffix": "%", "valueformat": ".2f", "font": {"size": 36, "color": "#14b8a6",
-                                                "family": "JetBrains Mono"}},
-                title={"text": title_gauge,
-                       "font": {"color": "#94a3b8", "size": 13, "family": "Inter"}},
+                number={
+                    "suffix": "%",
+                    "valueformat": ".2f",
+                    "font": {
+                        "size": 38,
+                        "color": "#14b8a6",
+                        "family": "JetBrains Mono",
+                    },
+                },
+                title={
+                    "text": title_gauge,
+                    "font": {
+                        "color": "#94a3b8",
+                        "size": 13,
+                        "family": "Inter",
+                    },
+                },
                 gauge={
-                    "axis":      {"range": [0, 100], "tickcolor": "#475569",
-                                  "tickfont": {"color": "#64748b", "size": 10}},
-                    "bar":       {"color": "#14b8a6", "thickness": 0.25},
-                    "bgcolor":   "rgba(0,0,0,0)",
+                    "axis": {
+                        "range": [0, 100],
+                        "tickcolor": "#475569",
+                        "tickfont": {"color": "#64748b", "size": 10},
+                    },
+                    "bar": {"color": "#14b8a6", "thickness": 0.25},
+                    "bgcolor": "rgba(0,0,0,0)",
                     "bordercolor": "rgba(100,116,139,0.3)",
                     "steps": [
-                        {"range": [0,  50], "color": "rgba(30,41,59,0.6)"},
+                        {"range": [0, 50], "color": "rgba(30,41,59,0.6)"},
                         {"range": [50, 80], "color": "rgba(23,37,84,0.6)"},
-                        {"range": [80,100], "color": "rgba(13,61,46,0.6)"},
+                        {"range": [80, 100], "color": "rgba(13,61,46,0.6)"},
                     ],
-                    "threshold": {"line": {"color": "#0ea5e9", "width": 3},
-                                  "thickness": 0.8, "value": pct_value},
+                    "threshold": {
+                        "line": {"color": "#0ea5e9", "width": 3},
+                        "thickness": 0.8,
+                        "value": pct_value,
+                    },
                 },
             ))
-            fig_gauge.update_layout(**styled_chart_layout(height=300))
+            gauge_layout = styled_chart_layout(height=315)
+            gauge_layout["margin"] = dict(l=8, r=8, t=42, b=8)
+            fig_gauge.update_layout(**gauge_layout)
             st.plotly_chart(
                 fig_gauge,
                 use_container_width=True,
                 key=f"status_gauge_{chart_key}",
             )
+
+        # Donut dipindahkan ke bawah supaya punya ruang lebih lebar dan legend terbaca.
+        st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="bps-section-head"><div class="bps-section-title">Komposisi Status</div>'
+            '<div class="bps-section-note">Proporsi seluruh status pada filter aktif</div></div>',
+            unsafe_allow_html=True,
+        )
+
+        fig_pie = px.pie(
+            values=status_totals_view.values,
+            names=status_totals_view.index,
+            hole=0.58,
+            color_discrete_sequence=TEAL_PALETTE,
+            template=PLOT_TEMPLATE,
+        )
+        fig_pie.update_traces(
+            textinfo="percent",
+            textposition="inside",
+            textfont_size=12,
+            hovertemplate="<b>%{label}</b><br>%{value:,} usaha<br>%{percent}<extra></extra>",
+        )
+        pie_layout = styled_chart_layout(height=430, showlegend=True)
+        pie_layout["margin"] = dict(l=20, r=20, t=20, b=115)
+        fig_pie.update_layout(
+            **pie_layout,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.08,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=11),
+            ),
+            uniformtext_minsize=10,
+            uniformtext_mode="hide",
+        )
+        st.plotly_chart(
+            fig_pie,
+            use_container_width=True,
+            key=f"status_pie_{chart_key}",
+        )
 
     tab_no_draft, tab_with_draft = st.tabs([
         "Progress tanpa Draft",
