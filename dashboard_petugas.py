@@ -63,23 +63,53 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
     border-bottom: 1px solid rgba(220,230,242,.7);
 }
 
-/* Sidebar utama — navigasi modern bergaya BPS */
+/* Sidebar utama — navigasi modern bergaya BPS.
+   PENTING: lebar 286px hanya dipaksa saat sidebar TERBUKA.
+   Saat sidebar ditutup, width/min-width/max-width kembali 0 agar area konten
+   otomatis melebar mengikuti sisa viewport. */
 section[data-testid="stSidebar"] {
     display: block !important;
     background: #FFFFFF !important;
-    border-right: 1px solid var(--line) !important;
+    transition: width .20s ease, min-width .20s ease, max-width .20s ease !important;
+}
+
+section[data-testid="stSidebar"][aria-expanded="true"] {
+    width: 286px !important;
     min-width: 286px !important;
     max-width: 286px !important;
+    border-right: 1px solid var(--line) !important;
     box-shadow: 8px 0 28px rgba(15,33,71,.035);
 }
+
+section[data-testid="stSidebar"][aria-expanded="false"] {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    border-right: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
 section[data-testid="stSidebar"] > div {
     background: #FFFFFF !important;
 }
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     padding-top: .7rem !important;
 }
-[data-testid="collapsedControl"] {
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {
     display: flex !important;
+}
+
+/* Main content harus mengambil seluruh ruang yang tersedia.
+   Ini membuat layout benar-benar responsif terhadap sidebar open/close. */
+[data-testid="stAppViewContainer"] > .main,
+[data-testid="stAppViewContainer"] [data-testid="stMain"],
+.main {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
 }
 
 .sidebar-brand {
@@ -192,7 +222,9 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-chil
     padding-left: 2rem;
     padding-right: 2rem;
     padding-bottom: 4.2rem;
-    max-width: 1760px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 /* Header */
@@ -1353,11 +1385,11 @@ with k4:
 st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
 k5, k6, k7 = st.columns(3)
 with k5:
-    render_bps_kpi("Draft", f"{total_draft:,}", "", "", "#F5A623")
+    render_bps_kpi("Draft", f"{total_draft:,}", "", "✎", "#F5A623")
 with k6:
-    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "", "", "#67B346")
+    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "", "✓", "#67B346")
 with k7:
-    render_bps_kpi("Ditolak", f"{total_rejected:,}", "", "", "#E8583E")
+    render_bps_kpi("Ditolak", f"{total_rejected:,}", "", "!", "#E8583E")
 
 st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
 
