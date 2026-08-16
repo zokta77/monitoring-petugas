@@ -24,216 +24,195 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+# ── Custom CSS — Modern BPS / SIPANTAU ────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
-/* ── Reset font global untuk SEMUA mode (terang & gelap) ── */
-html, body,
-[class*="css"],
-[data-testid="stAppViewContainer"],
-[data-testid="stMain"],
-.main,
-p, div, label, td, th, li, a, button {
+:root {
+    --bps-blue: #005BAA;
+    --bps-blue-2: #0877D1;
+    --bps-cyan: #00A6D2;
+    --bps-green: #67B346;
+    --bps-orange: #F5A623;
+    --bps-red: #E8583E;
+    --ink: #0F2147;
+    --muted: #65758B;
+    --line: #DCE6F2;
+    --surface: #FFFFFF;
+    --page: #F5F8FC;
+}
+
+html, body, [class*="css"], [data-testid="stAppViewContainer"],
+[data-testid="stMain"], .main, p, div, label, td, th, li, a, button {
     font-family: 'Inter', sans-serif !important;
 }
 
-/* Sembunyikan sidebar & toggle */
-[data-testid="collapsedControl"],
-section[data-testid="stSidebar"] {
+/* Dashboard dikunci light agar identitas visual BPS konsisten. */
+[data-testid="stAppViewContainer"] {
+    background:
+        radial-gradient(circle at 82% -5%, rgba(8,119,209,.08), transparent 28%),
+        linear-gradient(180deg, #F8FBFF 0%, #F4F7FB 100%) !important;
+    color: var(--ink) !important;
+    padding-top: 0 !important;
+}
+
+[data-testid="stHeader"] {
+    background: rgba(255,255,255,.72) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(220,230,242,.7);
+}
+
+/* Tidak menggunakan sidebar bawaan; navigasi utama tetap tab agar semua fitur lama aman. */
+[data-testid="collapsedControl"], section[data-testid="stSidebar"] {
     display: none !important;
 }
 
-/* ── Warna teks utama mengikuti tema ── */
-[data-testid="stAppViewContainer"] {
-    padding-top: 0 !important;
-}
 .main .block-container {
-    padding-top: 1.2rem;
+    padding-top: 1.15rem;
     padding-left: 2rem;
     padding-right: 2rem;
-    max-width: 100%;
+    padding-bottom: 4.2rem;
+    max-width: 1760px;
 }
 
-/* ───────────────── KPI Cards ───────────────── */
+/* Header */
+.bps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 22px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 8px 28px rgba(15,33,71,.06);
+    margin-bottom: 14px;
+}
+.bps-brand { display:flex; align-items:center; gap:14px; min-width:0; }
+.bps-mark {
+    width: 52px; height: 52px; border-radius: 15px;
+    position: relative; flex: 0 0 auto;
+    background: linear-gradient(145deg,#EFF7FF,#FFFFFF);
+    border: 1px solid #D6E7F8;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.7);
+}
+.bps-mark span { position:absolute; border-radius:4px; transform:skew(-9deg); }
+.bps-mark .b1 { width:13px;height:31px;left:10px;top:10px;background:var(--bps-blue); }
+.bps-mark .b2 { width:13px;height:26px;left:23px;top:14px;background:var(--bps-orange); }
+.bps-mark .b3 { width:13px;height:22px;left:36px;top:18px;background:var(--bps-green); }
+.bps-title { margin:0; color:var(--ink); font-size:1.55rem; font-weight:800; letter-spacing:-.035em; line-height:1.12; }
+.bps-title span { color:var(--bps-blue); }
+.bps-subtitle { margin:5px 0 0; color:var(--muted); font-size:.86rem; }
+.bps-update {
+    display:flex; align-items:center; gap:8px; flex:0 0 auto;
+    color:#31516F; background:#F4F9FF; border:1px solid #D7E8F8;
+    border-radius:12px; padding:9px 12px; font-size:.78rem; font-weight:600;
+}
+.bps-update-dot { width:8px;height:8px;border-radius:50%;background:#4DBB63;box-shadow:0 0 0 4px rgba(77,187,99,.12); }
 
+/* Filter area */
+.bps-filter-title { display:flex; align-items:center; gap:8px; font-weight:700; color:var(--ink); margin:2px 0 8px; font-size:.9rem; }
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(255,255,255,.96);
+    border-color: var(--line) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(15,33,71,.035);
+}
+div[data-baseweb="select"] > div,
+[data-testid="stDateInput"] > div > div,
+[data-testid="stTextInput"] input {
+    border-radius: 10px !important;
+}
+
+/* KPI custom */
+.bps-kpi-card {
+    min-height: 122px;
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 17px;
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    box-shadow: 0 5px 18px rgba(15,33,71,.045);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.bps-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,33,71,.08); border-color:#C6D9EE; }
+.bps-kpi-icon {
+    width: 44px; height: 44px; min-width:44px; border-radius: 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:700; color:#fff;
+    box-shadow: inset 0 -6px 14px rgba(0,0,0,.06);
+}
+.bps-kpi-label { color:#334E68; font-size:.78rem; font-weight:700; line-height:1.25; margin-bottom:7px; }
+.bps-kpi-value { color:var(--ink); font-family:'JetBrains Mono',monospace !important; font-size:1.65rem; font-weight:700; line-height:1.1; letter-spacing:-.04em; }
+.bps-kpi-unit { color:#718096; font-size:.72rem; margin-top:5px; }
+
+/* Fallback metric styling untuk metric yang ada di tab lain */
 div[data-testid="stMetric"] {
-    border-radius: 14px;
-    padding: 1.1rem 1.2rem 1rem 1.4rem;
-    position: relative;
-    overflow: hidden;
-
-    background: var(--secondary-background-color);
-    border: 1px solid rgba(100,116,139,0.15);
-
-    box-shadow:
-        0 1px 2px rgba(15,23,42,0.04),
-        0 4px 12px rgba(15,23,42,0.06);
+    background: #fff !important; border:1px solid var(--line) !important;
+    border-radius:14px !important; padding:14px 16px !important;
+    box-shadow:0 4px 16px rgba(15,33,71,.04) !important;
 }
+div[data-testid="stMetric"] label { color:#51657A !important; font-size:.75rem !important; font-weight:700 !important; }
+div[data-testid="stMetric"] [data-testid="stMetricValue"] { color:var(--ink) !important; font-family:'JetBrains Mono',monospace !important; font-size:1.55rem !important; font-weight:700 !important; }
 
-div[data-testid="stMetric"]::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(
-        180deg,
-        #14b8a6,
-        #0ea5e9
-    );
+/* Heading */
+h1,h2,h3,h4 { color:var(--ink) !important; font-weight:750 !important; letter-spacing:-.022em !important; }
+h2::after { content:""; display:block; width:42px; height:3px; margin-top:7px; border-radius:4px; background:linear-gradient(90deg,var(--bps-blue),var(--bps-cyan),var(--bps-green)); }
+
+/* Tab seperti navigasi modern */
+div[data-baseweb="tab-list"] {
+    gap: 6px !important; padding: 5px !important; border:1px solid var(--line) !important;
+    background:#FFFFFF !important; border-radius:14px !important;
+    box-shadow:0 4px 16px rgba(15,33,71,.035);
 }
-            
-
-/* Label KPI */
-
-div[data-testid="stMetric"] label {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.72rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.08em !important;
-    text-transform: uppercase !important;
-
-    color: var(--text-color) !important;
-    opacity: .7;
-}
-
-/* Nilai KPI */
-
-div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 1.8rem !important;
-    font-weight: 700 !important;
-
-    color: var(--text-color) !important;
-}
-
-/* Delta KPI */
-
-div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.8rem !important;
-    color: #10b981 !important;
-}
-
-/* Tooltip Help (?) */
-
-div[data-testid="stMetric"] button {
-    color: var(--text-color) !important;
-    opacity: .6;
-}
-
-div[data-testid="stMetric"] button:hover {
-    color: #14b8a6 !important;
-    opacity: 1;
-}
-
-/* ── Section headers ── */
-h1, h2, h3, h4 {
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.01em !important;
-}
-h2::after {
-    content: "";
-    display: block;
-    width: 40px;
-    height: 3px;
-    background: linear-gradient(90deg, #14b8a6, #0ea5e9);
-    border-radius: 2px;
-    margin-top: 6px;
-}
-
-/* ── Tab styling ── */
 button[data-baseweb="tab"] {
-    background: transparent !important;
-    border-bottom: 2px solid transparent !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 0.88rem !important;
-    padding: 0.6rem 1rem !important;
-    color: #64748b !important;
+    height: 42px !important; padding: 0 14px !important; border-radius:10px !important;
+    border:none !important; color:#5F7083 !important; font-size:.82rem !important; font-weight:650 !important;
+    background:transparent !important;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
-    color: #14b8a6 !important;
-    border-bottom-color: #14b8a6 !important;
+    color:#FFFFFF !important; background:linear-gradient(135deg,var(--bps-blue),#0877D1) !important;
+    box-shadow:0 6px 14px rgba(0,91,170,.20) !important;
+}
+button[data-baseweb="tab"] div[data-testid="stMarkdownContainer"] p { color:inherit !important; }
+
+/* Dataframe, expander, plot */
+div[data-testid="stDataFrame"] { border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
+.stPlotlyChart { border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 4px 16px rgba(15,33,71,.035); }
+iframe { border-radius:14px !important; }
+details { border:1px solid var(--line) !important; border-radius:12px !important; background:#fff !important; }
+hr { border-color:#E6EDF5 !important; margin:1.15rem 0 !important; }
+small,.stCaption,[data-testid="stCaptionContainer"] { color:#6D7F91 !important; font-size:.77rem !important; }
+div[data-testid="stAlert"] { border-radius:12px !important; }
+
+/* Buttons */
+.stButton > button, .stDownloadButton > button {
+    border-radius:10px !important; border:1px solid #CFE0F1 !important;
+    font-weight:650 !important; color:var(--bps-blue) !important; background:#F8FBFF !important;
+}
+.stButton > button:hover, .stDownloadButton > button:hover { border-color:var(--bps-blue) !important; background:#EFF7FF !important; }
+
+/* Compact section card labels */
+.bps-section-head { display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px; }
+.bps-section-title { font-size:1rem;font-weight:750;color:var(--ink); }
+.bps-section-note { font-size:.74rem;color:var(--muted); }
+
+/* Footer */
+.footer {
+    position:fixed; left:0; bottom:0; width:100%; text-align:center;
+    padding:7px 12px; font-size:11px; color:#6C7B8A;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(8px);
+    border-top:1px solid #E5EDF6; z-index:999;
 }
 
-/* ── Dataframe ── */
-div[data-testid="stDataFrame"] {
-    border: 1px solid rgba(100,116,139,0.25);
-    border-radius: 12px;
-    overflow: hidden;
-}
-iframe { border-radius: 12px !important; }
-
-/* ── Divider ── */
-hr {
-    border-color: rgba(100,116,139,0.2) !important;
-    margin: 1.25rem 0 !important;
-}
-
-/* ── Expander ── */
-details {
-    border-radius: 10px !important;
-    padding: 0.5rem !important;
-    border: 1px solid rgba(100,116,139,0.25) !important;
-}
-details summary {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.85rem !important;
-}
-
-/* ── Caption / small text ── */
-small, .stCaption, [data-testid="stCaptionContainer"] {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.78rem !important;
-    color: #64748b !important;
-}
-
-/* ── Alert ── */
-div[data-testid="stAlert"] {
-    border-radius: 10px !important;
-    border-left-width: 4px !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-/* ── Multiselect & selectbox ── */
-div[data-baseweb="select"] span,
-div[data-baseweb="tag"] span {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.85rem !important;
-}
-
-/* ── Plotly chart container ── */
-.stPlotlyChart {
-    border: 1px solid rgba(100,116,139,0.2);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-/* ── Badge update ── */
-.badge-update {
-    background: rgba(16,185,129,0.15);
-    border: 1px solid #10b981;
-    border-radius: 20px;
-    padding: 4px 14px;
-    color: #10b981;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.76rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-    /* Warna ikon help metric */
-[data-testid="stMetric"] button {
-    color: #0f172a !important;
-}
-
-/* Hover */
-[data-testid="stMetric"] button:hover {
-    color: #14b8a6 !important;
+@media (max-width: 1100px) {
+    .main .block-container { padding-left:1rem; padding-right:1rem; }
+    .bps-header { align-items:flex-start; flex-direction:column; }
+    .bps-update { width:100%; justify-content:center; }
+    .bps-kpi-value { font-size:1.45rem; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -292,19 +271,19 @@ def nice_col(c: str) -> str:
 DONE_KEYWORDS     = ["APPROVED", "SUBMITTED"]
 NOT_DONE_KEYWORDS = ["OPEN", "DRAFT"]
 
-PLOT_TEMPLATE = "plotly_dark"
-PLOT_BG       = "rgba(30,41,59,0)"
-PAPER_BG      = "rgba(30,41,59,0)"
+PLOT_TEMPLATE = "plotly_white"
+PLOT_BG       = "rgba(255,255,255,0)"
+PAPER_BG      = "rgba(255,255,255,0)"
 TEAL_PALETTE  = [
-    "#14b8a6", "#0ea5e9", "#6366f1", "#f59e0b",
-    "#ef4444", "#84cc16", "#ec4899", "#f97316",
+    "#005BAA", "#00A6D2", "#67B346", "#F5A623",
+    "#0877D1", "#8CC63F", "#E8583E", "#6B7C93",
 ]
 
 def styled_chart_layout(**kwargs):
     return dict(
         plot_bgcolor=PLOT_BG,
         paper_bgcolor=PAPER_BG,
-        font=dict(color="#94a3b8", family="Inter, sans-serif", size=12),
+        font=dict(color="#51657A", family="Inter, sans-serif", size=12),
         margin=dict(l=10, r=10, t=30, b=10),
         **kwargs,
     )
@@ -348,6 +327,36 @@ def to_excel(df):
         df.to_excel(writer, index=False, sheet_name="Rekap Pencacah")
 
     return output.getvalue()
+
+
+def render_bps_kpi(label, value, unit="", icon="●", accent="#005BAA"):
+    """KPI card visual-only; nilai tetap berasal dari perhitungan dashboard lama."""
+    st.markdown(
+        f"""
+        <div class="bps-kpi-card">
+            <div class="bps-kpi-icon" style="background:{accent};">{icon}</div>
+            <div>
+                <div class="bps-kpi-label">{label}</div>
+                <div class="bps-kpi-value">{value}</div>
+                <div class="bps-kpi-unit">{unit}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def progress_columns_core(columns):
+    """Kolom progress inti yang konsisten untuk PCL, kecamatan, desa, dan peta.
+
+    Formula mengikuti logika tabel PCL yang sudah ada: Submit + Approve + Reject
+    (+ Completed bila status tersebut tersedia). Draft/Open/Edited/Revoked tidak
+    dipakai sebagai pembilang progress pencacahan.
+    """
+    return [
+        c for c in columns
+        if any(k in str(c).upper() for k in ["SUBMIT", "APPROV", "REJECT", "COMPLETED"])
+    ]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1022,29 +1031,20 @@ last_updated = datetime.fromtimestamp(
 ).strftime("%d %b %Y · %H:%M WIT")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Header
+# Header — gaya modern BPS
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="display:flex;align-items:center;justify-content:space-between;
-            flex-wrap:wrap;gap:10px;margin-bottom:1rem;">
-    <div style="display:flex;align-items:center;gap:12px;">
-        <div style="background:linear-gradient(135deg,#14b8a6,#0ea5e9);
-                    width:44px;height:44px;border-radius:12px;
-                    display:flex;align-items:center;justify-content:center;
-                    font-size:1.4rem;flex-shrink:0;">📊</div>
+<div class="bps-header">
+    <div class="bps-brand">
+        <div class="bps-mark" aria-hidden="true">
+            <span class="b1"></span><span class="b2"></span><span class="b3"></span>
+        </div>
         <div>
-            <h1 style="margin:0;font-size:1.55rem;font-weight:700;
-                       letter-spacing:-0.02em;line-height:1.2;
-                       font-family:'Inter',sans-serif;">
-                SE2026 — Monitoring Status Pencacahan KOTA AMBON 
-            </h1>
-            <p style="margin:0;color:#64748b;font-size:0.8rem;
-                      font-family:'Inter',sans-serif;">
-                Progress per Pencacah / Desa · Data update dari FASIH-SM 
-            </p>
+            <h1 class="bps-title"><span>SIPANTAU</span> SE2026 · Dashboard Utama</h1>
+            <p class="bps-subtitle">Monitoring progres Sensus Ekonomi 2026 · BPS Kota Ambon · sumber data FASIH-SM</p>
         </div>
     </div>
-    <span class="badge-update">🟢 Diperbarui: {last_updated}</span>
+    <div class="bps-update"><span class="bps-update-dot"></span> Diperbarui {last_updated}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1067,40 +1067,42 @@ if not status_cols:
     st.stop()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Filter bar — inline
+# Filter bar — modern card
 # ─────────────────────────────────────────────────────────────────────────────
-f1, f2 = st.columns([2, 3])
+with st.container(border=True):
+    st.markdown('<div class="bps-filter-title">⚙️ Filter Dashboard</div>', unsafe_allow_html=True)
+    f1, f2 = st.columns([2, 3])
 
-with f1:
-    if "nmkec" in df_raw.columns:
-        all_kec = sorted(df_raw["nmkec"].dropna().unique().tolist())
-        sel_kec = st.multiselect(
-            "Kecamatan", all_kec,
-            default=[], placeholder="🏙️ Semua kecamatan",
-        )
+    with f1:
+        if "nmkec" in df_raw.columns:
+            all_kec = sorted(df_raw["nmkec"].dropna().astype(str).unique().tolist())
+            sel_kec = st.multiselect(
+                "Kecamatan", all_kec,
+                default=[], placeholder="Semua kecamatan",
+            )
+        else:
+            sel_kec = []
+
+    with f2:
+        if "nama_pcl" in df_raw.columns:
+            all_pcl = sorted(df_raw["nama_pcl"].dropna().astype(str).unique().tolist())
+            sel_pcl = st.multiselect(
+                "Pencacah", all_pcl,
+                default=[], placeholder="Cari nama pencacah...",
+            )
+        else:
+            sel_pcl = []
+
+    df = df_raw.copy()
+    if sel_kec and "nmkec" in df.columns:
+        df = df[df["nmkec"].astype(str).isin(sel_kec)]
+    if sel_pcl and "nama_pcl" in df.columns:
+        df = df[df["nama_pcl"].astype(str).isin(sel_pcl)]
+
+    if len(df) < len(df_raw):
+        st.caption(f"Filter aktif · menampilkan **{len(df):,}** dari **{len(df_raw):,}** baris data.")
     else:
-        sel_kec = []
-
-with f2:
-    if "nama_pcl" in df_raw.columns:
-        all_pcl = sorted(df_raw["nama_pcl"].dropna().unique().tolist())
-        sel_pcl = st.multiselect(
-            "Pencacah", all_pcl,
-            default=[], placeholder="👤 Cari nama pencacah...",
-        )
-    else:
-        sel_pcl = []
-
-df = df_raw.copy()
-if sel_kec and "nmkec" in df.columns:
-    df = df[df["nmkec"].isin(sel_kec)]
-if sel_pcl and "nama_pcl" in df.columns:
-    df = df[df["nama_pcl"].isin(sel_pcl)]
-
-if len(df) < len(df_raw):
-    st.caption(f"Filter aktif · Menampilkan **{len(df):,}** dari **{len(df_raw):,}** baris")
-
-st.divider()
+        st.caption("Menampilkan seluruh wilayah dan pencacah pada snapshot terbaru.")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # KPI
@@ -1120,6 +1122,7 @@ approve_cols  = [c for c in status_cols if "APPROV" in c.upper()]
 rejected_cols = [c for c in status_cols if any(k in c.upper() for k in ["REJECT", "DITOLAK"])]
 edited_cols   = [c for c in status_cols if any(k in c.upper() for k in ["EDIT", "EDITED", "DIEDIT"])]
 completed_cols = [c for c in status_cols if any(k in c.upper() for k in ["COMPLETED", "SELESAI"])]
+progress_core_cols = progress_columns_core(status_cols)
 # Progress TANPA draft = semua status kecuali Draft dan Open
 progress_without_draft_cols = [
     c for c in status_cols
@@ -1154,27 +1157,28 @@ pct_progress_with_draft = (
     total_progress_with_draft / total_data * 100
 ) if total_data else 0
 
-k1, k2, k3, k4, k5, k6, k7 = st.columns(7)
-k1.metric("Total Pencacah",  f"{n_pcl:,}")
-k2.metric("Total Pengawas",  f"{n_pml:,}")
-k3.metric("Total Desa",      f"{n_desa:,}")
-k4.metric("Total Muatan",    f"{total_data:,}")
-k5.metric(
-    "Draft",
-    f"{total_draft:,}",
-    help="Jumlah muatan yang masih berstatus Draft"
-)
-k6.metric(
-    "Selesai (Done)",
-    f"{total_done:,}",
-    help="Approved by Pengawas + Submitted by Pencacah"
-)
-k7.metric(
-    "Ditolak",
-    f"{total_rejected:,}",
-    help="Rejected by Pengawas"
-)
-st.divider()
+st.markdown('<div class="bps-section-head"><div class="bps-section-title">Ringkasan Monitoring</div><div class="bps-section-note">Nilai mengikuti filter aktif</div></div>', unsafe_allow_html=True)
+
+k1, k2, k3, k4 = st.columns(4)
+with k1:
+    render_bps_kpi("Total Pencacah", f"{n_pcl:,}", "orang", "👥", "#0877D1")
+with k2:
+    render_bps_kpi("Total Pengawas", f"{n_pml:,}", "orang", "🧑‍💼", "#67B346")
+with k3:
+    render_bps_kpi("Total Desa/Kelurahan", f"{n_desa:,}", "wilayah", "🏘", "#F5A623")
+with k4:
+    render_bps_kpi("Total Muatan", f"{total_data:,}", "usaha", "▦", "#005BAA")
+
+st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+k5, k6, k7 = st.columns(3)
+with k5:
+    render_bps_kpi("Draft", f"{total_draft:,}", "masih dalam pengerjaan", "✎", "#F5A623")
+with k6:
+    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "approved + submitted", "✓", "#67B346")
+with k7:
+    render_bps_kpi("Ditolak", f"{total_rejected:,}", "rejected by pengawas", "!", "#E8583E")
+
+st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TABS
@@ -1343,15 +1347,15 @@ with tab_overview:
         # 2. Persiapan Data (Menghitung Progress per Kecamatan & Desa)
         # Aggregasi Kecamatan
         agg_kec_map = df.groupby("nmkec")[status_cols + ["total_data"]].sum().reset_index()
-        if done_cols and "total_data" in agg_kec_map.columns:
-            agg_kec_map["Progress"] = (agg_kec_map[done_cols].sum(axis=1) / agg_kec_map["total_data"].replace(0, pd.NA) * 100).fillna(0)
+        if progress_core_cols and "total_data" in agg_kec_map.columns:
+            agg_kec_map["Progress"] = (agg_kec_map[progress_core_cols].sum(axis=1) / agg_kec_map["total_data"].replace(0, pd.NA) * 100).fillna(0).clip(0, 100)
         else:
             agg_kec_map["Progress"] = 0
 
         # Aggregasi Desa
         agg_desa_map = df.groupby(["nmkec", "nmdesa"])[status_cols + ["total_data"]].sum().reset_index()
-        if done_cols and "total_data" in agg_desa_map.columns:
-            agg_desa_map["Progress"] = (agg_desa_map[done_cols].sum(axis=1) / agg_desa_map["total_data"].replace(0, pd.NA) * 100).fillna(0)
+        if progress_core_cols and "total_data" in agg_desa_map.columns:
+            agg_desa_map["Progress"] = (agg_desa_map[progress_core_cols].sum(axis=1) / agg_desa_map["total_data"].replace(0, pd.NA) * 100).fillna(0).clip(0, 100)
         else:
             agg_desa_map["Progress"] = 0
 
@@ -1359,7 +1363,7 @@ with tab_overview:
         if st.session_state.selected_kecamatan is None:
             st.markdown("**Level: Kecamatan** (Klik area kecamatan pada peta untuk melihat detail level desa)")
 
-            m_kec = folium.Map(location=[-3.69, 128.18], zoom_start=11)
+            m_kec = folium.Map(location=[-3.69, 128.18], zoom_start=11, tiles='CartoDB positron', control_scale=True)
 
             # --- Layer Choropleth (Hanya untuk Warna Dasar) ---
             folium.Choropleth(
@@ -1435,7 +1439,7 @@ with tab_overview:
             }
             geo_desa_rendered = geo_desa_filtered if geo_desa_filtered['features'] else geo_desa
 
-            m_desa = folium.Map(location=[-3.69, 128.18], zoom_start=12)
+            m_desa = folium.Map(location=[-3.69, 128.18], zoom_start=12, tiles='CartoDB positron', control_scale=True)
 
             # --- Layer Choropleth (Warna Dasar Desa) ---
             folium.Choropleth(
@@ -2144,45 +2148,98 @@ with tab_target:
                 )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — Per Desa
+# TAB 5 — Per Desa / Kelurahan
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_desa:
     st.subheader("Rekap Per Desa / Kelurahan")
+    st.caption(
+        "Progress desa menggunakan rumus yang sama dengan tabel pencacah: "
+        "(Submit + Approve + Reject + Completed bila tersedia) ÷ Total Muatan. "
+        "Dengan demikian nilai desa konsisten dengan level petugas dan peta."
+    )
 
     if "nmdesa" not in df.columns:
         st.warning("Kolom `nmdesa` tidak ditemukan dalam data.")
     else:
-        grp_keys   = [c for c in ["nmkec", "nmdesa"] if c in df.columns]
-        agg_cols_d = status_cols + (["total_data"] if "total_data" in df.columns else [])
-        agg_desa   = df.groupby(grp_keys)[agg_cols_d].sum().reset_index()
+        grp_keys = [c for c in ["nmkec", "nmdesa"] if c in df.columns]
+        agg_cols_d = list(dict.fromkeys(
+            status_cols + (["total_data"] if "total_data" in df.columns else [])
+        ))
 
-        if "total_data" in agg_desa.columns and done_cols:
+        # Bersihkan nama wilayah agar spasi/NaN tidak membuat desa terpecah menjadi grup palsu.
+        work_desa = df.copy()
+        for key in grp_keys:
+            work_desa[key] = work_desa[key].fillna("Tidak diketahui").astype(str).str.strip()
+
+        agg_desa = (
+            work_desa.groupby(grp_keys, as_index=False, dropna=False)[agg_cols_d]
+            .sum(min_count=1)
+            .fillna(0)
+        )
+
+        # Pembilang progress dibuat eksplisit dan konsisten dengan tab PCL.
+        desa_progress_cols = [c for c in progress_core_cols if c in agg_desa.columns]
+        if desa_progress_cols:
+            agg_desa["Selesai"] = agg_desa[desa_progress_cols].sum(axis=1)
+        else:
+            agg_desa["Selesai"] = 0
+
+        if "total_data" in agg_desa.columns:
+            denom = agg_desa["total_data"].replace(0, pd.NA)
             agg_desa["Progress (%)"] = (
-                agg_desa[done_cols].sum(axis=1)
-                / agg_desa["total_data"].replace(0, pd.NA) * 100
-            ).round(1).fillna(0)
-            agg_desa = agg_desa.sort_values("Progress (%)", ascending=False)
+                agg_desa["Selesai"] / denom * 100
+            ).round(1).fillna(0).clip(0, 100)
+            agg_desa["Belum Selesai"] = (
+                agg_desa["total_data"] - agg_desa["Selesai"]
+            ).clip(lower=0)
+        else:
+            agg_desa["Progress (%)"] = 0.0
+            agg_desa["Belum Selesai"] = 0
 
-        if "nama_pcl" in df.columns:
-            pcl_per_desa = df.groupby(grp_keys)["nama_pcl"].nunique().reset_index(
-                name="Jumlah PCL")
+        if "nama_pcl" in work_desa.columns:
+            pcl_per_desa = (
+                work_desa.groupby(grp_keys, as_index=False, dropna=False)["nama_pcl"]
+                .nunique()
+                .rename(columns={"nama_pcl": "Jumlah PCL"})
+            )
             agg_desa = agg_desa.merge(pcl_per_desa, on=grp_keys, how="left")
 
-        # ── Bar progress per desa ────────────────────────────────────────────
-        if "Progress (%)" in agg_desa.columns:
-            top_desa = 40
-            hm_df    = agg_desa.head(top_desa).copy()
+        # Urutkan nilai tertinggi di atas; stabil saat progress sama.
+        sort_cols = ["Progress (%)"] + (["total_data"] if "total_data" in agg_desa.columns else [])
+        agg_desa = agg_desa.sort_values(sort_cols, ascending=[False] * len(sort_cols), kind="mergesort").reset_index(drop=True)
 
+        # KPI khusus desa
+        total_desa_view = len(agg_desa)
+        desa_80 = int((agg_desa["Progress (%)"] >= 80).sum())
+        desa_50 = int(((agg_desa["Progress (%)"] >= 50) & (agg_desa["Progress (%)"] < 80)).sum())
+        desa_low = int((agg_desa["Progress (%)"] < 50).sum())
+        avg_progress_desa = float(agg_desa["Progress (%)"].mean()) if total_desa_view else 0
+
+        d1, d2, d3, d4 = st.columns(4)
+        with d1:
+            render_bps_kpi("Desa Ditampilkan", f"{total_desa_view:,}", "desa/kelurahan", "⌂", "#005BAA")
+        with d2:
+            render_bps_kpi("Progress ≥ 80%", f"{desa_80:,}", "desa/kelurahan", "✓", "#67B346")
+        with d3:
+            render_bps_kpi("Progress 50–79%", f"{desa_50:,}", "desa/kelurahan", "↗", "#F5A623")
+        with d4:
+            render_bps_kpi("Rata-rata Desa", f"{avg_progress_desa:.1f}%", f"{desa_low:,} desa masih < 50%", "%", "#0877D1")
+
+        st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+
+        # ── Grafik progress per desa ─────────────────────────────────────────
+        if not agg_desa.empty:
+            top_desa = min(40, len(agg_desa))
+            hm_df = agg_desa.head(top_desa).copy()
             label_col = "nmdesa"
             if "nmkec" in hm_df.columns:
-                hm_df["_label"] = hm_df["nmkec"] + " · " + hm_df["nmdesa"]
+                hm_df["_label"] = hm_df["nmkec"].astype(str) + " · " + hm_df["nmdesa"].astype(str)
                 label_col = "_label"
 
-            hover_extra = {}
-            if "total_data" in hm_df.columns:
-                hover_extra["total_data"] = True
-            if "Jumlah PCL" in hm_df.columns:
-                hover_extra["Jumlah PCL"] = True
+            hover_extra = {
+                c: True for c in ["total_data", "Selesai", "Belum Selesai", "Jumlah PCL"]
+                if c in hm_df.columns
+            }
 
             fig_desa_bar = px.bar(
                 hm_df.sort_values("Progress (%)"),
@@ -2190,70 +2247,88 @@ with tab_desa:
                 orientation="h",
                 text="Progress (%)",
                 color="Progress (%)",
-                color_continuous_scale=["#ef4444", "#f59e0b", "#10b981"],
+                color_continuous_scale=["#E8583E", "#F5A623", "#8CC63F", "#005BAA"],
                 range_color=[0, 100],
                 template=PLOT_TEMPLATE,
                 labels={label_col: ""},
-                hover_data=hover_extra if hover_extra else None,
+                hover_data=hover_extra,
             )
             fig_desa_bar.update_traces(
                 texttemplate="%{text:.1f}%",
                 textposition="outside",
                 textfont_size=10,
+                marker_line_width=0,
+                hovertemplate="<b>%{y}</b><br>Progress: %{x:.1f}%<extra></extra>",
             )
             fig_desa_bar.update_layout(
                 **styled_chart_layout(
-                    height=max(400, len(hm_df) * 22),
+                    height=max(430, len(hm_df) * 24),
                     coloraxis_showscale=False,
                 ),
-                xaxis=dict(range=[0, 115], showgrid=False),
+                xaxis=dict(range=[0, 108], showgrid=True, gridcolor="rgba(120,144,170,.16)", ticksuffix="%"),
                 yaxis=dict(showgrid=False),
             )
-            st.plotly_chart(fig_desa_bar, use_container_width=True)
+            st.plotly_chart(fig_desa_bar, use_container_width=True, key="desa_progress_modern")
+            if len(agg_desa) > top_desa:
+                st.caption(f"Grafik menampilkan {top_desa} desa/kelurahan dengan progress tertinggi. Tabel di bawah tetap memuat seluruh desa.")
 
-        # ── Proporsi per Kecamatan ───────────────────────────────────────────
-        if len(agg_desa) <= 80 and "nmkec" in agg_desa.columns and done_cols:
-            st.markdown("#### Proporsi Penyelesaian per Kecamatan")
-            kec_agg = df.groupby("nmkec")[agg_cols_d].sum().reset_index()
-            if "total_data" in kec_agg.columns:
-                kec_agg["Selesai"] = kec_agg[done_cols].sum(axis=1)
-                kec_agg["Belum"]   = kec_agg["total_data"] - kec_agg["Selesai"]
-                kec_melt = kec_agg.melt(
-                    id_vars="nmkec", value_vars=["Selesai", "Belum"],
-                    var_name="Status", value_name="Jumlah"
-                )
-                fig_kec = px.bar(
-                    kec_melt, x="nmkec", y="Jumlah", color="Status",
-                    color_discrete_map={"Selesai": "#14b8a6",
-                                        "Belum": "rgba(51,65,85,0.8)"},
-                    barmode="stack",
-                    template=PLOT_TEMPLATE,
-                    labels={"nmkec": "Kecamatan"},
-                )
-                fig_kec.update_layout(
-                    **styled_chart_layout(height=340),
-                    xaxis=dict(tickangle=-30, showgrid=False),
-                    yaxis=dict(showgrid=True,
-                               gridcolor="rgba(100,116,139,0.15)"),
-                    legend=dict(orientation="h", y=1.05),
-                )
-                st.plotly_chart(fig_kec, use_container_width=True)
-
-        # ── Tabel Desa ────────────────────────────────────────────────────────
-        st.markdown("#### Tabel Detail per Desa")
-
-        disp_desa = agg_desa.drop(columns=["_label"], errors="ignore")
-        disp_desa = rename_display(disp_desa)
-
-        col_cfg_desa = {}
-        if "Progress (%)" in disp_desa.columns:
-            col_cfg_desa["Progress (%)"] = st.column_config.ProgressColumn(
-                "Progress (%)", min_value=0, max_value=100, format="%.1f%%"
+        # ── Proporsi per Kecamatan, memakai pembilang yang sama ──────────────
+        if "nmkec" in work_desa.columns and "total_data" in work_desa.columns:
+            st.markdown("#### Ringkasan Penyelesaian per Kecamatan")
+            kec_cols = list(dict.fromkeys(status_cols + ["total_data"]))
+            kec_agg = work_desa.groupby("nmkec", as_index=False)[kec_cols].sum(min_count=1).fillna(0)
+            kec_progress_cols = [c for c in progress_core_cols if c in kec_agg.columns]
+            kec_agg["Selesai"] = kec_agg[kec_progress_cols].sum(axis=1) if kec_progress_cols else 0
+            kec_agg["Belum Selesai"] = (kec_agg["total_data"] - kec_agg["Selesai"]).clip(lower=0)
+            kec_melt = kec_agg.melt(
+                id_vars="nmkec",
+                value_vars=["Selesai", "Belum Selesai"],
+                var_name="Status", value_name="Jumlah",
             )
+            fig_kec = px.bar(
+                kec_melt, x="nmkec", y="Jumlah", color="Status",
+                color_discrete_map={"Selesai": "#005BAA", "Belum Selesai": "#E7EEF6"},
+                barmode="stack", template=PLOT_TEMPLATE,
+                labels={"nmkec": "Kecamatan"},
+            )
+            fig_kec.update_layout(
+                **styled_chart_layout(height=340),
+                xaxis=dict(tickangle=-20, showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor="rgba(120,144,170,.16)"),
+                legend=dict(orientation="h", y=1.08),
+            )
+            fig_kec.update_traces(marker_line_width=0)
+            st.plotly_chart(fig_kec, use_container_width=True, key="kecamatan_proporsi_modern")
 
-        st.dataframe(disp_desa, use_container_width=True,
-                     column_config=col_cfg_desa, hide_index=True)
+        # ── Tabel detail desa ────────────────────────────────────────────────
+        st.markdown("#### Tabel Detail per Desa / Kelurahan")
 
+        # Kolom ringkas ditempatkan di depan, status teknis tetap dipertahankan.
+        front_cols = [c for c in ["nmkec", "nmdesa", "Jumlah PCL", "total_data", "Selesai", "Belum Selesai", "Progress (%)"] if c in agg_desa.columns]
+        other_cols = [c for c in agg_desa.columns if c not in front_cols and c != "_label"]
+        disp_desa = rename_display(agg_desa[front_cols + other_cols])
+
+        col_cfg_desa = {
+            "Progress (%)": st.column_config.ProgressColumn(
+                "Progress (%)", min_value=0, max_value=100, format="%.1f%%",
+                help="(Submit + Approve + Reject + Completed bila tersedia) / Total Muatan",
+            )
+        }
+        st.dataframe(
+            disp_desa,
+            use_container_width=True,
+            column_config=col_cfg_desa,
+            hide_index=True,
+            height=min(700, 42 + max(8, min(len(disp_desa), 16)) * 35),
+        )
+
+        st.download_button(
+            "📥 Download Rekap Desa (XLSX)",
+            data=to_excel(disp_desa),
+            file_name=f"rekap_desa_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_desa_modern",
+        )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 4 — Data Mentah
@@ -2284,26 +2359,10 @@ with tab_raw:
     )
 
 # ============================
-# Footer (muncul di semua halaman)
+# Footer
 # ============================
 st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-    font-size: 13px;
-    color: gray;
-    background-color: white;
-    border-top: 1px solid #ddd;
-    z-index: 999;
-}
-</style>
-
 <div class="footer">
-    © 2026 Zulfaa Dwi Oktavian (BPS Kota Ambon)
+    SIPANTAU SE2026 · Monitoring Progress Sensus Ekonomi 2026 · © Zulfaa Dwi Oktavoan BPS Kota Ambon
 </div>
 """, unsafe_allow_html=True)
