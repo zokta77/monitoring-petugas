@@ -18,7 +18,7 @@ from config_se2026 import LATEST_FILE, BASE_PATH, NAMA_KABUPATEN, HISTORY_PATH
 # Konfigurasi halaman
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="SE2026 — Monitoring Pencacahan",
+    page_title="SIPANTAU SE2026",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -1157,7 +1157,7 @@ pct_progress_with_draft = (
     total_progress_with_draft / total_data * 100
 ) if total_data else 0
 
-st.markdown('<div class="bps-section-head"><div class="bps-section-title">Ringkasan Monitoring</div><div class="bps-section-note">Nilai mengikuti filter aktif</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="bps-section-head"><div class="bps-section-title">Ringkasan Monitoring</div><div class="bps-section-note"></div></div>', unsafe_allow_html=True)
 
 k1, k2, k3, k4 = st.columns(4)
 with k1:
@@ -1167,16 +1167,16 @@ with k2:
 with k3:
     render_bps_kpi("Total Desa/Kelurahan", f"{n_desa:,}", "wilayah", "🏘", "#F5A623")
 with k4:
-    render_bps_kpi("Total Muatan", f"{total_data:,}", "usaha", "▦", "#005BAA")
+    render_bps_kpi("Total Muatan", f"{total_data:,}", "#005BAA")
 
 st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
 k5, k6, k7 = st.columns(3)
 with k5:
-    render_bps_kpi("Draft", f"{total_draft:,}", "masih dalam pengerjaan", "✎", "#F5A623")
+    render_bps_kpi("Draft", f"{total_draft:,}", "#F5A623")
 with k6:
-    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "approved + submitted", "✓", "#67B346")
+    render_bps_kpi("Selesai (Done)", f"{total_done:,}", "#67B346")
 with k7:
-    render_bps_kpi("Ditolak", f"{total_rejected:,}", "rejected by pengawas", "!", "#E8583E")
+    render_bps_kpi("Ditolak", f"{total_rejected:,}", "#E8583E")
 
 st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
 
@@ -2363,6 +2363,6 @@ with tab_raw:
 # ============================
 st.markdown("""
 <div class="footer">
-    SIPANTAU SE2026 · Monitoring Progress Sensus Ekonomi 2026 · © Zulfaa Dwi Oktavoan BPS Kota Ambon
+    SIPANTAU SE2026 · Monitoring Progress Sensus Ekonomi 2026 · © ZULFAA DWI OKTAVIAN BPS Kota Ambon
 </div>
 """, unsafe_allow_html=True)
