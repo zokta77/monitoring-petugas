@@ -868,7 +868,7 @@ def _format_daily_table(daily: pd.DataFrame, delta: pd.DataFrame) -> pd.DataFram
     return tampil
 
 
-def build_daily_recap(pcl_name: str):
+def build_daily_recap(pcl_name: str, pml_name: str | None = None):
     """
     Rekap harian untuk 1 pencacah.
 
@@ -910,6 +910,12 @@ def build_daily_recap(pcl_name: str):
     key = _name_key(pcl_name)
     sub = latest[latest["_nama_pcl_key"] == key].copy()
 
+    # Jika satu PPL berada di lebih dari satu PML, rekap harian dapat difilter
+    # sesuai pasangan PPL-PML yang dipilih dari tabel.
+    if pml_name is not None and "nama_pml" in sub.columns:
+        pml_key = _name_key(pml_name)
+        sub = sub[sub["nama_pml"].map(_name_key) == pml_key].copy()
+
     diag["n_rows_for_pcl"] = len(sub)
     if sub.empty:
         return None, None, diag
@@ -937,11 +943,14 @@ def build_daily_recap(pcl_name: str):
     return daily, delta, diag
 
 
-def render_pencacah_daily_panel(pcl_name: str):
-    """Panel rekap harian untuk 1 pencacah."""
-    daily, delta, diag = build_daily_recap(pcl_name)
+def render_pencacah_daily_panel(pcl_name: str, pml_name: str | None = None):
+    """Panel rekap harian untuk 1 pencacah, opsional spesifik per PML."""
+    daily, delta, diag = build_daily_recap(pcl_name, pml_name=pml_name)
 
-    st.markdown(f"##### 📅 Rekap Progress Harian — {pcl_name}")
+    panel_title = f"##### 📅 Rekap Progress Harian — {pcl_name}"
+    if pml_name is not None and str(pml_name).strip():
+        panel_title += f" · PML {pml_name}"
+    st.markdown(panel_title)
 
     if daily is None:
         if diag["n_files"] == 0:
@@ -1764,13 +1773,25 @@ elif menu == "pcl":
             + (["total_data"] if "total_data" in df.columns else [])
             + (["jumlah_prelist_awal"] if "jumlah_prelist_awal" in df.columns else [])
         )
-        agg_pcl  = df.groupby("nama_pcl")[agg_cols].sum().reset_index()
 
-        # Progress = Submit + Approve + Reject / Total Data (dan / Jumlah Prelist Awal)
-        progress_cols = [
-            c for c in agg_pcl.columns
-            if any(k in c.upper() for k in ["SUBMIT", "APPROV", "REJECT", "COMPLETED"])
-        ]
+        # Satu PPL bisa berada di lebih dari satu PML. Karena itu agregasi tidak
+        # boleh hanya berdasarkan nama PPL. Jika kolom nama_pml tersedia, data
+        # direkap per pasangan PPL-PML sehingga PPL yang memiliki 2 PML akan
+        # muncul sebagai 2 baris dan nilainya mengikuti wilayah masing-masing PML.
+        group_keys_pcl = ["nama_pcl"]
+        if "nama_pml" in df.columns:
+            group_keys_pcl.append("nama_pml")
+
+        agg_pcl = (
+            df.groupby(group_keys_pcl, dropna=False)[agg_cols]
+              .sum(min_count=1)
+              .fillna(0)
+              .reset_index()
+        )
+
+        # Progress utama = Submit + Approve + Reject (+ Completed jika ada)
+        # dibanding Total Muatan.
+        progress_cols = progress_columns_core(agg_pcl.columns)
 
         if "total_data" in agg_pcl.columns and progress_cols:
             agg_pcl["Progress (Total Muatan) (%)"] = (
@@ -1778,33 +1799,46 @@ elif menu == "pcl":
                 / agg_pcl["total_data"].replace(0, pd.NA) * 100
             ).round(1).fillna(0)
 
-        if "jumlah_prelist_awal" in agg_pcl.columns and progress_cols:
-            agg_pcl["Progress (Jumlah Prelist Awal) (%)"] = (
-                agg_pcl[progress_cols].sum(axis=1)
-                / agg_pcl["jumlah_prelist_awal"].replace(0, pd.NA) * 100
+        # Mengganti Progress (Jumlah Prelist Awal) menjadi Progress Dengan Draft.
+        # Pembilang = Draft + progress utama, penyebut tetap Total Muatan.
+        draft_progress_cols = [
+            c for c in agg_pcl.columns
+            if "DRAFT" in str(c).upper()
+        ]
+        progress_with_draft_pcl_cols = list(dict.fromkeys(progress_cols + draft_progress_cols))
+
+        if "total_data" in agg_pcl.columns and progress_with_draft_pcl_cols:
+            agg_pcl["Progress (Dengan Draft) (%)"] = (
+                agg_pcl[progress_with_draft_pcl_cols].sum(axis=1)
+                / agg_pcl["total_data"].replace(0, pd.NA) * 100
             ).round(1).fillna(0)
 
-        if "total_data" in agg_pcl.columns:
-            agg_pcl = agg_pcl.sort_values("total_data", ascending=False)
+        # Selisih tetap ditampilkan jika kedua kolom tersedia.
+        if "total_data" in agg_pcl.columns and "jumlah_prelist_awal" in agg_pcl.columns:
+            agg_pcl["Selisih"] = agg_pcl["total_data"] - agg_pcl["jumlah_prelist_awal"]
+
+        # Letakkan kedua kolom progress di bagian awal tabel setelah identitas PPL/PML.
+        identity_order = [c for c in ["nama_pcl", "nama_pml"] if c in agg_pcl.columns]
+        progress_order = [
+            c for c in ["Progress (Total Muatan) (%)", "Progress (Dengan Draft) (%)"]
+            if c in agg_pcl.columns
+        ]
+        remaining_order = [
+            c for c in agg_pcl.columns
+            if c not in identity_order + progress_order
+        ]
+        agg_pcl = agg_pcl[identity_order + progress_order + remaining_order]
+
+        # Urutkan berdasarkan PML lalu PPL jika PML tersedia.
+        if "nama_pml" in agg_pcl.columns:
+            agg_pcl = agg_pcl.sort_values(
+                ["nama_pml", "nama_pcl"], na_position="last"
+            ).reset_index(drop=True)
+        else:
+            agg_pcl = agg_pcl.sort_values("nama_pcl", na_position="last").reset_index(drop=True)
 
         # ── Tabel Detail ─────────────────────────────────────────────────────
         st.markdown("#### Tabel Detail per Pencacah")
-
-        if "total_data" in agg_pcl.columns:
-            # agg_pcl["_sum"]    = agg_pcl[status_cols].sum(axis=1)
-            agg_pcl["Selisih"] = agg_pcl["total_data"] - agg_pcl["jumlah_prelist_awal"]
-            # agg_pcl = agg_pcl.drop(columns=["_sum"])
-
-        # Sisipkan kolom Pengawas jika ada
-        if "nama_pml" in df.columns:
-            pml_map = df.groupby("nama_pcl")["nama_pml"].first().reset_index()
-            agg_pcl = agg_pcl.merge(pml_map, on="nama_pcl", how="left")
-            col_order = ["nama_pcl", "nama_pml"] + [
-                c for c in agg_pcl.columns if c not in ["nama_pcl", "nama_pml"]
-            ]
-            agg_pcl = agg_pcl[col_order]
-            # Urutkan tabel detail berdasarkan nama Pengawas, lalu nama Pencacah
-            agg_pcl = agg_pcl.sort_values(["nama_pml", "nama_pcl"], na_position="last").reset_index(drop=True)
 
         # Rename kolom untuk tampilan
         disp_pcl = rename_display(agg_pcl)
@@ -1824,13 +1858,13 @@ elif menu == "pcl":
                 help="(Submit + Approve + Reject) / Total Muatan"
             )
 
-        if "Progress (Jumlah Prelist Awal) (%)" in disp_pcl.columns:
-            col_cfg_pcl["Progress (Jumlah Prelist Awal) (%)"] = st.column_config.ProgressColumn(
-                "Progress (Jumlah Prelist Awal) (%)",
+        if "Progress (Dengan Draft) (%)" in disp_pcl.columns:
+            col_cfg_pcl["Progress (Dengan Draft) (%)"] = st.column_config.ProgressColumn(
+                "Progress (Dengan Draft) (%)",
                 min_value=0,
                 max_value=100,
                 format="%.2f%%",
-                help="(Submit + Approve + Reject) / Jumlah Prelist Awal"
+                help="(Draft + Submit + Approve + Reject + Completed jika ada) / Total Muatan"
             )
 
         st.caption("💡 Klik salah satu baris di tabel untuk melihat rekap progress harian pencacah tersebut.")
@@ -1863,9 +1897,17 @@ elif menu == "pcl":
             )
 
         if selected_rows and "Nama Pencacah" in disp_pcl.columns:
-            clicked_name = disp_pcl.iloc[selected_rows[0]]["Nama Pencacah"]
+            selected_row = disp_pcl.iloc[selected_rows[0]]
+            clicked_name = selected_row["Nama Pencacah"]
+
+            clicked_pml = None
+            if "Nama Pengawas" in disp_pcl.columns:
+                pml_value = selected_row["Nama Pengawas"]
+                if pd.notna(pml_value) and str(pml_value).strip():
+                    clicked_pml = str(pml_value).strip()
+
             st.divider()
-            render_pencacah_daily_panel(clicked_name)
+            render_pencacah_daily_panel(clicked_name, pml_name=clicked_pml)
 
         # =========================
         # Download Rekap Pencacah
