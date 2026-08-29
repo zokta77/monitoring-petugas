@@ -36,11 +36,17 @@ st.markdown("""
     --bps-green: #67B346;
     --bps-orange: #F5A623;
     --bps-red: #E8583E;
-    --ink: #0F2147;
-    --muted: #65758B;
-    --line: #DCE6F2;
-    --surface: #FFFFFF;
-    --page: #F5F8FC;
+    /* Gunakan variabel tema bawaan Streamlit agar custom UI ikut Light/Dark mode. */
+    --ink: var(--text-color);
+    --muted: color-mix(in srgb, var(--text-color) 62%, transparent);
+    --line: color-mix(in srgb, var(--text-color) 16%, transparent);
+    --surface: var(--secondary-background-color);
+    --page: var(--background-color);
+    --surface-soft: color-mix(in srgb, var(--secondary-background-color) 90%, var(--background-color) 10%);
+    --surface-hover: color-mix(in srgb, var(--bps-blue) 10%, var(--secondary-background-color) 90%);
+    --surface-selected: color-mix(in srgb, var(--bps-blue) 18%, var(--secondary-background-color) 82%);
+    --shadow-soft: 0 5px 18px rgba(0,0,0,.10);
+    --shadow-card: 0 8px 28px rgba(0,0,0,.12);
 }
 
 html, body, [class*="css"], [data-testid="stAppViewContainer"],
@@ -48,19 +54,19 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
     font-family: 'Inter', sans-serif !important;
 }
 
-/* Dashboard dikunci light agar identitas visual BPS konsisten. */
+/* Tema adaptif: mengikuti Light/Dark mode Streamlit. */
 [data-testid="stAppViewContainer"] {
     background:
-        radial-gradient(circle at 82% -5%, rgba(8,119,209,.08), transparent 28%),
-        linear-gradient(180deg, #F8FBFF 0%, #F4F7FB 100%) !important;
+        radial-gradient(circle at 82% -5%, color-mix(in srgb, var(--bps-blue-2) 9%, transparent), transparent 28%),
+        var(--page) !important;
     color: var(--ink) !important;
     padding-top: 0 !important;
 }
 
 [data-testid="stHeader"] {
-    background: rgba(255,255,255,.72) !important;
+    background: color-mix(in srgb, var(--surface) 86%, transparent) !important;
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(220,230,242,.7);
+    border-bottom: 1px solid var(--line);
 }
 
 /* Sidebar utama — navigasi modern bergaya BPS.
@@ -69,7 +75,7 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
    otomatis melebar mengikuti sisa viewport. */
 section[data-testid="stSidebar"] {
     display: block !important;
-    background: #FFFFFF !important;
+    background: var(--surface) !important;
     transition: width .20s ease, min-width .20s ease, max-width .20s ease !important;
 }
 
@@ -78,7 +84,7 @@ section[data-testid="stSidebar"][aria-expanded="true"] {
     min-width: 286px !important;
     max-width: 286px !important;
     border-right: 1px solid var(--line) !important;
-    box-shadow: 8px 0 28px rgba(15,33,71,.035);
+    box-shadow: 8px 0 28px rgba(0,0,0,.10);
 }
 
 section[data-testid="stSidebar"][aria-expanded="false"] {
@@ -91,7 +97,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] {
 }
 
 section[data-testid="stSidebar"] > div {
-    background: #FFFFFF !important;
+    background: var(--surface) !important;
 }
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     padding-top: .7rem !important;
@@ -118,7 +124,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     gap:12px;
     padding: 12px 10px 15px;
     margin: 0 2px 8px;
-    border-bottom: 1px solid #E6EEF7;
+    border-bottom: 1px solid var(--line);
 }
 .sidebar-bps-mark {
     width:46px;
@@ -126,9 +132,9 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     min-width:46px;
     border-radius:14px;
     position:relative;
-    background:linear-gradient(145deg,#EFF7FF,#FFFFFF);
-    border:1px solid #D6E7F8;
-    box-shadow:0 5px 14px rgba(0,91,170,.08);
+    background:linear-gradient(145deg,var(--surface-soft),var(--surface));
+    border:1px solid var(--line);
+    box-shadow:0 5px 14px rgba(0,0,0,.10);
 }
 .sidebar-bps-mark span { position:absolute; border-radius:4px; transform:skew(-9deg); }
 .sidebar-bps-mark .s1 { width:11px;height:28px;left:8px;top:8px;background:var(--bps-blue); }
@@ -154,7 +160,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
     line-height:1.25;
 }
 .sidebar-menu-label {
-    color:#8A99AC;
+    color:var(--muted);
     font-size:.68rem;
     font-weight:800;
     letter-spacing:.09em;
@@ -176,8 +182,8 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label {
     cursor: pointer;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-    background:#F2F7FD !important;
-    border-color:#DCE9F6 !important;
+    background:var(--surface-hover) !important;
+    border-color:var(--line) !important;
     transform:translateX(2px);
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
@@ -191,7 +197,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
     font-weight:700 !important;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
-    color:#213B5A !important;
+    color:var(--ink) !important;
     font-size:.86rem !important;
     font-weight:600 !important;
 }
@@ -202,20 +208,20 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-chil
 .sidebar-info-card {
     margin: 16px 6px 4px;
     padding: 13px 13px 12px;
-    border:1px solid #DCE8F5;
+    border:1px solid var(--line);
     border-radius:13px;
-    background:linear-gradient(145deg,#F7FBFF,#FFFFFF);
-    color:#526A82;
+    background:linear-gradient(145deg,var(--surface-soft),var(--surface));
+    color:var(--muted);
     font-size:.72rem;
     line-height:1.5;
 }
 .sidebar-info-title {
-    color:#17385C;
+    color:var(--ink);
     font-size:.76rem;
     font-weight:800;
     margin-bottom:5px;
 }
-.sidebar-info-card strong { color:#1E4F7D; }
+.sidebar-info-card strong { color:var(--ink); }
 
 .main .block-container {
     padding-top: 1.15rem;
@@ -236,17 +242,17 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-chil
     padding: 18px 22px;
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: rgba(255,255,255,.96);
-    box-shadow: 0 8px 28px rgba(15,33,71,.06);
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    box-shadow: var(--shadow-card);
     margin-bottom: 14px;
 }
 .bps-brand { display:flex; align-items:center; gap:14px; min-width:0; }
 .bps-mark {
     width: 52px; height: 52px; border-radius: 15px;
     position: relative; flex: 0 0 auto;
-    background: linear-gradient(145deg,#EFF7FF,#FFFFFF);
-    border: 1px solid #D6E7F8;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.7);
+    background: linear-gradient(145deg,var(--surface-soft),var(--surface));
+    border: 1px solid var(--line);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-color) 8%, transparent);
 }
 .bps-mark span { position:absolute; border-radius:4px; transform:skew(-9deg); }
 .bps-mark .b1 { width:13px;height:31px;left:10px;top:10px;background:var(--bps-blue); }
@@ -257,7 +263,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-chil
 .bps-subtitle { margin:5px 0 0; color:var(--muted); font-size:.86rem; }
 .bps-update {
     display:flex; align-items:center; gap:8px; flex:0 0 auto;
-    color:#31516F; background:#F4F9FF; border:1px solid #D7E8F8;
+    color:var(--ink); background:var(--surface-soft); border:1px solid var(--line);
     border-radius:12px; padding:9px 12px; font-size:.78rem; font-weight:600;
 }
 .bps-update-dot { width:8px;height:8px;border-radius:50%;background:#4DBB63;box-shadow:0 0 0 4px rgba(77,187,99,.12); }
@@ -265,10 +271,10 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-chil
 /* Filter area */
 .bps-filter-title { display:flex; align-items:center; gap:8px; font-weight:700; color:var(--ink); margin:2px 0 8px; font-size:.9rem; }
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,.96);
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
     border-color: var(--line) !important;
     border-radius: 16px !important;
-    box-shadow: 0 4px 16px rgba(15,33,71,.035);
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
 }
 div[data-baseweb="select"] > div,
 [data-testid="stDateInput"] > div > div,
@@ -276,37 +282,60 @@ div[data-baseweb="select"] > div,
     border-radius: 10px !important;
 }
 
+/* BaseWeb / input controls: samakan dengan surface tema agar tidak tetap putih di Dark mode. */
+div[data-baseweb="select"] > div,
+[data-baseweb="popover"] > div,
+[data-baseweb="menu"],
+[data-testid="stTextInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stNumberInput"] input {
+    background-color: var(--surface) !important;
+    color: var(--ink) !important;
+    border-color: var(--line) !important;
+}
+
+div[data-baseweb="select"] span,
+div[data-baseweb="tag"] span,
+[data-baseweb="menu"] li,
+[data-testid="stTextInput"] input::placeholder {
+    color: var(--ink) !important;
+}
+
+[data-baseweb="menu"] li:hover {
+    background: var(--surface-hover) !important;
+}
+
 /* KPI custom */
 .bps-kpi-card {
     min-height: 122px;
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 16px 17px;
     display: flex;
     gap: 13px;
     align-items: flex-start;
-    box-shadow: 0 5px 18px rgba(15,33,71,.045);
+    box-shadow: var(--shadow-soft);
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.bps-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,33,71,.08); border-color:#C6D9EE; }
+.bps-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.14); border-color:color-mix(in srgb, var(--bps-blue) 45%, var(--line)); }
 .bps-kpi-icon {
     width: 44px; height: 44px; min-width:44px; border-radius: 14px;
     display:flex; align-items:center; justify-content:center;
     font-size:20px; font-weight:700; color:#fff;
     box-shadow: inset 0 -6px 14px rgba(0,0,0,.06);
 }
-.bps-kpi-label { color:#334E68; font-size:.78rem; font-weight:700; line-height:1.25; margin-bottom:7px; }
+.bps-kpi-label { color:var(--ink); font-size:.78rem; font-weight:700; line-height:1.25; margin-bottom:7px; }
 .bps-kpi-value { color:var(--ink); font-family:'JetBrains Mono',monospace !important; font-size:1.65rem; font-weight:700; line-height:1.1; letter-spacing:-.04em; }
-.bps-kpi-unit { color:#718096; font-size:.72rem; margin-top:5px; }
+.bps-kpi-unit { color:var(--muted); font-size:.72rem; margin-top:5px; }
 
 /* Fallback metric styling untuk metric yang ada di tab lain */
 div[data-testid="stMetric"] {
-    background: #fff !important; border:1px solid var(--line) !important;
+    background: var(--surface) !important; border:1px solid var(--line) !important;
     border-radius:14px !important; padding:14px 16px !important;
-    box-shadow:0 4px 16px rgba(15,33,71,.04) !important;
+    box-shadow:0 4px 16px rgba(0,0,0,.08) !important;
 }
-div[data-testid="stMetric"] label { color:#51657A !important; font-size:.75rem !important; font-weight:700 !important; }
+div[data-testid="stMetric"] label { color:var(--muted) !important; font-size:.75rem !important; font-weight:700 !important; }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] { color:var(--ink) !important; font-family:'JetBrains Mono',monospace !important; font-size:1.55rem !important; font-weight:700 !important; }
 
 /* Heading */
@@ -316,12 +345,12 @@ h2::after { content:""; display:block; width:42px; height:3px; margin-top:7px; b
 /* Tab seperti navigasi modern */
 div[data-baseweb="tab-list"] {
     gap: 6px !important; padding: 5px !important; border:1px solid var(--line) !important;
-    background:#FFFFFF !important; border-radius:14px !important;
-    box-shadow:0 4px 16px rgba(15,33,71,.035);
+    background:var(--surface) !important; border-radius:14px !important;
+    box-shadow:0 4px 16px rgba(0,0,0,.08);
 }
 button[data-baseweb="tab"] {
     height: 42px !important; padding: 0 14px !important; border-radius:10px !important;
-    border:none !important; color:#5F7083 !important; font-size:.82rem !important; font-weight:650 !important;
+    border:none !important; color:var(--muted) !important; font-size:.82rem !important; font-weight:650 !important;
     background:transparent !important;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
@@ -331,20 +360,20 @@ button[data-baseweb="tab"][aria-selected="true"] {
 button[data-baseweb="tab"] div[data-testid="stMarkdownContainer"] p { color:inherit !important; }
 
 /* Dataframe, expander, plot */
-div[data-testid="stDataFrame"] { border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
-.stPlotlyChart { border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 4px 16px rgba(15,33,71,.035); }
+div[data-testid="stDataFrame"] { border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface); }
+.stPlotlyChart { border:1px solid var(--line); border-radius:16px; overflow:hidden; background:var(--surface); box-shadow:0 4px 16px rgba(0,0,0,.08); }
 iframe { border-radius:14px !important; }
-details { border:1px solid var(--line) !important; border-radius:12px !important; background:#fff !important; }
-hr { border-color:#E6EDF5 !important; margin:1.15rem 0 !important; }
-small,.stCaption,[data-testid="stCaptionContainer"] { color:#6D7F91 !important; font-size:.77rem !important; }
+details { border:1px solid var(--line) !important; border-radius:12px !important; background:var(--surface) !important; }
+hr { border-color:var(--line) !important; margin:1.15rem 0 !important; }
+small,.stCaption,[data-testid="stCaptionContainer"] { color:var(--muted) !important; font-size:.77rem !important; }
 div[data-testid="stAlert"] { border-radius:12px !important; }
 
 /* Buttons */
 .stButton > button, .stDownloadButton > button {
-    border-radius:10px !important; border:1px solid #CFE0F1 !important;
-    font-weight:650 !important; color:var(--bps-blue) !important; background:#F8FBFF !important;
+    border-radius:10px !important; border:1px solid var(--line) !important;
+    font-weight:650 !important; color:color-mix(in srgb, var(--bps-blue-2) 78%, var(--ink)) !important; background:var(--surface-soft) !important;
 }
-.stButton > button:hover, .stDownloadButton > button:hover { border-color:var(--bps-blue) !important; background:#EFF7FF !important; }
+.stButton > button:hover, .stDownloadButton > button:hover { border-color:var(--bps-blue) !important; background:var(--surface-hover) !important; }
 
 /* Compact section card labels */
 .bps-section-head { display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px; }
@@ -354,9 +383,9 @@ div[data-testid="stAlert"] { border-radius:12px !important; }
 /* Footer */
 .footer {
     position:fixed; left:0; bottom:0; width:100%; text-align:center;
-    padding:7px 12px; font-size:11px; color:#6C7B8A;
-    background:rgba(255,255,255,.92); backdrop-filter:blur(8px);
-    border-top:1px solid #E5EDF6; z-index:999;
+    padding:7px 12px; font-size:11px; color:var(--muted);
+    background:color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line); z-index:999;
 }
 
 @media (max-width: 1100px) {
@@ -422,9 +451,9 @@ def nice_col(c: str) -> str:
 DONE_KEYWORDS     = ["APPROVED", "SUBMITTED"]
 NOT_DONE_KEYWORDS = ["OPEN", "DRAFT"]
 
-PLOT_TEMPLATE = "plotly_white"
-PLOT_BG       = "rgba(255,255,255,0)"
-PAPER_BG      = "rgba(255,255,255,0)"
+PLOT_TEMPLATE = "none"
+PLOT_BG       = "rgba(0,0,0,0)"
+PAPER_BG      = "rgba(0,0,0,0)"
 TEAL_PALETTE  = [
     "#005BAA", "#00A6D2", "#67B346", "#F5A623",
     "#0877D1", "#8CC63F", "#E8583E", "#6B7C93",
@@ -434,7 +463,7 @@ def styled_chart_layout(**kwargs):
     return dict(
         plot_bgcolor=PLOT_BG,
         paper_bgcolor=PAPER_BG,
-        font=dict(color="#51657A", family="Inter, sans-serif", size=12),
+        font=dict(family="Inter, sans-serif", size=12),
         margin=dict(l=10, r=10, t=30, b=10),
         **kwargs,
     )
@@ -1037,7 +1066,7 @@ def render_pencacah_daily_panel(pcl_name: str, pml_name: str | None = None):
         ),
         legend=dict(orientation="h", y=1.15),
     )
-    st.plotly_chart(fig_line, use_container_width=True)
+    st.plotly_chart(fig_line, use_container_width=True, theme="streamlit")
 
 
 def build_overall_daily_recap():
@@ -1167,7 +1196,7 @@ def render_overall_daily_panel():
             ),
             legend=dict(orientation="h", y=1.15),
         )
-        st.plotly_chart(fig_line, use_container_width=True)
+        st.plotly_chart(fig_line, use_container_width=True, theme="streamlit")
     elif len(daily) < 2:
         st.info("Baru ada 1 tanggal histori. Grafik tren akan muncul setelah ada scraping hari berikutnya.")
 
@@ -1470,6 +1499,7 @@ if menu == "overview":
             st.plotly_chart(
                 fig_bar,
                 use_container_width=True,
+                theme="streamlit",
                 key=f"status_bar_{chart_key}",
             )
 
@@ -1495,7 +1525,6 @@ if menu == "overview":
                 title={
                     "text": title_gauge,
                     "font": {
-                        "color": "#94a3b8",
                         "size": 13,
                         "family": "Inter",
                     },
@@ -1503,16 +1532,15 @@ if menu == "overview":
                 gauge={
                     "axis": {
                         "range": [0, 100],
-                        "tickcolor": "#475569",
-                        "tickfont": {"color": "#64748b", "size": 10},
+                        "tickfont": {"size": 10},
                     },
                     "bar": {"color": "#14b8a6", "thickness": 0.25},
                     "bgcolor": "rgba(0,0,0,0)",
                     "bordercolor": "rgba(100,116,139,0.3)",
                     "steps": [
-                        {"range": [0, 50], "color": "rgba(30,41,59,0.6)"},
-                        {"range": [50, 80], "color": "rgba(23,37,84,0.6)"},
-                        {"range": [80, 100], "color": "rgba(13,61,46,0.6)"},
+                        {"range": [0, 50], "color": "rgba(0,91,170,0.10)"},
+                        {"range": [50, 80], "color": "rgba(0,166,210,0.14)"},
+                        {"range": [80, 100], "color": "rgba(103,179,70,0.16)"},
                     ],
                     "threshold": {
                         "line": {"color": "#0ea5e9", "width": 3},
@@ -1527,6 +1555,7 @@ if menu == "overview":
             st.plotly_chart(
                 fig_gauge,
                 use_container_width=True,
+                theme="streamlit",
                 key=f"status_gauge_{chart_key}",
             )
 
@@ -1569,6 +1598,7 @@ if menu == "overview":
         st.plotly_chart(
             fig_pie,
             use_container_width=True,
+            theme="streamlit",
             key=f"status_pie_{chart_key}",
         )
 
@@ -2037,7 +2067,7 @@ elif menu == "pml":
                 yaxis=dict(showgrid=False, categoryorder="total ascending"),
                 legend=dict(orientation="h", y=1.08),
             )
-            st.plotly_chart(fig_pml, use_container_width=True)
+            st.plotly_chart(fig_pml, use_container_width=True, theme="streamlit")
 
             if len(chart_pml) > top_n_pml:
                 st.caption(f"Menampilkan {top_n_pml} pengawas dengan total penanganan tertinggi dari {len(chart_pml)} pengawas.")
@@ -2258,7 +2288,7 @@ elif menu == "target":
                 legend=dict(orientation="h", y=1.15),
             )
 
-            st.plotly_chart(fig_curve, use_container_width=True)
+            st.plotly_chart(fig_curve, use_container_width=True, theme="streamlit")
 
             st.divider()
 
@@ -2373,7 +2403,7 @@ elif menu == "target":
                         yaxis=dict(showgrid=False),
                     )
 
-                    st.plotly_chart(fig_target, use_container_width=True)
+                    st.plotly_chart(fig_target, use_container_width=True, theme="streamlit")
 
                     if (agg_t["Sisa ke Milestone"] > 0).sum() > top_n_target:
                         st.caption(
@@ -2568,7 +2598,7 @@ elif menu == "desa":
                 xaxis=dict(range=[0, 108], showgrid=True, gridcolor="rgba(120,144,170,.16)", ticksuffix="%"),
                 yaxis=dict(showgrid=False),
             )
-            st.plotly_chart(fig_desa_bar, use_container_width=True, key="desa_progress_modern")
+            st.plotly_chart(fig_desa_bar, use_container_width=True, key="desa_progress_modern", theme="streamlit")
             if len(agg_desa) > top_desa:
                 st.caption(f"Grafik menampilkan {top_desa} desa/kelurahan dengan progress tertinggi. Tabel di bawah tetap memuat seluruh desa.")
 
@@ -2598,7 +2628,7 @@ elif menu == "desa":
                 legend=dict(orientation="h", y=1.08),
             )
             fig_kec.update_traces(marker_line_width=0)
-            st.plotly_chart(fig_kec, use_container_width=True, key="kecamatan_proporsi_modern")
+            st.plotly_chart(fig_kec, use_container_width=True, key="kecamatan_proporsi_modern", theme="streamlit")
 
         # ── Tabel detail desa ────────────────────────────────────────────────
         st.markdown("#### Tabel Detail per Desa / Kelurahan")
