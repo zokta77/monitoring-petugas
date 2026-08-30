@@ -1485,16 +1485,32 @@ if menu == "overview":
                 textfont_size=11,
                 cliponaxis=False,
             )
+            # Beri ruang kiri yang cukup untuk nama status. Sebelumnya margin kiri
+            # hanya 10px sehingga label sumbu-Y terpotong dan terlihat seperti hilang.
+            max_label_len = max((len(str(v)) for v in status_totals_view.index), default=0)
+            left_margin = max(165, min(300, (max_label_len * 7) + 30))
+
+            # Paksa sumbu-X mulai dari 0. Tanpa ini Plotly dapat memberi ruang negatif
+            # saat menghitung otomatis area teks di luar batang.
+            max_value = float(status_totals_view.max()) if len(status_totals_view) else 0.0
+            x_upper = max(1.0, max_value * 1.18)
+
             bar_layout = styled_chart_layout(showlegend=False, height=410)
-            bar_layout["margin"] = dict(l=10, r=35, t=20, b=35)
+            bar_layout["margin"] = dict(l=left_margin, r=45, t=20, b=45)
             fig_bar.update_layout(
                 **bar_layout,
                 xaxis=dict(
                     showgrid=True,
                     gridcolor="rgba(100,116,139,0.15)",
                     title="Jumlah",
+                    range=[0, x_upper],
+                    zeroline=True,
                 ),
-                yaxis=dict(showgrid=False),
+                yaxis=dict(
+                    showgrid=False,
+                    automargin=True,
+                    tickfont=dict(size=11),
+                ),
             )
             st.plotly_chart(
                 fig_bar,
